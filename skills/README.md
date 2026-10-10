@@ -22,14 +22,20 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit|NotebookEdit",
-        "hooks": [{ "type": "command", "command": "python3 ~/Work/software-factory/hooks/factory_gate.py" }]
+        "hooks": [{ "type": "command", "command": "python3 <factory repo>/hooks/factory_gate.py" }]
       }
     ]
   }
 }
 ```
 
-It guards the editing tools only; shell commands that write files pass. Self-check: `python3 hooks/test_factory_gate.py`.
+What it leaves to others:
+
+- It blocks but never changes `status.yaml`: after a hash mismatch, the gate skill it names reverts the gate and everything after it.
+- A frozen signature changed inside an allowed file is caught by review's contract check, not by the hook.
+- It guards the editing tools only; shell commands that write files pass.
+
+Self-check: `python3 hooks/test_factory_gate.py`.
 
 ## Run one change
 

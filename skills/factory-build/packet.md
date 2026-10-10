@@ -18,6 +18,7 @@ Stub form: <the Stubs section of the language's adapter>
 <Research facts this slice needs, each with path:line>
 
 ## Allowed files
+One path per bullet.
 - <path>
 
 ## Tests first

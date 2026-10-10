@@ -15,7 +15,7 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 
 `hash(doc)` = `shasum -a 256 <doc> | cut -d' ' -f1`
 
-`status.yaml` keeps each gate, slice and deviation as a one-line flow map (`{ id: 1, name: tracer, state: pending }`). The factory hook (`hooks/factory_gate.py` in the factory repository) reads them that way to block source edits the gates do not allow.
+`status.yaml` keeps each gate and slice as a one-line flow map (`{ id: 1, name: tracer, state: pending }`). The factory hook (`hooks/factory_gate.py` in the factory repository) reads them that way to block source edits the gates do not allow.
 
 ## IDs
 

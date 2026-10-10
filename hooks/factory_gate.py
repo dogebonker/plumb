@@ -2,12 +2,13 @@
 """Claude Code PreToolUse hook: hard gates for factory changes.
 
 Blocks Edit/Write/MultiEdit/NotebookEdit on source files (anything outside
-.factory/) in a repository whose current branch has an active factory change,
-unless the change's gates allow it. Exit 2 blocks the tool call and shows
-stderr to the agent; exit 0 allows it.
+.factory/) in a repository with an active factory change on the current
+branch, unless the change's gates allow it. Exit 2 blocks the tool call and
+shows stderr to the agent; exit 0 allows it. Once an active change is found,
+an unreadable state blocks too, so a broken status.yaml cannot open the gate.
 
-ponytail: reads status.yaml with line regexes, which relies on the flow-map
-lines the factory skills write; a real YAML parser if the format grows.
+ponytail: reads status.yaml with line regexes, which relies on the one-line
+flow maps the factory skills write; a real YAML parser if the format grows.
 """
 import hashlib
 import json
@@ -22,7 +23,10 @@ EDITING = {"building", "red", "green"}
 
 
 def git(cwd, *args):
-    r = subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True)
+    try:
+        r = subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True, check=False)
+    except OSError:
+        return None
     return r.stdout.strip() if r.returncode == 0 else None
 
 
@@ -32,16 +36,16 @@ def field(text, key):
 
 
 def parse_status(text):
-    status = {"branch": None, "stubbing": False, "gates": {}, "slices": [], "deviations": []}
+    status = {"branch": None, "stubbing": False, "gates": {}, "slices": []}
     section = None
     for line in text.splitlines():
         top = re.match(r"^(\w+):\s*(.*)$", line)
         if top:
-            section, value = top.group(1), top.group(2)
+            section, value = top.group(1), top.group(2).split("#")[0].strip().strip('"')
             if section == "branch":
-                status["branch"] = value.split("#")[0].strip().strip('"')
+                status["branch"] = value
             elif section == "stubbing":
-                status["stubbing"] = value.split("#")[0].strip() == "true"
+                status["stubbing"] = value == "true"
             continue
         gate = re.match(r"^\s+(\w+):\s*\{(.*)\}", line)
         if section == "gates" and gate:
@@ -49,79 +53,95 @@ def parse_status(text):
                                               "doc_sha256": field(gate.group(2), "doc_sha256")}
         item = re.match(r"^\s*-\s*\{(.*)\}", line)
         if section == "slices" and item:
-            status["slices"].append({"id": field(item.group(1), "id"), "state": field(item.group(1), "state")})
-        if section == "deviations" and item:
-            status["deviations"].append({"slice": field(item.group(1), "slice"), "file": field(item.group(1), "file")})
+            status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state")})
     return status
 
 
 def allowed_files(packet):
-    if not packet.exists():
-        return set()
     files, inside = set(), False
     for line in packet.read_text().splitlines():
         if line.startswith("## "):
             inside = line.strip() == "## Allowed files"
         elif inside and line.lstrip().startswith("- "):
-            files.add(line.lstrip()[2:].strip().strip("`"))
+            for part in line.lstrip()[2:].split(","):
+                if part.split():
+                    files.add(part.split()[0].strip("`"))
     return files
 
 
 def check(change, status, rel):
     """Return a reason to block, or None to allow."""
-    if status["stubbing"]:
+    gates = status["gates"]
+    if len(gates) < len(GATES):
+        return "cannot read all four gates in status.yaml; keep each gate as a one-line { } map (gates.md)."
+    if status["stubbing"] and gates["interface"]["state"] == "pending":
         return None
     for gate, doc in GATES:
-        g = status["gates"].get(gate, {})
-        if g.get("state") == "approved":
+        if gates[gate]["state"] == "approved":
             path = change / doc
             digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
-            if digest != g.get("doc_sha256"):
+            if digest != gates[gate]["doc_sha256"]:
                 return f"{doc} changed after the {gate} gate was approved. Run /factory-{gate} to approve it again."
     for gate, _ in GATES:
-        if status["gates"].get(gate, {}).get("state") not in ("approved", "skipped"):
+        if gates[gate]["state"] not in ("approved", "skipped"):
             return f"source edits wait for the slices gate; the {gate} gate is not approved yet. Run /factory-{gate}."
     active = [s for s in status["slices"] if s["state"] in EDITING]
     if not active:
         return "no slice is being built. Run /factory-build to start the next slice."
     for s in active:
-        nn = f"{int(s['id']):02d}"
-        ok = allowed_files(change / "slices" / nn / "packet.md")
-        ok |= {d["file"] for d in status["deviations"] if d["slice"] and int(d["slice"]) == int(s["id"])}
-        if rel in ok:
+        packet = change / "slices" / s["id"].zfill(2) / "packet.md"
+        if packet.exists() and rel in allowed_files(packet):
             return None
     ids = ", ".join(s["id"] for s in active)
     return f"{rel} is not in the Allowed files of slice {ids}. Ask the user; if they allow it, log a deviation and add it to the packet."
 
 
+def find_changes(start):
+    for folder in [start, *start.parents]:
+        if (folder / ".factory" / "changes").is_dir():
+            return folder
+    return None
+
+
 def main():
-    data = json.load(sys.stdin)
-    tool_input = data.get("tool_input", {})
-    target = tool_input.get("file_path") or tool_input.get("notebook_path")
+    try:
+        data = json.load(sys.stdin)
+        tool_input = data.get("tool_input") or {}
+        target = tool_input.get("file_path") or tool_input.get("notebook_path")
+    except (ValueError, AttributeError):
+        return 0
     if not target:
         return 0
     path = Path(target)
     if not path.is_absolute():
-        path = Path(data.get("cwd", ".")) / path
+        path = Path(data.get("cwd") or ".") / path
     probe = path.parent
     while not probe.exists() and probe != probe.parent:
         probe = probe.parent
+    if not find_changes(probe.resolve()):
+        return 0
     root = git(probe, "rev-parse", "--show-toplevel")
     if not root:
         return 0
-    root = Path(root)
-    rel = path.resolve().relative_to(root.resolve()).as_posix() if path.resolve().is_relative_to(root.resolve()) else None
+    root = Path(root).resolve()
+    try:
+        rel = path.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return 0
     changes = root / ".factory" / "changes"
-    if rel is None or rel.startswith(".factory/") or not changes.is_dir():
+    if rel.startswith(".factory/") or not changes.is_dir():
         return 0
     branch = git(root, "symbolic-ref", "--short", "HEAD")
     for status_file in sorted(changes.glob("*/status.yaml")):
-        status = parse_status(status_file.read_text())
-        if status["branch"] != branch:
-            continue
-        if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
-            continue
-        reason = check(status_file.parent, status, rel)
+        try:
+            status = parse_status(status_file.read_text())
+            if branch and status["branch"] != branch:
+                continue
+            if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
+                continue
+            reason = check(status_file.parent, status, rel)
+        except Exception as e:  # noqa: BLE001 - an active change with unreadable state stays closed
+            reason = f"cannot read the change's state ({type(e).__name__}: {e}). Fix {status_file.relative_to(root)}."
         if reason:
             print(f"factory gate ({status_file.parent.name}): {reason}", file=sys.stderr)
             return 2
