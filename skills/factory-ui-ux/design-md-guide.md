@@ -56,7 +56,7 @@ Never ask for colors, fonts or spacing the code already answers.
 
 Write the file once the user confirms it, stamped `<!-- factory:design-schema 1 - reviewed <slug or date> -->`; the stamp is what the factory hook and runner look for. Give the user the one line for `AGENTS.md` or `CLAUDE.md` that points agents to it, for them to add. Committed mode: commit it on the change's branch, or on its own branch when no change is open. Ignored mode: the root file stays untracked unless the user commits it.
 
-Headless mode: write the draft to `<change>/design-draft.md`, commit and push it, and wait for the user as gates.md's Headless mode describes, asking the interview questions in that comment. The run that receives an approver's confirmation writes the design file from the draft with their corrections.
+Headless mode: write the draft to `<change>/design-draft.md`, commit and push it, and wait for the user as gates.md's Headless mode describes, asking the interview questions in that comment. The next run reads the approvers' replies as the interview answers: once they answer every open question, or reply `confirm design`, it writes the design file from the draft with their corrections; otherwise it updates the draft and asks what is still open, within the 2-round cap; after that, what is still open stays `inferred` under Known Gaps.
 
 ## Keeping it current
 

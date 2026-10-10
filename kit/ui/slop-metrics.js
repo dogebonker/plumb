@@ -28,7 +28,7 @@
   const glass = all.filter(el => { const s = getComputedStyle(el);
     return s.backdropFilter && s.backdropFilter !== 'none' && (rgb(s.backgroundColor)[3] ?? 1) < 0.9; }).length;
   const glow = all.filter(el => /(^|,\s*)(?:rgba?|oklch|oklab|lab|lch|hsla?|color)\([^)]*\)\s+0px\s+0px\s+([1-9]\d*)px/.test(getComputedStyle(el).boxShadow)
-    && colorsIn(getComputedStyle(el).boxShadow).some(c => hsl(rgb(c))[1] > 0.35)).length;
+    && colorsIn(getComputedStyle(el).boxShadow).some(c => { const v = rgb(c); return v[3] > 0.2 && hsl(v)[1] > 0.35; })).length;
   const purpleSurfaces = all.filter(el => { const s = getComputedStyle(el);
     return [s.backgroundColor, ...colorsIn(s.backgroundImage)].some(c => (rgb(c)[3] ?? 1) > 0.2 && purple(c)); }).length;
   const emojiIcons = all.filter(el => el.children.length === 0 && el.textContent.trim() && EMOJI.test(el.textContent)).length;
