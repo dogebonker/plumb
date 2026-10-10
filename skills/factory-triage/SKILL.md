@@ -20,13 +20,15 @@ Triage turns a task into a tracked change: a track, a branch, `status.yaml`, and
 
 Done when you can name the modules in scope and all three commands.
 
-## 2. Detect money and BDD
+## 2. Detect the repository profile
 
 - **Modules.** The repository root, plus every directory with its own manifest, outside dependency and build directories (`node_modules`, `vendor`, `target`, `dist`, `.venv`). For each: path, language, and language version from the manifest (`engines` / `typescript` in `package.json`, `rust-version` or `edition` in `Cargo.toml`, `go` in `go.mod`, `requires-python` in `pyproject.toml`), or `unknown`.
 - **BDD per module.** `native` when the module has any of: `*.feature` files, a BDD runner dependency (`@cucumber/cucumber`, `cucumber`, `behave`, `pytest-bdd`, `godog`), or runner config (`cucumber.js`, `cucumber.mjs`, `cucumber.yml`, `behave.ini`, `features/environment.py`). Otherwise `off`.
 - **Money signals.** A payment, exchange or chain SDK in any manifest (`stripe`, `adyen`, `paypal`, `braintree`, `square`, `plaid`, `modern-treasury`, `ccxt`, `ethers`, `viem`, `web3`, `@solana/web3.js`, `bitcoinjs-lib`, `fireblocks`), or money in the schema and code (columns or fields named `amount`, `balance`, `price`, `currency`, `ledger`, `payout`, `refund`). List each signal with its `path:line`.
 
-Done when every module has a language and a BDD state, and every money signal has a location. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
+- **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
+
+Done when every module has a language and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
 
 ## 3. Pick the track
 
@@ -46,7 +48,7 @@ Ask in one message:
 - the track, with a one-line reason
 - the slug (kebab-case, at most four words)
 - the three commands, so the user can correct them
-- the modules with language and BDD state, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
+- the lens profile with a one-line reason, the modules with language and BDD state, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)
 
@@ -60,6 +62,8 @@ Done when the user has answered all of them.
 4. Write `.factory/system/lenses.yaml` with the confirmed values:
 
 ```yaml
+profile: domain-core          # domain-core | crud-service | legacy
+domain_model: rich            # from the profile; the architecture gate may change it by a decision
 money: false
 domain: web-api              # NFR catalog that seeded the registry, or none
 modules:

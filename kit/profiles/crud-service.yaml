@@ -1,0 +1,5 @@
+# Admin panels and simple CRUD: thin logic, transaction scripts.
+domain_model: transaction-scripts
+lenses:
+  architecture: [patterns-of-enterprise-application-architecture]
+  packet: [clean-code]

@@ -1,0 +1,5 @@
+# Brownfield code without tests: characterize first, refactor in small steps.
+domain_model: keep               # follow what the code already does
+lenses:
+  architecture: [working-effectively-with-legacy-code]
+  packet: [working-effectively-with-legacy-code, refactoring]

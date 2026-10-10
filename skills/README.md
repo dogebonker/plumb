@@ -10,7 +10,7 @@ ln -s ~/Work/software-factory/skills/factory-* ~/.claude/skills/
 
 The skills read the kit at `~/.software-factory/`. Set it up once from [kit/](../kit/README.md).
 
-Install them as a set: the skills share `factory-shared/gates.md`. Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
+Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
 
 ## Run one change
 
@@ -27,7 +27,7 @@ Install them as a set: the skills share `factory-shared/gates.md`. Review needs 
 | `factory-architecture` | S2 | Architecture gate: research facts, budgets, ADRs |
 | `factory-interface` | S2 | Interface gate: human-decided signatures, coverage. Cost card and challenge panel in S4 |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
-| `factory-shared` | S2 | Not a skill: `gates.md`, the gate rules every skill follows |
+| `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
 | `factory-research` | S4 | Research firewall |
 | `factory-reconcile` | S7 | Fold shipped work back into specs, ADRs and lessons |
 | `factory-prune` | S7 | Repository audit and prune slices |

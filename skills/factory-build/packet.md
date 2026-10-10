@@ -25,6 +25,10 @@ Each fails on its assertion in the red commit, before any implementation exists.
 ## Verify
 - `<command>`
 
+## Rules in scope
+Read these before writing code, and apply them inside the frozen contract.
+- `~/.agents/skills/<lens>/<lens>.nano.md`
+
 ## Stop and report
 - a frozen signature cannot work as written
 - a file outside Allowed files must change
