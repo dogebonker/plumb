@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 478" width="760" height="478" role="img" aria-label="Review: scripts first, agents second, you last">
+  <style>
+    text { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .bg { fill: #F5F7F8; }
+    .ink { fill: #1F2A33; }
+    .quiet { fill: #5B6873; }
+    .box { fill: #FFFFFF; stroke: #8A97A3; stroke-width: 1.25; }
+    .opt { fill: #FFFFFF; stroke: #8A97A3; stroke-width: 1.25; stroke-dasharray: 5 4; }
+    .you { fill: #E6EDFB; stroke: #2F5DD0; stroke-width: 2; }
+    .group { fill: none; stroke: #C5CDD4; stroke-width: 1.25; }
+    .line { fill: none; stroke: #8A97A3; stroke-width: 1.25; }
+    .head { fill: #8A97A3; }
+    .pulse { fill: #E8A317; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15191D; }
+      .ink { fill: #E6EAEE; }
+      .quiet { fill: #9AA6B1; }
+      .box, .opt { fill: #1C2228; stroke: #5E6B76; }
+      .you { fill: #1D2A44; stroke: #6F95F0; }
+      .group { stroke: #36404A; }
+      .line { stroke: #5E6B76; }
+      .head { fill: #5E6B76; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="760" height="478" rx="14"/>
+  <text class="ink" x="24" y="38" font-size="17" font-weight="700">Review: scripts first, agents second, you last</text>
+  <text class="quiet" x="24" y="60" font-size="12.5">Anything a script can check never costs agent tokens; dashed agents run only when armed</text>
+
+  <!-- Phase 1 -->
+  <rect class="group" x="24" y="80" width="212" height="316" rx="10"/>
+  <text class="ink" x="40" y="104" font-size="13" font-weight="700">Phase 1: scripts</text>
+  <text class="quiet" x="40" y="121" font-size="11.5">about zero tokens</text>
+  <rect class="box" x="40" y="134" width="180" height="44" rx="8"/>
+  <text class="ink" x="54" y="153" font-size="12.5" font-weight="700">Lint + type check</text>
+  <text class="quiet" x="54" y="169" font-size="11">the repo's own command</text>
+  <rect class="box" x="40" y="186" width="180" height="44" rx="8"/>
+  <text class="ink" x="54" y="205" font-size="12.5" font-weight="700">Import graph</text>
+  <text class="quiet" x="54" y="221" font-size="11">Clean Architecture</text>
+  <rect class="box" x="40" y="238" width="180" height="44" rx="8"/>
+  <text class="ink" x="54" y="257" font-size="12.5" font-weight="700">Interface conformance</text>
+  <text class="quiet" x="54" y="273" font-size="11">frozen stubs vs diff</text>
+  <rect class="box" x="40" y="290" width="180" height="44" rx="8"/>
+  <text class="ink" x="54" y="309" font-size="12.5" font-weight="700">Dead-code tool</text>
+  <text class="quiet" x="54" y="325" font-size="11">knip, vulture, deadcode</text>
+  <rect class="box" x="40" y="342" width="180" height="44" rx="8"/>
+  <text class="ink" x="54" y="361" font-size="12.5" font-weight="700">Language linters</text>
+  <text class="quiet" x="54" y="377" font-size="11">rules from the pack</text>
+
+  <!-- Phase 3 -->
+  <rect class="group" x="268" y="80" width="236" height="368" rx="10"/>
+  <text class="ink" x="284" y="104" font-size="13" font-weight="700">Phase 3: agents in parallel</text>
+  <text class="quiet" x="284" y="121" font-size="11.5">fresh context each, read-only</text>
+  <rect class="box" x="284" y="134" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="153" font-size="12.5" font-weight="700">Cleanliness</text>
+  <text class="quiet" x="298" y="169" font-size="11">+ Gherkin, if BDD is native</text>
+  <rect class="box" x="284" y="186" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="205" font-size="12.5" font-weight="700">Design &amp; Reuse</text>
+  <text class="quiet" x="298" y="221" font-size="11">+ Refactoring.Guru + Ponytail</text>
+  <rect class="box" x="284" y="238" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="257" font-size="12.5" font-weight="700">Efficiency</text>
+  <text class="quiet" x="298" y="273" font-size="11">+ language pack hot paths</text>
+  <rect class="box" x="284" y="290" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="309" font-size="12.5" font-weight="700">Side-effect gating</text>
+  <text class="quiet" x="298" y="325" font-size="11">irreversible effects vs checks</text>
+  <rect class="opt" x="284" y="342" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="361" font-size="12.5" font-weight="700">APoSD</text>
+  <text class="quiet" x="298" y="377" font-size="11">if a frozen interface changed</text>
+  <rect class="opt" x="284" y="394" width="204" height="44" rx="8"/>
+  <text class="ink" x="298" y="413" font-size="12.5" font-weight="700">Money</text>
+  <text class="quiet" x="298" y="429" font-size="11">money repos, fin-* skills</text>
+
+  <!-- right chain -->
+  <rect class="box" x="544" y="134" width="192" height="44" rx="8"/>
+  <text class="ink" x="558" y="153" font-size="12.5" font-weight="700">Validate</text>
+  <text class="quiet" x="558" y="169" font-size="11">drop unverified claims</text>
+  <rect class="box" x="544" y="206" width="192" height="44" rx="8"/>
+  <text class="ink" x="558" y="225" font-size="12.5" font-weight="700">Report</text>
+  <text class="quiet" x="558" y="241" font-size="11">review.md, by category</text>
+  <rect class="you" x="544" y="278" width="192" height="44" rx="8"/>
+  <text class="ink" x="558" y="297" font-size="12.5" font-weight="700">You approve</text>
+  <text class="ink" x="558" y="313" font-size="11">per finding, by number</text>
+  <rect class="box" x="544" y="350" width="192" height="44" rx="8"/>
+  <text class="ink" x="558" y="369" font-size="12.5" font-weight="700">Fix</text>
+  <text class="quiet" x="558" y="385" font-size="11">behavior-preserving only</text>
+  <text class="quiet" x="544" y="420" font-size="11">A frozen signature change is not</text>
+  <text class="quiet" x="544" y="436" font-size="11">a fix: it goes back to the gate.</text>
+
+  <!-- connectors -->
+  <path id="r1" class="line" d="M236 238H266" marker-end="url(#arrow-r)"/>
+  <path id="r2" class="line" d="M504 156H542" marker-end="url(#arrow-r)"/>
+  <path id="r3" class="line" d="M640 178V204" marker-end="url(#arrow-r)"/>
+  <path id="r4" class="line" d="M640 250V276" marker-end="url(#arrow-r)"/>
+  <path id="r5" class="line" d="M640 322V348" marker-end="url(#arrow-r)"/>
+
+  <!-- findings travelling through the pipeline -->
+  <circle class="pulse" r="4.5" opacity="0">
+    <animateMotion dur="7s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;0.12;1"
+      path="M236 238H266"/>
+    <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.02;0.11;0.13;1" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="pulse" r="4.5" opacity="0">
+    <animateMotion dur="7s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.3;0.45;1"
+      path="M504 156H542"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.29;0.31;0.44;0.46;1" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="pulse" r="4.5" opacity="0">
+    <animateMotion dur="7s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.5;0.95;1"
+      path="M640 178V350"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.49;0.51;0.94;0.96;1" dur="7s" repeatCount="indefinite"/>
+  </circle>
+</svg>

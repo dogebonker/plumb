@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 556" width="760" height="556" role="img" aria-label="The factory loop: six stages per feature, four steps per slice, reconcile after merge">
+  <style>
+    text { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .bg { fill: #F5F7F8; }
+    .ink { fill: #1F2A33; }
+    .quiet { fill: #5B6873; }
+    .box { fill: #FFFFFF; stroke: #8A97A3; stroke-width: 1.25; }
+    .you { fill: #E6EDFB; stroke: #2F5DD0; stroke-width: 2; }
+    .line { fill: none; stroke: #8A97A3; stroke-width: 1.25; }
+    .head { fill: #8A97A3; }
+    .group { fill: none; stroke: #C5CDD4; stroke-width: 1.25; stroke-dasharray: 5 5; }
+    .gate { fill: #E8A317; }
+    .token { fill: #E8A317; }
+    .halo { fill: #E8A317; opacity: 0.25; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #15191D; }
+      .ink { fill: #E6EAEE; }
+      .quiet { fill: #9AA6B1; }
+      .box { fill: #1C2228; stroke: #5E6B76; }
+      .you { fill: #1D2A44; stroke: #6F95F0; }
+      .line { stroke: #5E6B76; }
+      .head { fill: #5E6B76; }
+      .group { stroke: #36404A; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path class="head" d="M0 0L10 5L0 10z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="760" height="556" rx="14"/>
+
+  <text class="ink" x="24" y="38" font-size="17" font-weight="700">You decide at the gates; agents build between them</text>
+  <text class="quiet" x="24" y="60" font-size="12.5">Six stages per feature, four steps per slice, reconcile after the last slice merges</text>
+
+  <!-- per-slice group -->
+  <rect class="group" x="24" y="292" width="712" height="148" rx="10"/>
+  <text class="quiet" x="40" y="314" font-size="12" font-weight="600">Per slice</text>
+
+  <!-- connectors -->
+  <path class="line" d="M228 120H280" marker-end="url(#arrow)"/>
+  <path class="line" d="M480 120H532" marker-end="url(#arrow)"/>
+  <path class="line" d="M632 148V174H128V200" marker-end="url(#arrow)"/>
+  <path class="line" d="M228 228H280" marker-end="url(#arrow)"/>
+  <path class="line" d="M480 228H532" marker-end="url(#arrow)"/>
+  <path class="line" d="M632 256V274H116V336" marker-end="url(#arrow)"/>
+  <path class="line" d="M192 364H216" marker-end="url(#arrow)"/>
+  <path class="line" d="M368 364H392" marker-end="url(#arrow)"/>
+  <path class="line" d="M544 364H568" marker-end="url(#arrow)"/>
+  <path class="line" d="M644 392V412H116V392" marker-end="url(#arrow)"/>
+  <path class="line" d="M380 440V472" marker-end="url(#arrow)"/>
+  <text class="quiet" x="380" y="430" font-size="11.5" text-anchor="middle">next slice</text>
+  <text class="quiet" x="392" y="461" font-size="11.5">after the last slice</text>
+
+  <!-- boxes -->
+  <rect class="box" x="28" y="92" width="200" height="56" rx="9"/>
+  <rect class="box" x="280" y="92" width="200" height="56" rx="9"/>
+  <rect class="box" x="532" y="92" width="200" height="56" rx="9"/>
+  <rect class="box" x="28" y="200" width="200" height="56" rx="9"/>
+  <rect class="you" x="280" y="200" width="200" height="56" rx="9"/>
+  <rect class="box" x="532" y="200" width="200" height="56" rx="9"/>
+  <rect class="box" x="40" y="336" width="152" height="56" rx="9"/>
+  <rect class="box" x="216" y="336" width="152" height="56" rx="9"/>
+  <rect class="box" x="392" y="336" width="152" height="56" rx="9"/>
+  <rect class="box" x="568" y="336" width="152" height="56" rx="9"/>
+  <rect class="box" x="280" y="472" width="200" height="56" rx="9"/>
+
+  <!-- gate markers -->
+  <path class="gate" d="M466 99l7 7l-7 7l-7-7z"/>
+  <path class="gate" d="M214 207l7 7l-7 7l-7-7z"/>
+  <path class="gate" d="M466 207l7 7l-7 7l-7-7z"/>
+  <path class="gate" d="M718 207l7 7l-7 7l-7-7z"/>
+
+  <!-- travelling token: drawn above boxes, below labels -->
+  <g>
+    <circle class="halo" r="11" cx="0" cy="0"/>
+    <circle class="token" r="5.5" cx="0" cy="0"/>
+    <animateMotion dur="18s" repeatCount="indefinite" calcMode="linear"
+      path="M128 120H632V174H128V228H632V274H116V364H644V412H116V364H644V412H380V500"/>
+  </g>
+
+  <!-- labels -->
+  <text class="ink" x="128" y="116" font-size="14" font-weight="700" text-anchor="middle">Triage</text>
+  <text class="quiet" x="128" y="134" font-size="12" text-anchor="middle">track, money, BDD, lenses</text>
+  <text class="ink" x="380" y="116" font-size="14" font-weight="700" text-anchor="middle">Product</text>
+  <text class="quiet" x="380" y="134" font-size="12" text-anchor="middle">FRs, NFRs, examples</text>
+  <text class="ink" x="632" y="116" font-size="14" font-weight="700" text-anchor="middle">Research</text>
+  <text class="quiet" x="632" y="134" font-size="12" text-anchor="middle">facts only, never sees task</text>
+  <text class="ink" x="128" y="224" font-size="14" font-weight="700" text-anchor="middle">Architecture</text>
+  <text class="quiet" x="128" y="242" font-size="12" text-anchor="middle">contracts, budgets, ADRs</text>
+  <text class="ink" x="380" y="224" font-size="14" font-weight="700" text-anchor="middle">Interface Design</text>
+  <text class="ink" x="380" y="242" font-size="12" text-anchor="middle">you design, then freeze</text>
+  <text class="ink" x="632" y="224" font-size="14" font-weight="700" text-anchor="middle">Slices</text>
+  <text class="quiet" x="632" y="242" font-size="12" text-anchor="middle">tracer bullet first</text>
+  <text class="ink" x="116" y="360" font-size="14" font-weight="700" text-anchor="middle">Packet</text>
+  <text class="quiet" x="116" y="378" font-size="12" text-anchor="middle">frozen contract</text>
+  <text class="ink" x="292" y="360" font-size="14" font-weight="700" text-anchor="middle">Build</text>
+  <text class="quiet" x="292" y="378" font-size="12" text-anchor="middle">red, then green</text>
+  <text class="ink" x="468" y="360" font-size="14" font-weight="700" text-anchor="middle">Review</text>
+  <text class="quiet" x="468" y="378" font-size="12" text-anchor="middle">scripts + lenses</text>
+  <text class="ink" x="644" y="360" font-size="14" font-weight="700" text-anchor="middle">You read</text>
+  <text class="quiet" x="644" y="378" font-size="12" text-anchor="middle">diff + review.md</text>
+  <text class="ink" x="380" y="496" font-size="14" font-weight="700" text-anchor="middle">Reconcile</text>
+  <text class="quiet" x="380" y="514" font-size="12" text-anchor="middle">specs, ADRs, lessons</text>
+
+  <!-- legend -->
+  <path class="gate" d="M32 487l6 6l-6 6l-6-6z"/>
+  <text class="quiet" x="46" y="497" font-size="11.5">approval gate</text>
+  <rect class="you" x="26" y="510" width="12" height="12" rx="3" stroke-width="1.5"/>
+  <text class="quiet" x="46" y="520" font-size="11.5">owned by you</text>
+</svg>
