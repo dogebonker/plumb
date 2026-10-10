@@ -21,8 +21,14 @@ Stub form: <the Stubs section of the language's adapter>
 - <path>
 
 ## Tests first
-Each fails on its assertion in the red commit, before any implementation exists.
+Each fails in the red commit, before any implementation exists.
 - `<test file>` :: <test name>: <what it asserts>
+
+## Scenarios (bdd: native modules only)
+<the slice's scenarios, verbatim>
+
+Existing step definitions, to reuse before writing new ones:
+- `<path:line>` <step text>
 
 ## Verify
 - `<command>`

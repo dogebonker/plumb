@@ -8,3 +8,7 @@
 
 ## Typecheck
 `npx --no-install tsc --noEmit -p <the module's tsconfig.json> --noUnusedLocals false --noUnusedParameters false` (stub bodies leave parameters unused)
+
+## BDD
+- Run one feature: `npx --no-install cucumber-js <feature file>`
+- Step definitions: `rg -n "(Given|When|Then)\(" <module>`

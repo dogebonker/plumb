@@ -7,3 +7,7 @@
 
 ## Typecheck
 `go build ./... && go vet ./...` in the module directory
+
+## BDD
+- Run one feature: `godog run <feature file>`, or the module's `go test` entry that runs godog
+- Step definitions: `rg -n "\.Step\(" <module>`

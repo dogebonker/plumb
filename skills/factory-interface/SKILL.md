@@ -29,6 +29,18 @@ Cost: <n> public methods, <n> parameters, <n> error variants exposed, <n> config
 ```
 <interface comment: what it promises, its errors, never how>
 
+## Test plan
+### <module path> (bdd: native)
+```gherkin
+Feature: <capability, in the product's words>
+  Scenario: <FR-01's example, as a sentence>
+    Given <state>
+    When <event>
+    Then <outcome>
+```
+### <module path> (bdd: off)
+- FR-01: `<test file>` :: <test name that states the example's outcome>
+
 ## Coverage
 | ID | Enforced by |
 | --- | --- |
@@ -40,6 +52,7 @@ Cost: <n> public methods, <n> parameters, <n> error variants exposed, <n> config
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile.
+- The Test plan turns every FR example into one test, per module by its `bdd` state in `lenses.yaml`: a declarative scenario in native modules, reusing the wording of existing step definitions (the adapter's BDD step search finds them); a test name in the repository's framework elsewhere. Coverage names that scenario or test.
 
 ## 3. Compile and cost
 

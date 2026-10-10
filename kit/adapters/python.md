@@ -7,3 +7,7 @@
 
 ## Typecheck
 The module's type checker: `uv run pyright <files>` or `uv run mypy <files>`. Without a type checker the module stays unchecked.
+
+## BDD
+- Run one feature: `uv run behave <feature file>` (behave) or `uv run pytest <test file binding the feature>` (pytest-bdd)
+- Step definitions: `rg -n "@(given|when|then)\(" <module>`

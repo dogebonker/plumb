@@ -43,7 +43,7 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
 ### 01 <name>
 Covers: FR-01
 Modules: <module paths this slice touches>
-Tests first: <test file> :: <test name> - <what it asserts>
+Tests first: <test file or feature file> :: <test name or scenario> - <what it asserts>
 Allowed files: <paths, test files included>
 Verify: <commands>
 

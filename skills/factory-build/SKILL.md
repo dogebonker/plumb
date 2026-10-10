@@ -39,7 +39,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`, and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
-- its tests, allowed files and verify commands, from `04-slices.md`
+- its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan, and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
 - under Rules in scope, the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md)
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
@@ -70,7 +70,7 @@ When the executor stops:
 
 1. Record `test_commit`: the sha of the `test(<slug>): slice NN red` commit. The test files are those listed in the packet's Tests first.
 2. `git checkout --detach <test_commit>`
-3. Run `test_file_command` once per test file, then `test_command`.
+3. Run `test_file_command` once per test file (a feature file: the adapter's BDD run command), then `test_command`.
 4. `git checkout <branch>`
 
 Red means: it builds; every new test fails, on an assertion or an error raised through a stub, except those in `red_exempt`; and every other test passes except those in `baseline_failures`.
