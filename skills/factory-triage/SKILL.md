@@ -69,7 +69,7 @@ modules:
     bdd: off                # native | off; adopt is set only by the user
 ```
 
-5. When `.factory/system/constraints.md` is missing, create it from [constraints.md](../factory-shared/constraints.md) with the example rows removed. Add each catalog row the user kept as `SYS-NFR-NN`: Kind is the catalog key, Statement the promise, Fit criterion the tuned budget, Source `nfr-catalog/<domain>`, Enforced by the catalog's kind until a change names the exact test or monitor.
+5. When `.factory/system/constraints.md` is missing, create it from [constraints.md](../factory-shared/constraints.md) with the example rows removed. Add each catalog row the user kept as `SYS-NFR-NN`: Kind is the catalog key, Statement the promise, Fit criterion the tuned budget, Source `nfr-catalog/<domain>`, Enforced by `unmapped (<catalog Enforced by>)` until a change names the exact test, monitor or check.
 6. Write `.factory/changes/<slug>/status.yaml`:
 
 ```yaml

@@ -1,9 +1,10 @@
 # Factory kit
 
-Starter content for `~/.software-factory/`, the kit every factory skill reads. Copy it once, then keep it as your own git repository: your edits there are your taste, synced to every machine and server you run the factory on.
+Starter content for `~/.software-factory/`, the kit every factory skill reads. Copy it once (`-n` keeps any file you already have), then keep it as your own git repository: your edits there are your taste, synced to every machine and server you run the factory on.
 
 ```bash
-cp -R ~/Work/software-factory/kit ~/.software-factory
+mkdir -p ~/.software-factory
+cp -Rn ~/Work/software-factory/kit/. ~/.software-factory/
 git -C ~/.software-factory init
 ```
 
