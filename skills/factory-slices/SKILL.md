@@ -15,7 +15,14 @@ Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate 
 
 Load the change as gates.md describes, for the `slices` gate. Read every earlier gate document that is not `skipped`.
 
-## 2. Draft `04-slices.md`
+## 2. Gather
+
+- Read the files in scope fully, with their tests, to name real test files, allowed files and verify commands.
+- Track small: read the sessions in `pond_sessions`, from the end.
+
+Done when every slice can name existing or new files by path.
+
+## 3. Draft `04-slices.md`
 
 Track `small` has no earlier documents: write Goal and Requirements here too. Other tracks start at Slices.
 
@@ -43,18 +50,17 @@ Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
 - Slices are vertical. A slice that only adds a layer (all models, then all handlers) is replaced by one that cuts through.
-- Every ID in Coverage of `03-interface.md` (track small: every FR above) is covered by a slice, with the test named there.
-- Allowed files list every file a slice may touch, tests included.
+- Every ID in Coverage of `03-interface.md` (track small: every FR above) is covered by a slice. When Coverage names a test, that slice writes it.
 
-## 3. Walk the human through it
+## 4. Walk the human through it
 
 Show the slice list with what each one proves. Ask whether the tracer bullet is thin enough and whether any slice is a layer in disguise. Then ask the open questions.
 
-Done when every ID is covered and Open questions is empty.
+Done when Open questions is empty.
 
-## 4. Approve
+## 5. Approve
 
-Approve the `slices` gate as gates.md describes. Before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
+Approve the `slices` gate as gates.md describes. After its steps 1 and 2 and before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
 
 - a slice already `done` stays as it is
 - the slice named in `sent_back` gets `state: rewind`; factory-build undoes its code before rebuilding it

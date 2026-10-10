@@ -35,6 +35,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 
 Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice. Copy, never paraphrase:
 
+- the slice's heading from `04-slices.md` as Goal
 - the covered IDs with their fit criteria (each FR's Example line) from `01-product.md`, or from `04-slices.md` on track small
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`
@@ -57,12 +58,12 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 
 When the executor stops:
 
-- **Frozen signature or wrong test:** send the slice back (below).
+- **Frozen signature or wrong test:** send the slice back.
 - **File outside the list:** ask the user. Allowed: log `{ slice, file, reason }` in `deviations`, append the file to the packet's Allowed files, and continue the executor. Refused: send the slice back.
 - **Pre-commit hook:** ask the user whether red commits may use `--no-verify`, and continue the executor with the answer.
 - **A new test passes against the stub:** ask the user to keep it (record its name in the slice's `red_exempt`) or have the executor rewrite it.
 
-**Send back:** as gates.md describes.
+**Send back** follows gates.md, which picks the target gate from the reason.
 
 ## 4. Prove red
 

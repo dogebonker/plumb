@@ -29,7 +29,7 @@ Done when every claim in the Research section has a `path:line` or a Pond sessio
 # Architecture: <slug>
 
 ## Research
-Facts only, each with `path:line` or a Pond session id. No proposals.
+Facts only, each with `path:line` or a Pond session id.
 
 ## Fit
 Where the change lives in the existing system, and what it reuses.
@@ -47,34 +47,25 @@ The path of one request or event through the system, step by step.
 - C-01: <constraint> -> rules out <options>
 
 ## Decisions
-- ADR-NNNN <title> - <one line>
+### <title>
+Supersedes: <earlier ADR, or none>
+Context: <forces at play, with references>
+Decision: <what was decided>
+Consequences: <what gets easier, what gets harder>
 
 ## Open questions
 ```
 
-Every NFR and C from `01-product.md` appears under Budgets or Constraints.
+- Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves shipped ADRs into `.factory/system/adr/` after merge.
+- When `.factory/system/` records no domain-model decision, add one: rich domain model or transaction scripts.
+- Track critical: Budgets holds at least one NFR budget.
 
-## 4. ADRs
+## 4. Walk the human through it
 
-Write each decision as `.factory/system/adr/NNNN-<kebab-title>.md`, numbered after the highest existing one:
-
-```markdown
-# NNNN <title>
-
-Status: accepted | supersedes NNNN
-Context: <forces at play, with references>
-Decision: <what was decided>
-Consequences: <what gets easier, what gets harder>
-```
-
-A decision that changes an earlier ADR supersedes it: mark the old one `superseded by NNNN`.
-
-## 5. Walk the human through it
-
-Present the Decisions first, each with the main alternative it rejects. Then the Budgets, then the open questions. Fold every answer into the document and the ADRs.
+Present the Decisions first, each with the main alternative it rejects. Then the Budgets, then the open questions. Fold every answer into the document.
 
 Done when Open questions is empty and every NFR and C has a budget or the options it rules out.
 
-## 6. Approve
+## 5. Approve
 
 Approve the `architecture` gate as gates.md describes. Next skill: `/factory-interface`.

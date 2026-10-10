@@ -9,17 +9,19 @@ argument-hint: "[slug]"
 
 Slug: $ARGUMENTS
 
-Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides what the change does for its users. It names no technology: no frameworks, tables, endpoints or file names.
+Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides what the change does for its users, in their vocabulary: behavior, rules and outcomes. Technology enters at architecture.
 
 ## 1. Load
 
-Load the change as gates.md describes, for the `product` gate. If it is `skipped` (track small), point to `/factory-slices <slug>` and stop.
+Load the change as gates.md describes, for the `product` gate.
 
 ## 2. Gather
 
 - The task in `status.yaml`, and the sessions in `pond_sessions`, read from the end (latest decisions win).
 - Search Pond for earlier requests, complaints and decisions about the same behavior.
 - Read the code in scope only far enough to describe today's behavior in user terms.
+
+Done when you can state today's behavior and the requested change in the user's words.
 
 ## 3. Draft `01-product.md`
 
@@ -41,6 +43,7 @@ Load the change as gates.md describes, for the `product` gate. If it is `skipped
 ## Rules and examples
 ### <business rule>
 - FR-01: WHEN <trigger>, the system SHALL <response>
+  (EARS: `The system SHALL`, `WHEN`, `WHILE <state>`, `WHERE <feature>`, `IF <unwanted> THEN`)
 - Example: <concrete input> -> <concrete outcome>
 
 ## Promises
@@ -60,7 +63,7 @@ Work the Rules section as Example Mapping: every rule gets at least one requirem
 
 Go rule by rule. For each: read back the rule and its examples, ask for the missing or surprising case, and fold the answer in. Then ask the open questions one at a time.
 
-Done when every rule has an example the user agreed to, Open questions is empty, and the document still names no technology.
+Done when every rule has an example the user agreed to and Open questions is empty.
 
 ## 5. Approve
 

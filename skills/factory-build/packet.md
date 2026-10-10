@@ -9,7 +9,7 @@
 | FR-01 | <the FR's Example line> |
 
 ## Frozen contract
-<signatures, interface comments and depth statements, copied from the plan. They do not change.>
+<signatures, interface comments and depth statements, copied from `03-interface.md`. They do not change.>
 
 ## Context
 <Research facts this slice needs, each with path:line>

@@ -9,14 +9,14 @@ argument-hint: "<task description>"
 
 Task: $ARGUMENTS
 
-Triage turns a task into a tracked change. It writes no plan and no code.
+Triage turns a task into a tracked change: a track, a branch and `status.yaml`.
 
 ## 1. Read the task and the repository
 
 - If the task is empty, ask for it and stop.
 - Read `CLAUDE.md` / `AGENTS.md`, the manifest (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, ...) and the test setup. Find three exact commands: the full test suite, a single test file, and lint plus type check.
 - Read the code the task names, enough to judge how many modules it touches and whether it adds or changes an interface.
-- Search Pond for prior work on the same area (`pond_search`, project filter set to this repository). Note session ids worth reading in the plan. If Pond tools are not available, note that and continue.
+- Search Pond for prior work on the same area (`pond_search`, project filter set to this repository). Note session ids worth reading in the gates. If Pond tools are not available, note that and continue.
 
 Done when you can name the modules in scope and all three commands.
 
@@ -60,7 +60,7 @@ test_command: "<full suite>"
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"
 baseline_failures: []       # tests already failing at change_base_commit
-gates:                      # track small: product, architecture and interface are skipped
+gates:
   product:      { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
   architecture: { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
   interface:    { state: pending, approved_by: null, approved_at: null, doc_sha256: null }

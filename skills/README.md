@@ -8,7 +8,7 @@ The factory skills land here, built in roadmap order. Each follows the open Agen
 ln -s ~/Work/software-factory/skills/factory-* ~/.claude/skills/
 ```
 
-S1 review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
+Install them as a set: the skills share `factory-shared/gates.md`. Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
 
 ## Run one change
 

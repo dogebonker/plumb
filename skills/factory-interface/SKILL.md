@@ -13,7 +13,7 @@ Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). The human 
 
 ## 1. Load
 
-Load the change as gates.md describes, for the `interface` gate. Read `01-product.md` and `02-architecture.md`.
+Load the change as gates.md describes, for the `interface` gate. Read `01-product.md`, `02-architecture.md`, and the modules it names with their callers.
 
 ## 2. Draft `03-interface.md`
 
@@ -38,13 +38,12 @@ Depth: <what this module hides, in one line>
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile.
-- Every FR, NFR and C from the earlier gates appears in Coverage. An unmapped ID blocks approval.
 
 ## 3. The human decides
 
 For each module, show the draft and ask the user to accept, edit or rewrite it. Apply their changes verbatim: their wording of a signature wins over yours. Then ask the open questions.
 
-Done when the user has decided every module, Coverage maps every ID, and Open questions is empty.
+Done when the user has decided every module, Coverage maps every FR, NFR and C from the earlier gates, and Open questions is empty. An unmapped ID blocks approval.
 
 ## 4. Approve
 
