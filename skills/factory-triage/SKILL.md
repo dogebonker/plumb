@@ -74,6 +74,7 @@ modules:
     pack: go                # react | rust | go | python | none
     dev_command: ""         # packs with runtime checks: starts the app locally
     dev_url: ""             # where dev_command serves the app
+    layers: []              # path globs, innermost first; set by the architecture gate
     bdd: off                # native | off; adopt is set only by the user
 ```
 

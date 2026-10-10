@@ -13,5 +13,5 @@ git -C ~/.software-factory init
 | `nfr-catalog/<domain>.md` | Default promises per domain, offered by triage when a project's constraints registry is created |
 | `profiles/<profile>.yaml` | Lens profiles: which design-book lenses load in which step, and the default domain model |
 | `languages/<pack>.yaml` | Language packs per stack: the index pack, extra rule packs, linter rules to propose, and review checks (React: react-doctor) |
-| `adapters/<language>.md` | Per language: how to write a signature as a stub, type-check it, run one BDD feature and find step definitions |
+| `adapters/<language>.md` | Per language: how to write a signature as a stub, type-check it, run one BDD feature, find step definitions, list imports and find dead code |
 | `packs.lock.yaml` | The pinned hash of every pack the profiles name |

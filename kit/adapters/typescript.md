@@ -12,3 +12,9 @@
 ## BDD
 - Run one feature: `npx --no-install cucumber-js <feature file>`
 - Step definitions: `rg -n "(Given|When|Then|defineStep)\(" <module>`
+
+## Import graph
+- `npx --no-install depcruise --output-type json <module src>` when dependency-cruiser is installed; otherwise `rg -n "from ['\"](\.|@/)" <files>` lists each file's local imports
+
+## Dead code
+- `npx --no-install knip --reporter json` when knip is installed; keep only results in the slice's changed files
