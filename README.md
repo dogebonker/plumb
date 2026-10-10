@@ -211,6 +211,7 @@ Book rules are priors. Your project history, in Pond, wins.
 | [templates/](templates/) | The challenge card template, for the S4 challenge panel. Other templates live with the skills that use them |
 | [kit/](kit/) | Starter content for `~/.software-factory/`: NFR catalogs, lens profiles, language packs, stack adapters, pack pins |
 | [skills/](skills/) | Where the factory skills land, starting with S1 |
+| [hooks/](hooks/) | The hard-gate hook for Claude Code, with its self-check |
 | [assets/](assets/) | Diagrams used in this README |
 
 ## Roadmap

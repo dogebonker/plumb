@@ -98,6 +98,7 @@ gates:
   slices:       { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
 slices: []                  # filled by factory-slices
 sent_back: null             # { gate, slice, reason } while a gate must be revisited
+stubbing: false             # true only while the interface gate compiles its stubs
 deviations: []              # { slice, file, reason }
 pond_sessions: []           # prior sessions worth reading, from step 1
 notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."

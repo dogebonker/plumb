@@ -12,6 +12,25 @@ The skills read the kit at `~/.software-factory/`. Set it up once from [kit/](..
 
 Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
 
+## Hard gates
+
+`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.factory/` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [{ "type": "command", "command": "python3 ~/Work/software-factory/hooks/factory_gate.py" }]
+      }
+    ]
+  }
+}
+```
+
+It guards the editing tools only; shell commands that write files pass. Self-check: `python3 hooks/test_factory_gate.py`.
+
 ## Run one change
 
 `/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` once per slice. Each skill resumes from `.factory/changes/<slug>/status.yaml`, so start a fresh session whenever a skill tells you to.
