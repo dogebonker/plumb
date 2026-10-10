@@ -6,6 +6,10 @@
 #   $OUT         the run folder, .factory/security/<run>/
 #   $CACHE       ~/.cache/factory-security (databases, rule packs, the history mirror), never in the repository
 #   $KIT         ~/.software-factory
+#   $TREE        a fresh empty directory holding the commit under audit:
+#                git -C $REPO archive --format=tar HEAD | tar -x -C $TREE
+#                (committed content only, so run folders and untracked files never reach a scanner;
+#                the report names the commit, and says uncommitted changes were not scanned)
 #   $MODULE_DIR  one Go module directory; <module-slug> is its path with / replaced by -
 #
 # What a repository can still do to its own scan, and how the run handles it:
@@ -30,7 +34,7 @@ trivy:
   run: >-
     cd $NEUTRAL && trivy fs --scanners vuln,misconfig --format json --output $OUT/trivy-fs.json
     --list-all-pkgs=false --exit-code 0 --disable-telemetry --skip-version-check --offline-scan
-    --skip-dirs $REPO/.factory/security --cache-dir $CACHE/trivy $REPO
+    --cache-dir $CACHE/trivy $TREE
   note: >-
     --offline-scan keeps Trivy from fetching from repositories a pom.xml names, which would send the user's
     Maven credentials there; some transitive Maven versions are then unresolved, and the report says so.
@@ -46,10 +50,10 @@ opengrep:
     each file's sha256 in the report. Never commit them.
   run: >-
     cd $NEUTRAL && opengrep scan --config $CACHE/rules/p-default.yml [--config $CACHE/rules/p-<stack>.yml]
-    --taint-intrafile --disable-nosem --json-output $OUT/sast.json $REPO
+    --taint-intrafile --disable-nosem --json-output $OUT/sast.json $TREE
   fallback: >-
     semgrep 1.178.0: cd $NEUTRAL && semgrep scan --metrics off --disable-version-check
-    --config $CACHE/rules/p-default.yml --disable-nosem --json-output $OUT/sast.json $REPO
+    --config $CACHE/rules/p-default.yml --disable-nosem --json-output $OUT/sast.json $TREE
 
 gitleaks:
   version: 8.30.1

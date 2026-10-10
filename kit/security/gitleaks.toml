@@ -1,7 +1,4 @@
 # Kit-owned Gitleaks config: the embedded default rules, never the repository's own .gitleaks.toml.
-# The only path allowed is factory-security's own run folder, whose reports must not be rescanned.
+# No allowlist: the history scan reads a bare mirror, which holds only committed content.
 [extend]
 useDefault = true
-
-[allowlist]
-paths = ['''(^|/)\.factory/security/''']
