@@ -51,7 +51,8 @@ def parse_status(text):
         gate = re.match(r"^\s+(\w+):\s*\{(.*)\}", line)
         if section == "gates" and gate:
             status["gates"][gate.group(1)] = {"state": field(gate.group(2), "state"),
-                                              "doc_sha256": field(gate.group(2), "doc_sha256")}
+                                              "doc_sha256": field(gate.group(2), "doc_sha256"),
+                                              "approved_at": field(gate.group(2), "approved_at")}
         item = re.match(r"^\s*-\s*\{(.*)\}", line)
         if section == "slices" and item:
             status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state"),

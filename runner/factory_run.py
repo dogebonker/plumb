@@ -7,11 +7,16 @@ reviews (an approval written into status.yaml any other way is undone), then
 runs the next factory skill through a headless harness. Run it from cron or CI
 in a dedicated clone:
 
-    python3 runner/factory_run.py <clone> --approvers alice,bob [--harness "claude -p"]
+    python3 runner/factory_run.py <clone> --approvers alice,bob
 
 Approver reviews in state APPROVED, first line:
+    start                                          the runner may work on this change
     approve <product|architecture|interface|slices>
     sign off slice <NN>
+A later CHANGES_REQUESTED review by the same approver revokes their earlier ones.
+The harness runs only on a branch head the runner or harness left, or one an
+approver approved: anyone else's push waits for an approver's review. It runs
+in a throwaway clone, so nothing it writes reaches the runner's own clone.
 While a change waits for its approvers, their other comments and reviews after
 its question are passed to the next skill run as their replies.
 
@@ -25,21 +30,28 @@ import json
 import os
 import re
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "hooks"))
 from factory_gate import GATES, parse_status
 
 BRANCH = re.compile(r"^factory/[A-Za-z0-9._/-]+$")
+SHA = re.compile(r"^[0-9a-f]{40}$")
+GIT_SAFE = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false")
+HARNESS = "claude -p --setting-sources user --strict-mcp-config"
 GIT_TIMEOUT = 300
 MAX_REPLY_BYTES = 100_000
 PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
 
 
 def run(cwd, *cmd, timeout=GIT_TIMEOUT, binary=False):
+    if cmd[0] == "git":
+        cmd = ("git", *GIT_SAFE, *cmd[1:])  # hooks or fsmonitor a harness left in .git never run
     r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=not binary, check=False, timeout=timeout)
     if r.returncode != 0:
         err = r.stderr.decode(errors="replace") if binary else r.stderr
@@ -65,6 +77,8 @@ def is_ancestor(repo, older, newer):
 def command(body):
     lines = body.strip().splitlines()
     first = lines[0].strip().lower() if lines else ""
+    if first == "start":
+        return ("start", None)
     m = re.fullmatch(r"approve (product|architecture|interface|slices)", first)
     if m:
         return ("approve", m.group(1))
@@ -106,15 +120,21 @@ def set_slice_state(text, sid, state):
     return out
 
 
+def only_factory(repo, older, newer):
+    changed = run(repo, "git", "diff", "--no-renames", "--name-only", older, newer).split()
+    return all(path.startswith(".factory/") for path in changed)
+
+
 def verify(repo, ref, change, text, approvals, may_skip):
     """Re-derive gate approvals and slice sign-offs from approval reviews.
 
     `change` is the change folder relative to the repository; `approvals` are
-    APPROVED reviews by approvers; `may_skip` are the gates triage skipped.
-    Returns the corrected status text and notes.
+    APPROVED reviews by approvers; `may_skip` are the gates an approver's start
+    review covered as skipped. Returns the corrected status text and notes.
     """
+    head = run(repo, "git", "rev-parse", ref).strip()
     status = parse_status(text)
-    notes, blocked = [], False
+    notes, blocked, approved_at = [], False, {}
     for gate, doc in GATES:
         state = status["gates"].get(gate, {}).get("state")
         if state == "skipped" and gate in may_skip:
@@ -137,17 +157,25 @@ def verify(repo, ref, change, text, approvals, may_skip):
                                         f"approved_at: {r['at']}, doc_sha256: {current} }}")
             notes.append(f"{gate} approved by {r['login']}")
             state = "approved"
+        if state == "approved":
+            approved_at[gate] = max(r["at"] for r in backing)
         blocked = blocked or state != "approved"
+    slices_at = approved_at.get("slices")  # from the reviews, never from status.yaml
     for s in status["slices"]:
         nn = s["id"].zfill(2)
         signed = [r for r in approvals if (c := command(r["body"])) and c[0] == "sign-off"
                   and c[1].lstrip("0") == s["id"].lstrip("0")]
-        signed = [r for r in signed if s["head_commit"] and is_ancestor(repo, s["head_commit"], r["commit"])
+        # A sign-off covers the slice's code exactly: head_commit is a full sha, only .factory/ changed
+        # between it and the reviewed commit, and the review came after the slices gate's approval.
+        signed = [r for r in signed if s["head_commit"] and SHA.match(s["head_commit"])
+                  and slices_at and r["at"] > slices_at
+                  and is_ancestor(repo, s["head_commit"], r["commit"]) and is_ancestor(repo, r["commit"], ref)
+                  and only_factory(repo, s["head_commit"], r["commit"])
                   and blob_sha256(repo, r["commit"], f"{change}/slices/{nn}/review.md")]
         if s["state"] == "done" and not signed:
             text = set_slice_state(text, s["id"], "green")
             notes.append(f"slice {nn} reset to green: no matching sign-off")
-        elif s["state"] == "green" and signed and not blocked:
+        elif s["state"] == "green" and not blocked and [r for r in signed if r["commit"] == head]:
             text = set_slice_state(text, s["id"], "done")
             notes.append(f"slice {nn} signed off by {max(signed, key=lambda r: r['at'])['login']}")
     if notes:
@@ -155,17 +183,22 @@ def verify(repo, ref, change, text, approvals, may_skip):
     return text, notes
 
 
-def triage_skips(repo, ref, status_path):
-    """Gates skipped by the commit that created status.yaml on the branch's own line, which triage wrote."""
+def triage_skips(repo, ref, status_path, starts):
+    """Gates skipped both by the commit that created status.yaml and at an approver's start review of it."""
     first = run(repo, "git", "log", "--reverse", "--first-parent", "--diff-filter=A", "--format=%H",
                 ref, "--", status_path).split()[:1]
+
+    def skipped_at(commit):
+        try:
+            gates = parse_status(run(repo, "git", "show", f"{commit}:{status_path}"))["gates"]
+        except RuntimeError:
+            return set()
+        return {g for g, v in gates.items() if v.get("state") == "skipped" and g != "slices"}
+
     if not first:
         return set()
-    try:
-        gates = parse_status(run(repo, "git", "show", f"{first[0]}:{status_path}"))["gates"]
-    except RuntimeError:
-        return set()
-    return {g for g, v in gates.items() if v.get("state") == "skipped" and g != "slices"}
+    covered = [r["commit"] for r in starts if is_ancestor(repo, first[0], r["commit"])]
+    return set().union(*(skipped_at(first[0]) & skipped_at(c) for c in covered)) if covered else set()
 
 
 def run_harness(cmd, cwd, timeout):
@@ -177,6 +210,46 @@ def run_harness(cmd, cwd, timeout):
         os.killpg(proc.pid, signal.SIGKILL)
         proc.wait()
         raise
+
+
+def created_commits(clone):
+    """Commits the harness created in its clone, read from the reflog file without running git there."""
+    log = clone / ".git" / "logs" / "HEAD"
+    made = ("commit", "rebase (pick)", "rebase -i (pick)", "rebase (continue)", "revert")
+    created = set()
+    for line in (log.read_text(errors="replace").splitlines() if log.exists() else []):
+        head, _, message = line.partition("\t")
+        parts = head.split()
+        if len(parts) > 1 and message.startswith(made):
+            created.add(parts[1])
+    return created
+
+
+def new_head_trusted(repo, before, after, created):
+    """A head the harness left: the old head or a fast-forward of it made only of commits the harness created."""
+    if after == before:
+        return True
+    return is_ancestor(repo, before, after) and all(
+        c in created for c in run(repo, "git", "rev-list", f"{before}..{after}").split())
+
+
+def harness_pass(repo, branch, head, cmd, setup, timeout):
+    """Run the harness in a throwaway clone of the trusted head. Returns its exit code and created commits."""
+    url = run(repo, "git", "remote", "get-url", "origin").strip()
+    work = Path(tempfile.mkdtemp(prefix="factory-harness-"))
+    try:
+        run(work, "git", "clone", "-q", "--branch", branch, url, ".")
+        if run(work, "git", "rev-parse", "HEAD").strip() != head:
+            raise RuntimeError("the branch moved after its head was checked; the next pass looks again")
+        try:
+            if setup:
+                run_harness(shlex.split(setup), work, timeout)
+            code = run_harness(cmd, work, timeout)
+        except subprocess.TimeoutExpired:
+            code = None
+        return code, created_commits(work)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 
 def pull_request(repo, branch):
@@ -198,7 +271,15 @@ def pull_request(repo, branch):
     return reviews, notes
 
 
-def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout):
+def approver_reviews(reviews, allowed):
+    """APPROVED reviews by approvers, minus those a later CHANGES_REQUESTED review by the same approver revokes."""
+    mine = [r for r in reviews if r["login"].lower() in allowed]
+    return [r for r in mine if r["state"] == "APPROVED" and r["commit"] and not any(
+        o["login"].lower() == r["login"].lower() and o["state"] == "CHANGES_REQUESTED" and o["at"] > r["at"]
+        for o in mine)]
+
+
+def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, heads, setup=None):
     ref = f"origin/{branch}"
     text = run(repo, "git", "show", f"{ref}:{status_path}")
     status = parse_status(text)
@@ -208,8 +289,16 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout):
     change = str(Path(status_path).parent)
     slug = Path(change).name
     reviews, notes = pull_request(repo, branch)
-    approvals = [r for r in reviews if r["state"] == "APPROVED" and r["login"].lower() in allowed and r["commit"]]
-    may_skip = triage_skips(repo, ref, status_path)
+    approvals = approver_reviews(reviews, allowed)
+    starts = [r for r in approvals if command(r["body"]) == ("start", None)]
+    if not starts:
+        if any(r["login"].lower() in allowed for r in reviews):
+            print(f"{slug}: no standing start review by an approver; a later CHANGES_REQUESTED revokes it",
+                  file=sys.stderr)
+        return  # no approver has started this change: the runner leaves it alone
+    head = run(repo, "git", "rev-parse", ref).strip()
+    trusted = heads.get(branch) == head or any(r["commit"] == head for r in approvals)
+    may_skip = triage_skips(repo, ref, status_path, starts)
     text, recorded = verify(repo, ref, change, text, approvals, may_skip)
     if recorded and verify(repo, ref, change, text, approvals, may_skip)[1]:
         raise RuntimeError("status.yaml has duplicate or malformed gate or slice lines; fix it by hand")
@@ -221,7 +310,9 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout):
         replies += [{"login": r["login"], "body": r["body"], "at": r["at"]} for r in reviews
                     if r["login"].lower() in allowed and r["body"].strip() and not command(r["body"])
                     and r["at"] > waiting]
-    if not recorded and (skill is None or (waiting and not replies)):
+    if not recorded and (skill is None or (waiting and not replies) or not trusted):
+        if skill and not trusted:
+            print(f"{slug}: {head[:12]} was pushed by someone else; waiting for an approver to review it", file=sys.stderr)
         return
     if run(repo, "git", "status", "--porcelain").strip():
         raise RuntimeError("the clone has uncommitted changes; the runner needs a clean, dedicated clone")
@@ -236,30 +327,36 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout):
             run(repo, "git", "reset", "-q", "--hard", ref)
             raise
         print(f"{slug}: {'; '.join(recorded)}")
-    if skill is None:
+        if trusted:
+            heads[branch] = run(repo, "git", "rev-parse", "HEAD").strip()
+    if skill is None or not trusted:
         return
     message = prompt.format(skill=skill, slug=slug)
     if replies:
         body = "\n\n".join(f"{r['login']} ({r['at']}):\n{r['body']}" for r in sorted(replies, key=lambda r: r["at"]))
         body = body.encode()[-MAX_REPLY_BYTES:].decode(errors="ignore")
         message += "\n\nReplies from the pull request, by approvers:\n" + body
-    try:
-        code = run_harness([*shlex.split(harness), message], repo, timeout)
-        if code != 0:
-            print(f"{slug}: {skill} exited with {code}", file=sys.stderr)
-    except subprocess.TimeoutExpired:
+    code, created = harness_pass(repo, branch, head, [*shlex.split(harness), message], setup, timeout)
+    if code is None:
         print(f"{slug}: {skill} timed out after {timeout} s", file=sys.stderr)
-    if run(repo, "git", "status", "--porcelain").strip():
-        raise RuntimeError(f"{skill} left uncommitted changes; the next pass waits until the clone is clean")
+    elif code != 0:
+        print(f"{slug}: {skill} exited with {code}", file=sys.stderr)
+    run(repo, "git", "fetch", "origin", branch)
+    after = run(repo, "git", "rev-parse", ref).strip()
+    if new_head_trusted(repo, head, after, created):
+        heads[branch] = after
+    else:
+        print(f"{slug}: {after[:12]} holds commits the harness did not write; waiting for an approver", file=sys.stderr)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("repo", type=Path, help="a clean clone dedicated to the runner")
     parser.add_argument("--approvers", required=True, help="comma-separated GitHub logins whose reviews approve")
-    parser.add_argument("--harness", default="claude -p")
+    parser.add_argument("--harness", default=HARNESS, help="headless agent command; keep repository settings off")
     parser.add_argument("--prompt", default="/{skill} {slug}", help="prompt template for the harness")
     parser.add_argument("--timeout", type=int, default=3600, help="seconds per skill run")
+    parser.add_argument("--setup", help="command run in the harness's fresh clone first, e.g. 'npm ci'")
     args = parser.parse_args()
     repo = args.repo.resolve()
     approvers = {a.strip().lower() for a in args.approvers.split(",") if a.strip()}
@@ -272,17 +369,26 @@ def main():
             return 0
         start = run(repo, "git", "rev-parse", "--abbrev-ref", "HEAD").strip()
         run(repo, "git", "fetch", "--prune", "origin")
+        heads_file = repo / ".git" / "factory-runner-heads.json"
+        heads = json.loads(heads_file.read_text()) if heads_file.exists() else {}
         refs = run(repo, "git", "for-each-ref", "--format=%(refname:short)", "refs/remotes/origin/factory/").split()
         for ref in refs:
             branch = ref.removeprefix("origin/")
             if not BRANCH.match(branch):
                 continue
             names = run(repo, "git", "ls-tree", "-r", "--name-only", ref, ".factory/changes/").split()
-            for status_path in [n for n in names if re.fullmatch(r"\.factory/changes/[^/]+/status\.yaml", n)]:
+            own = [n for n in names if re.fullmatch(r"\.factory/changes/[^/]+/status\.yaml", n)
+                   and parse_status(run(repo, "git", "show", f"{ref}:{n}"))["branch"] == branch]
+            if len(own) > 1:
+                print(f"{branch}: {len(own)} changes claim this branch; expected 1", file=sys.stderr)
+                continue
+            for status_path in own:
                 try:
-                    pass_change(repo, branch, status_path, approvers, args.harness, args.prompt, args.timeout)
+                    pass_change(repo, branch, status_path, approvers, args.harness, args.prompt, args.timeout,
+                                heads, args.setup)
                 except Exception as e:  # noqa: BLE001 - one change's failure must not stop the others
                     print(f"{branch}: {type(e).__name__}: {e}", file=sys.stderr)
+        heads_file.write_text(json.dumps(heads))
         if start != "HEAD" and not run(repo, "git", "status", "--porcelain").strip():
             run(repo, "git", "checkout", start)
     return 0

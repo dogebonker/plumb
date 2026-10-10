@@ -62,6 +62,7 @@ Then:
 
 When `mode` is `headless` in `status.yaml`, no one is in the chat. The change's pull request is the conversation, and `runner/factory_run.py` in the factory repository is the only writer of approvals.
 
+- **Start.** The runner works on a change only after an approver reviews its pull request with an APPROVED review whose first line is `start`.
 - **Push.** Push after every commit, so the pull request always shows the work.
 - **Wait for the user.** Wherever a skill asks the user something or waits for their approval, it commits and pushes its work, posts the question as one pull-request comment (`gh pr comment`), sets `waiting_since` to that comment's `created_at` from GitHub (`gh api repos/{owner}/{repo}/issues/comments/<id> --jq .created_at`, the id ending the comment's URL), commits and pushes `status.yaml`, and stops.
 - **Finish without waiting.** A run that ends without a question sets `waiting_since: null`.

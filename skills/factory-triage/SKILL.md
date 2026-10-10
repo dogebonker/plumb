@@ -113,7 +113,7 @@ notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
 7. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
 8. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
 9. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): triage <slug>`.
-10. Headless mode needs committed mode: the pull request carries the documents. Push the branch and open a draft pull request (`gh pr create --draft`) titled `factory: <slug>`.
+10. Headless mode needs committed mode: the pull request carries the documents. Push the branch and open a draft pull request (`gh pr create --draft`) titled `factory: <slug>`. Tell the user the runner starts once an approver reviews it with an APPROVED review whose first line is `start`.
 
 ## 6. Hand off
 

@@ -4,7 +4,16 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from factory_run import command, next_skill, parse_status, triage_skips, verify
+from factory_run import (
+    approver_reviews,
+    command,
+    created_commits,
+    new_head_trusted,
+    next_skill,
+    parse_status,
+    triage_skips,
+    verify,
+)
 
 STATUS = """feature: demo
 branch: factory/demo
@@ -25,6 +34,14 @@ assert command("approve product\nlooks good") == ("approve", "product")
 assert command("Sign off slice 01") == ("sign-off", "01")
 assert command("please approve product") is None
 assert command("") is None
+assert command("Start") == ("start", None)
+
+# A later CHANGES_REQUESTED review by the same approver revokes their earlier approvals.
+ok = {"login": "Alice", "state": "APPROVED", "body": "approve product", "commit": "c1", "at": "2026-10-10T10:00:00Z"}
+later_no = {**ok, "state": "CHANGES_REQUESTED", "body": "no", "at": "2026-10-10T11:00:00Z"}
+assert approver_reviews([ok], {"alice"}) == [ok]
+assert approver_reviews([ok, later_no], {"alice"}) == []
+assert approver_reviews([ok], {"bob"}) == []
 
 # The next skill follows the gates, then the slices, then reconcile.
 assert next_skill(parse_status(STATUS.format(p=PENDING))) == "factory-product"
@@ -93,9 +110,9 @@ with tempfile.TemporaryDirectory() as tmp:
                       ("interface", "03-interface.md"), ("slices", "04-slices.md")]:
         h = hashlib.sha256((repo / change / doc).read_bytes()).hexdigest()
         head_status = head_status.replace(f"  {gate}:", f"  {gate}: {{ state: approved, approved_by: alice, "
-                                          f"approved_at: x, doc_sha256: {h} }} #", 1)
+                                          f"approved_at: 2026-10-10T09:30:00Z, doc_sha256: {h} }} #", 1)
         gates_ok.append({**review, "body": f"approve {gate}", "commit": docs})
-    sign = {**review, "body": "sign off slice 01", "commit": docs}
+    sign = {**review, "body": "sign off slice 01", "commit": docs, "at": "2026-10-10T11:00:00Z"}
     _, notes = check(head_status, [*gates_ok, sign])
     assert notes == [], notes  # no review.md at that commit yet
     (repo / change / "slices" / "01").mkdir(parents=True)
@@ -106,6 +123,18 @@ with tempfile.TemporaryDirectory() as tmp:
     text, notes = check(head_status, [*gates_ok, {**sign, "commit": reviewed}])
     assert notes == ["slice 01 signed off by alice"], notes
     assert parse_status(text)["slices"][0]["state"] == "done"
+
+    # The sign-off must sit on the branch head, after the slices approval, over a full head_commit with
+    # only .factory/ changes since it.
+    assert check(head_status.replace(v2, v2[:12]), [*gates_ok, {**sign, "commit": reviewed}])[1] == []
+    early = {**sign, "commit": reviewed, "at": "2026-10-10T09:00:00Z"}
+    assert check(head_status, [*gates_ok, early])[1] == []
+    (repo / "src.txt").write_text("new code after the reviewed commit\n")
+    git("add", ".")
+    git("commit", "-qm", "code after review")
+    assert check(head_status, [*gates_ok, {**sign, "commit": reviewed}])[1] == []  # not at head: not recorded
+    code_head = head_status.replace(v2, git("rev-parse", "HEAD~2"))
+    assert check(code_head, [*gates_ok, {**sign, "commit": git("rev-parse", "HEAD")}])[1] == []  # code since head_commit
 
     # A gate the agent marked skipped is reset unless triage skipped it.
     skipped = STATUS.format(p="{ state: skipped }")
@@ -121,7 +150,31 @@ with tempfile.TemporaryDirectory() as tmp:
     (repo / status_path).write_text(STATUS.format(p="{ state: skipped }").replace(
         "architecture: { state: pending", "architecture: { state: skipped"))
     git("commit", "-qam", "agent skips architecture")
-    assert triage_skips(repo, "HEAD", status_path) == {"product"}
+    start = {"login": "alice", "state": "APPROVED", "body": "start", "commit": git("rev-parse", "HEAD"), "at": "t"}
+    assert triage_skips(repo, "HEAD", status_path, [start]) == {"product"}
+    assert triage_skips(repo, "HEAD", status_path, []) == set()  # no approver started it: no skips
+    (repo / status_path).write_text(STATUS.format(p=PENDING))
+    git("commit", "-qam", "unskip before the start review")
+    laundered = {**start, "commit": git("rev-parse", "HEAD")}
+    assert triage_skips(repo, "HEAD", status_path, [laundered]) == set()  # not skipped where the approver looked
+
+    # The harness's own commits are read from its reflog; commits it only checked out are not its own.
+    clone = repo / "clone"
+    subprocess.run(["git", "clone", "-q", str(repo), str(clone)], check=True)
+    cloned = git("rev-parse", "HEAD")
+    (clone / "x.txt").write_text("x\n")
+    subprocess.run(["git", "-c", "commit.gpgsign=false", "-c", "user.email=t@t", "-c", "user.name=t", "-C", str(clone),
+                    "commit", "-qam", "x", "--allow-empty"], check=True)
+    made = subprocess.run(["git", "-C", str(clone), "rev-parse", "HEAD"], capture_output=True, text=True,
+                          check=True).stdout.strip()
+    assert made in created_commits(clone) and cloned not in created_commits(clone)
+
+    # A new head counts as the harness's own only as a fast-forward made of commits it created.
+    older = git("rev-parse", "HEAD~1")
+    assert new_head_trusted(repo, cloned, cloned, set())
+    assert new_head_trusted(clone, cloned, made, {made})
+    assert not new_head_trusted(clone, cloned, made, set())
+    assert not new_head_trusted(repo, cloned, older, set())  # a force-push back to an older commit
 
     # A duplicated gate line survives one rewrite, so a second check still finds work: the runner refuses it.
     dup = STATUS.format(p=PENDING).replace("gates:\n", f"gates:\n  product: {PENDING}\n").replace(

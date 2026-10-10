@@ -42,11 +42,15 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 `runner/factory_run.py` drives changes whose `mode` is `headless` through their pull request, one `factory/<slug>` branch and one pull request per change. On every pass it re-derives approvals from approvers' APPROVED reviews (`approve <gate>`, `sign off slice NN`) and resets any it cannot back, passes approvers' replies to a waiting change, and runs the next skill through a headless harness (default `claude -p`). Run one pass per cron tick or CI job, in a clone used only by the runner:
 
 ```bash
-python3 runner/factory_run.py <clone> --approvers alice,bob --harness "claude -p"
+python3 runner/factory_run.py <clone> --approvers alice,bob
 ```
 
+- The runner works on a change only after an approver starts it with an APPROVED review whose first line is `start`. After that it runs the harness only on a branch head that the runner or the harness itself left, or that an approver reviewed: a push by anyone else waits for an approver's review. A later CHANGES_REQUESTED review by an approver revokes their earlier approvals.
+- Each skill run happens in a fresh throwaway clone of the branch, so nothing the harness writes, including `.git` config, reaches the runner's clone; `--setup` (for example `npm ci`) prepares that clone, and uncommitted work is discarded with it. A new branch head counts as the harness's own only when it fast-forwards the head the harness started from with commits created in that clone. A harness that pulls someone else's concurrent push and then rewrites it (amend, squash) can still launder it: protect `factory/*` so only the runner's account can push there.
+- The default harness, `claude -p --setting-sources user --strict-mcp-config`, ignores the repository's own Claude settings and MCP servers. The skills still run the repository's tests and dev commands, so run the harness in a container or VM with a token scoped to this repository.
+- Gate approvals are also GitHub pull-request approvals: protect the default branch with "dismiss stale approvals" so an early `approve product` cannot merge later code.
 - Approvers come only from `--approvers`. The login `gh` runs as on the server never counts, even when listed, so give the runner its own GitHub account.
-- Gates that interactive triage skipped stay skipped; any other `skipped` gate is reset to pending.
+- Gates skipped in the change's first commit stay skipped only when an approver's `start` review covers that commit; any other `skipped` gate is reset to pending.
 - The server needs the skills installed, the kit, `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
 - Interactive triage creates the change and its pull request; the runner takes over from there.
 - The hard-gate hook guards the harness's editing tools only. Headless enforcement rests on the runner resetting what no approval backs.
