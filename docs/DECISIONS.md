@@ -26,6 +26,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 20 | Third-party packs vendored and pinned | Accepted |
 | 21 | factory-security: Cloudflare method, five scanners, routed knowledge | Accepted |
 | 22 | factory-ui-ux: an enforced DESIGN.md, mechanical de-slop, anchored critique | Accepted |
+| 23 | factory-ci: its own measurement, a catalog with guards, savings that must beat the noise | Accepted |
 
 ---
 
@@ -202,3 +203,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** Installed design skills polish surfaces, contradict each other and get accessibility wrong; none grounds a judgment in the product. The user's recorded standard is restraint, and "AI doesn't make design calls". Models judge design quality near chance, so they answer closed questions instead of scoring. The full record: [research/ui-ux-selection.md](research/ui-ux-selection.md).
 
 **Cost.** Writing the design file takes a short interview. The slop thresholds are guesses until calibrated on the user's own screens. The tools need a local install.
+
+## 23. factory-ci: its own measurement, a catalog with guards, savings that must beat the noise
+
+**Decision.** `factory-ci` measures with a small script over `gh api`: 30 days of runs of every outcome, split into comparable groups, with the critical path, per-job queue, minutes, dollars and a measured noise floor. It applies a catalog of fixes with pinned actions and guards, reports CI posture through factory-security's zizmor line, and hands each approved fix to triage with a frozen baseline that `verify` checks after the merge. The installed `ci-speedup` is not loaded; its method is borrowed.
+
+**Why.** On the user's own repositories, ci-speedup's success-only, unbounded sample described pipelines that were red at the time, and its verifier rejected its own report. The measurement needs about one API call per run and a few hundred lines. Run-to-run noise of 9 to 31% means a saving is claimed only when it beats the noise measured on the same repository. The full record: [research/ci-selection.md](research/ci-selection.md).
+
+**Cost.** GitHub Actions only. Merge-queue time and checks from other apps are not measured yet. A fix's saving can take weeks of runs to confirm.

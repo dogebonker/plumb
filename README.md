@@ -4,7 +4,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** roadmap S1 to S8, S9 and S11 built; not yet run end to end on a real feature.
+**Status:** roadmap S1 to S11 built; not yet run end to end on a real feature.
 
 ## TL;DR
 
@@ -252,12 +252,12 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 - **Seen, not imagined.** Screens rendered in a real browser at each breakpoint, with accessibility, empty and error states, and React Doctor's runtime scan where it applies.
 - **Where it plugs in:** mockups in the product gate, UI states in the interface gate, and review of slices that touch UI.
 
-**S10: `factory-ci`, "why is my CI so slow?"** One question, an answer with numbers.
+**S10: `factory-ci`, "why is my CI so slow?"** Built: [skills/factory-ci](skills/factory-ci/SKILL.md). What it uses and why: [docs/research/ci-selection.md](docs/research/ci-selection.md). One question, an answer with numbers.
 
-- **Measured, not guessed.** Reads the workflows and recent runs (`gh run list`, per-job and per-step timings), builds the critical path, and finds where the minutes go: missing caches, redundant setup, serial jobs that could fan out, unsharded test suites, full-history checkouts, sleep-based readiness, workflows triggered on paths they don't need.
-- **Ranked by saving.** Each proposal comes with the wall-clock and runner minutes it saves, measured where it can be, and how sure that number is.
+- **Measured, not guessed.** Reads the workflows and 30 days of runs of every outcome (per-job and per-step timings through `gh api`), says first when the pipeline is red, builds the critical path and time to green, and finds where the minutes go: runner queues, missing or thrashing caches, redundant setup, serial jobs that could fan out, unsharded test suites, full-history checkouts, sleep-based readiness, workflows triggered on paths they don't need.
+- **Ranked by saving.** Each proposal comes with the wall-clock minutes, runner minutes and dollars it saves, labelled measured, modeled or guessed, against the run-to-run noise measured on the same repository. After a fix merges, `verify` claims the saving only if it beats that noise.
 - **Posture on the way.** Unpinned actions, broad token permissions, secrets reachable from forks: reported beside the speed findings.
-- **Where it plugs in:** on demand, like prune; each accepted proposal runs as a small change.
+- **Where it plugs in:** on demand, like prune; each accepted proposal runs as its own change through triage, with its baseline frozen for `verify`.
 
 **S11: `factory-security`, an audit that knows which checks matter here.** Built: [skills/factory-security](skills/factory-security/SKILL.md). What it loads and why, with the research behind each choice: [docs/research/security-selection.md](docs/research/security-selection.md).
 

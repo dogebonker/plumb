@@ -17,4 +17,5 @@ ln -s ~/Work/software-factory/kit ~/.software-factory
 | `ui/tools.yaml` | The pinned UI tools: the DESIGN.md linter, impeccable's detector, Playwright, axe |
 | `security/index.yaml` | Routing for `factory-security`: the method file per component and the approved knowledge sources, with known errors to skip |
 | `security/tools.yaml`, `security/gitleaks.toml` | The pinned scanners and how they run |
+| `ci/ci_runs.py`, `ci/tools.yaml`, `ci/catalog.md` | factory-ci's measurement script (with its self-check), its tools, and the catalog of fixes with their guards |
 | `packs.lock.yaml` | The pinned hash of every pack the factory loads |

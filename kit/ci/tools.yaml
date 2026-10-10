@@ -1,0 +1,40 @@
+# Tools for factory-ci. Why these and not others: docs/research/ci-selection.md (CI-1, CI-4, CI-5).
+#
+# Variables:
+#   $REPO     absolute path of the repository root
+#   $SLUG     owner/name of its GitHub remote
+#   $OUT      the run folder, .factory/ci/<YYYY-MM-DD-HHMM>/, ignored by git
+#   $NEUTRAL  a fresh empty directory (mktemp -d), new for every run
+#   $KIT      ~/.software-factory
+#
+# Every gh call runs with GH_TELEMETRY=false and GH_NO_UPDATE_NOTIFIER=1 (ci_runs.py sets both), GET only.
+# A tool that is missing or older than its pin is skipped, with its install line in the report.
+
+ci_runs:
+  needs: "Python 3.10 or later; gh signed in to an account that can read $SLUG"
+  run: "python3 $KIT/ci/ci_runs.py fetch $SLUG $OUT --days 30 && python3 $KIT/ci/ci_runs.py analyze $OUT"
+  check: "python3 $KIT/ci/test_ci_runs.py"
+
+zizmor:
+  from: >-
+    the zizmor entry of $KIT/security/tools.yaml: same pin, install line and run line, with $OUT this run folder.
+    factory-ci shows only the audits below and counts the rest.
+  show:
+    unpinned: [unpinned-uses, unpinned-images, unpinned-tools, ref-version-mismatch]
+    token: [excessive-permissions, artipacked, github-app]
+    forks: [dangerous-triggers, template-injection, cache-poisoning, secrets-inherit, overprovisioned-secrets, bot-conditions]
+  speed: [superfluous-actions]   # actions that install what the runner image already has: catalog A2
+
+actionlint:
+  version: 1.7.12
+  install: "release archive from github.com/rhysd/actionlint, checked against checksums.txt and with gh attestation verify -R rhysd/actionlint"
+  when: "a change edits a workflow file: before it is ready for review"
+  run: "cd $NEUTRAL && : > empty.yaml && actionlint -no-color -oneline -config-file empty.yaml $REPO/<each edited workflow file>"
+  note: "the empty config stops a repository's .github/actionlint.yaml from silencing it"
+
+pinact:
+  version: 5.0.0
+  install: "release archive from github.com/suzuki-shunsuke/pinact, verified with gh attestation verify -R suzuki-shunsuke/pinact"
+  when: "only inside an accepted change that pins actions; never during the audit, because it rewrites files"
+  run: "pinact run $REPO/<each workflow file>"
+  note: "pins each action's current tag to its commit SHA, the tag kept as a comment; when it also updates (--update), add --min-age 14"

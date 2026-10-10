@@ -70,7 +70,7 @@ gitleaks:
 
 zizmor:
   version: 1.30.1
-  install: "uv tool install zizmor==1.30.1"
+  install: "release archive from github.com/zizmorcore/zizmor, verified with gh attestation verify -R zizmorcore/zizmor; not the PyPI wheel, which has no provenance"
   when: ".github/workflows, an action.yml or a dependabot.yml exists"
   run: "cd $NEUTRAL && zizmor --offline --no-config --persona regular --format json --no-exit-codes $REPO > $OUT/zizmor.json"
   online: >-
