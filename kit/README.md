@@ -1,11 +1,9 @@
 # Factory kit
 
-Starter content for `~/.software-factory/`, the kit every factory skill reads. Copy it once (`-n` keeps any file you already have), then keep it as your own git repository: your edits there are your taste, synced to every machine and server you run the factory on.
+The kit every factory skill reads at `~/.software-factory/`: a symlink to this folder, so the kit lives in the factory repository and syncs with it. Edits the factory makes here (principles from reconcile, pin bumps from `/factory-packs`) are commits in this repository.
 
 ```bash
-mkdir -p ~/.software-factory
-cp -Rn ~/Work/software-factory/kit/. ~/.software-factory/
-git -C ~/.software-factory init
+ln -s ~/Work/software-factory/kit ~/.software-factory
 ```
 
 | Path | What it holds |

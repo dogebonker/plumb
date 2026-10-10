@@ -59,7 +59,7 @@ Your answers to lens findings tune the kit's `~/.software-factory/principles.md`
 
 ## 6. Confirm and write
 
-Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change. Write them once the user confirms; apply their corrections first. Kit changes are committed in `~/.software-factory`, staging only the files reconcile changed, and pushed only when the user asks.
+Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change. Write them once the user confirms; apply their corrections first. Kit changes are committed in the factory repository (`~/.software-factory` links into it), staging only the files reconcile changed, and pushed only when the user asks.
 
 ## 7. Record
 

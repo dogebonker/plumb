@@ -44,6 +44,6 @@ For each listed change in this repository, the user chooses: re-review it now as
 
 ## 4. Bump
 
-Only for packs the user approves after reading the summary: set the pin to `{ source, hash: <installed hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. Commit in `~/.software-factory`, staging only `packs.lock.yaml`, and push only when the user asks.
+Only for packs the user approves after reading the summary: set the pin to `{ source, hash: <installed hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. Commit it in the factory repository (`~/.software-factory` links into it), staging only `packs.lock.yaml`, and push only when the user asks.
 
 A pack the user does not approve keeps its old pin and stays unloaded until they do.

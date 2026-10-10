@@ -186,7 +186,7 @@ The factory uses it in three places:
 What is curated stays in files:
 
 ```
-~/.software-factory/                      global kit, git-synced to every machine and server
+~/.software-factory/                      global kit: a symlink to this repository's kit/
   principles.md                  engineering taste, with reasons; shapes first drafts
   nfr-catalog/<domain>.md        default NFRs per domain
   profiles/                      domain-core, crud-service, legacy
