@@ -45,13 +45,13 @@ Cost: <n> public methods, <n> parameters, <n> error variants exposed, <n> config
 
 Prove the signatures compile against the real code, using `~/.software-factory/adapters/<language>.md` for each module's language. Without an adapter for a language, tell the user that module stays unchecked.
 
-1. The working tree must be clean apart from `.factory/`.
-2. Write every module's signatures as stubs in their real files, in the adapter's stub form.
-3. Run the adapter's typecheck. A failure is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat.
+1. Tracked files outside `.factory/` must be unchanged; otherwise ask the user to commit or stash. Record the untracked files (`git status --short`).
+2. Write every module's signatures as stubs in their real files, in the adapter's stub form, with any `mod` lines or exports they need.
+3. Run the adapter's typecheck. An error in a stub or its imports is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat. An error from the environment (dependencies not installed, missing toolchain) leaves the module unchecked: tell the user why.
 4. Fill each module's Cost line by counting in the stubs. A pass-through method forwards to another method with nearly the same signature.
-5. Undo the stubs: `git restore --worktree -- <files that existed>` and delete the files that did not. `git status --short` shows only `.factory/` again.
+5. Undo the stubs: `git restore --worktree -- . ':!.factory'`, then delete every untracked file that was not in the list from step 1.
 
-Done when every module with an adapter type-checks, every Cost line is filled, and the tree is back to its state before step 2.
+Done when every module type-checks or is reported unchecked with its reason, every Cost line is filled, and `git status --short` matches step 1.
 
 ## 4. The human decides
 

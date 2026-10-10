@@ -6,4 +6,4 @@
 - `use` lines: whatever the signatures need; new modules get their `mod` line in the parent.
 
 ## Typecheck
-`cargo check --all-targets` in the module's crate
+`cargo check --all-targets -p <crate>` (in a single-crate repository, without `-p`)

@@ -12,6 +12,8 @@
 ## Frozen contract
 <signatures, interface comments and depth statements, copied from `03-interface.md`. They do not change.>
 
+Stub form: <the Stubs section of the language's adapter>
+
 ## Context
 <Research facts this slice needs, each with path:line>
 
