@@ -3,3 +3,4 @@ domain_model: transaction-scripts
 lenses:
   architecture: [patterns-of-enterprise-application-architecture]
   packet: [clean-code]
+  challenge: [patterns-of-enterprise-application-architecture]

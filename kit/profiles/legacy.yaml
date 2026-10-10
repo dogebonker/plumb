@@ -3,3 +3,4 @@ domain_model: keep               # the architecture gate records the model the c
 lenses:
   architecture: [working-effectively-with-legacy-code, refactoring]
   packet: [working-effectively-with-legacy-code, clean-code]
+  challenge: [working-effectively-with-legacy-code]

@@ -3,3 +3,4 @@ domain_model: rich
 lenses:                     # ordered by priority; a step loads at most two
   architecture: [domain-driven-design-distilled, clean-architecture]
   packet: [clean-code]
+  challenge: [domain-driven-design, clean-architecture, release-it]   # interface panel, beside APoSD

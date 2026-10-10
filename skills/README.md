@@ -50,7 +50,7 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 | `factory-review` | S1 | Allowed-files and frozen-contract checks, `/polish`, human sign-off |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
 | `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
-| `factory-interface` | S2, S4 | Interface gate: human-decided signatures that compile through the kit's adapters, cost card, coverage. Challenge panel in S6 |
+| `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
 | `factory-reconcile` | S7 | Fold shipped work back into specs, ADRs and lessons |

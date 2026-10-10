@@ -10,4 +10,4 @@
 | Alternative | `<alternative signature>` |
 | Cost of alternative | <what gets worse> |
 | Severity | block / fix / note (unanchored challenges cap at note) |
-| Response | accept / modify / overrule: <one line> |
+| Response | accept / modify / overrule: <one line, written by the human> |

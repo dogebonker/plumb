@@ -41,6 +41,12 @@ Feature: <capability, in the product's words>
 ### <module path> (bdd: off)
 - FR-01: `<test file>` :: <test name that states the example's outcome>
 
+## Decisions
+### <lens conflict the human settled>
+Context: <the two cards, by lens>
+Decision: <the call>
+Consequences: <what gets easier, what gets harder>
+
 ## Coverage
 | ID | Enforced by |
 | --- | --- |
@@ -68,12 +74,27 @@ Prove the signatures compile against the real code, using `~/.software-factory/a
 
 Done when every module type-checks or is reported unchecked with its reason, every Cost line is filled, and `git status --short` matches step 1.
 
-## 4. The human decides
+## 4. Challenge panel
 
-For each module, show the draft with its Cost line and ask the user to accept, edit or rewrite it. A high count is a prompt to ask whether the module hides enough. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again. Then ask the open questions.
+Fresh reviewers challenge the draft, one lens each, the way a future reader would: they see the documents, never this conversation.
 
-Done when the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
+1. The panel: `a-philosophy-of-software-design` at full size (`<name>.md`), the profile's `challenge` lenses at size `mini`, and `fin-money-core` (`SKILL.md`) when `money` is `true` in `lenses.yaml`. Each passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md) or is reported skipped.
+2. Start one fresh sub-agent per lens, all at once. Each receives these instructions and nothing else:
 
-## 5. Approve
+   > Challenge the interface in `<03-interface.md path>` through the rules in `<lens file>`. The constraint IDs are in `<01-product.md path>` (track small: none) and `.factory/system/constraints.md`. Write at most three cards to `<tmp>/<lens>.md`, each in the form of `<challenge-card.md path>`. Every card quotes a signature from the document, argues for the current design first, then states the objection, an alternative signature and what the alternative costs. Severity `block` or `fix` needs an anchor: a constraint ID or a number on a module's Cost line; every other card is a `note`. Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
+
+3. Collect the cards into `<change>/challenges.md`, grouped by lens. Drop a card whose quoted signature is not in the document; a `block` or `fix` card whose anchor does not exist becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`.
+
+`challenge-card.md` sits in this skill's folder; pass its absolute path.
+
+Done when every lens has its cards, or its dropped objection, in `challenges.md`.
+
+## 5. The human decides
+
+For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, recorded as its Response; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through steps 3 and 4 again. Then ask the open questions.
+
+Done when every card has a Response, the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
+
+## 6. Approve
 
 Approve the `interface` gate as gates.md describes. Next skill: `/factory-slices`.
