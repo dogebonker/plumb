@@ -28,7 +28,7 @@ Each fails on its assertion in the red commit, before any implementation exists.
 ## Rules in scope
 Read these before writing code, and apply them inside the frozen contract.
 - `~/.agents/skills/<lens>/<lens>.nano.md`
-- Language pack index: `~/.agents/skills/<pack>/SKILL.md`. Read only the one or two rules this slice needs; skip rules that need a newer <language> than <language_version>.
+- Language pack: `~/.agents/skills/<index pack>/SKILL.md`, plus `~/.agents/skills/<rules pack>/SKILL.md` for each rules pack. Read only the one or two rules this slice needs, apply them to the code this slice writes, leave what the linter enforces to the linter, and skip rules that need a newer <language> than <language_version>.
 
 ## Stop and report
 - a frozen signature cannot work as written

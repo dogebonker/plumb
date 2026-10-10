@@ -3,7 +3,7 @@
 index: modern-python                   # tooling: uv, ruff, type checker
 rules: [python-type-safety, python-error-handling, python-design-patterns]
 linter:
-  check: uv run ruff check && uv run ruff format --check
+  check: uv run ruff check && uv run ruff format --check && uv run pyright
   propose:
     - "ruff select: E, F, I, B, UP, SIM, RUF"
     - "type checker in strict mode (pyright or mypy)"

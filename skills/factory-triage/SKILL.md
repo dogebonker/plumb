@@ -29,7 +29,7 @@ Done when you can name the modules in scope and all three commands.
 - **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing.
 - **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
 
-Done when every module has a language and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
+Done when every module has a language, a language pack and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
 
 ## 3. Pick the track
 

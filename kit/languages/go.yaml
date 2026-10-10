@@ -1,8 +1,8 @@
 # Go modules: go.mod. Install: npx skills add cxuu/golang-skills --all
 index: go-style-core                   # the pack has no index skill; this one covers style and points to the rest
-rules: [go-error-handling, go-interfaces, go-concurrency, go-testing]
+rules: [go-error-handling, go-interfaces, go-concurrency, go-testing]   # extra packs, each with its own SKILL.md
 linter:
   check: golangci-lint run
-  propose:                             # see the go-linting skill for the reasoning
+  propose:                             # in line with the pack's go-linting skill
     - "enable: errcheck, govet, staticcheck, errorlint, gosec, revive"
     - "formatter: gofumpt"
