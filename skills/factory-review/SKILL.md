@@ -24,7 +24,10 @@ Run each check and record pass or fail with evidence. Rerun all of them whenever
 2. **Frozen contract.** Find each signature from the packet's Frozen contract in the code. Formatting may differ. A change to the name, parameters, types, return type, errors or visibility is a difference.
 3. **Red tests unchanged.** `git diff <test>..HEAD -- <test files from Tests first>` is empty, or each change is logged in `deviations`.
 4. **Green.** `test_command` passes at HEAD, apart from tests in `baseline_failures`.
-5. **Language checks.** For each module the slice changed whose `~/.software-factory/languages/<pack>.yaml` has `checks`: run `static` on the changed files it names. When the slice changes such files and `dev_command` is set, start `dev_command` in the background, wait until `dev_url` answers, run `runtime`, then stop the server. A non-zero exit or a reported issue is a finding. A tool that is not installed is reported as skipped, with its `install` line.
+5. **Language checks.** For each module whose `~/.software-factory/languages/<pack>.yaml` has `checks`, `{files}` is the slice's changed files with the listed `extensions`: `git diff --name-only --diff-filter=d <base>..HEAD`, made relative to the module path. No such files: skip the module. Otherwise, from the module directory:
+   - `static` on `{files}`. Each issue it reports is a finding.
+   - `runtime`, on tracks standard and critical, when the module has a `dev_url`. If `dev_url` already answers, use that server and leave it running. Otherwise start the module's `dev_command` in the background, wait up to 60 seconds for `dev_url`, run the scan, and stop the server you started. Each issue in the JSON is a finding.
+   - A tool that is not installed, a server that never answers, or a scan that cannot start (for example, no browser) is reported as skipped, with the error or the `install` line.
 
 A frozen-contract difference sends the slice back, as gates.md describes.
 
@@ -54,6 +57,7 @@ Range: <base>..<head>
 - Frozen contract: pass
 - Red tests unchanged: pass | <deviation entries>
 - Red: <test> failed on the new tests. Green: <head> passes test_command.
+- Language checks: pass | <issues> | skipped: <reason>
 
 ## Polish
 <each validated finding, numbered as polish numbered it, with the user's answer (fix / skip) and the outcome>
