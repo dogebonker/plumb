@@ -14,7 +14,7 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
 
 ## Hard gates
 
-`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.factory/` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
+`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.factory/` and the root `DESIGN.md` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
 
 ```json
 {

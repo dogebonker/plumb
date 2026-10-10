@@ -50,6 +50,7 @@ Ask in one message:
 - the track, with a one-line reason
 - the slug (kebab-case, at most four words)
 - the three commands, so the user can correct them
+- whether the change touches UI, and whether the design file exists
 - the lens profile with a one-line reason, the modules with language, language pack, BDD state and any dev command and URL, linter rules and check tools the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)

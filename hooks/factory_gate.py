@@ -2,8 +2,8 @@
 """Claude Code PreToolUse hook: hard gates for factory changes.
 
 Blocks Edit/Write/MultiEdit/NotebookEdit on source files (anything outside
-.factory/) in a repository with an active factory change on the current
-branch, unless the change's gates allow it. Exit 2 blocks the tool call and
+.factory/ and the root DESIGN.md) in a repository with an active factory change
+on the current branch, unless the change's gates allow it. Exit 2 blocks the tool call and
 shows stderr to the agent; exit 0 allows it. Once an active change is found,
 an unreadable state blocks too, so a broken status.yaml cannot open the gate.
 
@@ -20,6 +20,7 @@ from pathlib import Path
 GATES = [("product", "01-product.md"), ("architecture", "02-architecture.md"),
          ("interface", "03-interface.md"), ("slices", "04-slices.md")]
 EDITING = {"building", "red", "green"}
+DESIGN_STAMP = "factory:design-schema"  # marks a design file the factory made, not any DESIGN.md
 
 
 def git(cwd, *args):
@@ -79,7 +80,8 @@ def check(change, status, rel):
         return "cannot read all four gates in status.yaml; keep each gate as a one-line { } map (gates.md)."
     root = change.parent.parent.parent
     if status["scalars"].get("ui") == "true" and not any(
-            (root / f).exists() for f in ("DESIGN.md", ".factory/system/design.md")):
+            (root / f).exists() and DESIGN_STAMP in (root / f).read_text(errors="replace")
+            for f in ("DESIGN.md", ".factory/system/design.md")):
         return "this change touches UI and the repository has no design file. Run /factory-ui-ux design-md."
     if status["stubbing"] and gates["interface"]["state"] == "pending":
         return None

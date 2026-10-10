@@ -66,6 +66,14 @@ def blob_sha256(repo, ref, path):
         return None
 
 
+def has_stamp(repo, ref, path):
+    """A design file the factory made: it carries the stamp, unlike an architecture DESIGN.md."""
+    try:
+        return "factory:design-schema" in run(repo, "git", "show", f"{ref}:{path}")
+    except RuntimeError:
+        return False
+
+
 def is_ancestor(repo, older, newer):
     try:
         run(repo, "git", "merge-base", "--is-ancestor", older, newer)
@@ -304,7 +312,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     text, recorded = verify(repo, ref, change, text, approvals, may_skip)
     if recorded and verify(repo, ref, change, text, approvals, may_skip)[1]:
         raise RuntimeError("status.yaml has duplicate or malformed gate or slice lines; fix it by hand")
-    has_design = any(blob_sha256(repo, ref, f) for f in ("DESIGN.md", ".factory/system/design.md"))
+    has_design = any(has_stamp(repo, ref, f) for f in ("DESIGN.md", ".factory/system/design.md"))
     skill = next_skill(parse_status(text), has_design)
     waiting = parse_status(text)["scalars"].get("waiting_since")
     replies = []

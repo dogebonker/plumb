@@ -17,6 +17,8 @@ A challenge card, argued fairly: the current design's case first, then the objec
 - **Anchored:** to a principle (P#), a position, a word, the success metric, or a WCAG criterion. Unanchored is taste: it caps at `note`.
 - **Prediction / check:** what you would observe if the objection is right, and how to check it (a walkthrough step, a measurement, a usage number). No check caps at `note`.
 
+A comparison with a baseline (an earlier screenshot or the mockup) runs in both orders; a difference counts only when both orders agree.
+
 The fix is the cheapest that works, in this order: delete, merge, make it a default, collapse it, restyle it. A cut names exactly what stays.
 
 ## Severity and volume

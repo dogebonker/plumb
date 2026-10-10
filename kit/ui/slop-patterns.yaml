@@ -3,125 +3,126 @@
 # code:     ripgrep -P patterns, run with
 #           -g '*.{tsx,jsx,html,mdx,css,scss,vue,svelte,astro}' -g '!**/*.{test,spec,stories}.*' -g '!**/__fixtures__/**'
 # rendered: a field of kit/ui/slop-metrics.js, an impeccable rule id (imp:), or a model question (model:)
+# IDs are S1..S22, apart from a design file's principles (P1, P2...).
 # waive:    what DESIGN.md can declare to make the pattern intended for this product
 # Every hit is a candidate, judged against DESIGN.md; thresholds are advisory until calibrated.
 
 patterns:
-  - id: P1
+  - id: S1
     name: purple or indigo accent and gradients
-    code: ['\b(?:from|via|to)-(?:indigo|violet|purple|fuchsia)-\d{2,3}\b', '#(?:6366f1|4f46e5|8b5cf6|7c3aed|a855f7|9333ea)\b']
+    code: ['\b(?:from|via|to)-(?:indigo|violet|purple|fuchsia)-\d{2,3}\b', '(?i)#(?:6366f1|4f46e5|8b5cf6|7c3aed|a855f7|9333ea)\b']
     rendered: [purpleSurfaces, 'imp:ai-color-palette']
     waive: a brand hue in Colors
     fix: take the accent from DESIGN.md; one accent over neutral tints
-  - id: P2
+  - id: S2
     name: gradient text
     code: ['^(?=.*\bbg-clip-text\b)(?=.*\bbg-(?:gradient|linear|radial|conic)-)', 'background-clip:\s*text']
     rendered: [gradientText, 'imp:gradient-text']
     fix: solid color; emphasis from weight and size
-  - id: P3
+  - id: S3
     name: emoji as icons, bullets or headings
     code: ['[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B50}]']
     rendered: [emojiIcons]
     waive: emoji declared as part of the voice in Words
     fix: one icon set at one stroke weight; aria-hidden on decorative icons
-  - id: P4
+  - id: S4
     name: icon in a tinted rounded square above a heading
     code: ['class(?:Name)?="(?=[^"]*\b(?:w|size)-(?:8|10|12|14|16)\b)(?=[^"]*\brounded-(?:md|lg|xl|2xl|full)\b)(?=[^"]*\bbg-[a-z]+-(?:50|100|\d{3}/10)\b)(?=[^"]*\b(?:items|place)-center\b)[^"]*"']
     rendered: ['imp:icon-tile-stack']
     fix: icon inline with the heading, or none; put the point in the heading text
-  - id: P5
+  - id: S5
     name: three or four equal cards as the feature row
-    code: ['\b(?:(?:sm|md|lg):)?grid-cols-3\b|repeat\(3,\s*1fr\)', '\{\s*(?:icon|Icon)\s*:[^}]*title\s*:[^}]*desc']
+    code: ['\{\s*(?:icon|Icon)\s*:[^}]*title\s*:[^}]*desc']
     rendered: [cardRows]
     waive: real comparisons such as pricing tiers
     fix: rank the points, give one the large slot, merge or cut the rest
-  - id: P6
+  - id: S6
     name: decorative glassmorphism
     code: ['^(?=.*\bbackdrop-blur(?:-\w+)?\b)(?=.*\bbg-(?:white|black|\w+-\d+)/\d+)', 'backdrop-filter:\s*blur']
     rendered: [glass]
     waive: a surface that really overlays scrolling content
     fix: a solid surface; blur only where layers overlap
-  - id: P7
+  - id: S7
     name: rounded-2xl and shadow-xl on every box
     code: ['\brounded-(?:2xl|3xl)\b', '\bshadow-(?:xl|2xl)\b']
     rendered: [roundShadowRatio, 'imp:gpt-thin-border-wide-shadow']
     threshold: roundShadowRatio above 0.5
     fix: a radius scale from DESIGN.md; shadows only on raised layers
-  - id: P8
+  - id: S8
     name: centered everything
-    code: ['\btext-center\b|\bitems-center\b|\bmx-auto\b|text-align:\s*center']
+    code: ['\btext-center\b|text-align:\s*center']
     rendered: [centeredRatio]
     threshold: centeredRatio above 0.6 outside the hero, empty states and dialogs
     fix: left-align body copy; keep one centered moment
-  - id: P9
+  - id: S9
     name: a default face with no type scale
     code: ['next/font/google[^\n]*\b(?:Inter|Geist|Plus_Jakarta_Sans|Space_Grotesk|Roboto)\b', 'font-family:\s*(?:Inter|Roboto|system-ui)']
     rendered: [families, fontSizes, sizeSteps, 'imp:flat-type-hierarchy']
     threshold: adjacent steps mostly below 1.2, or more than 7 sizes
     waive: a face named in Typography with a reason (the face alone is never a finding then)
     fix: name the face and the scale in DESIGN.md; fewer sizes, bigger steps
-  - id: P10
+  - id: S10
     name: generic marketing copy
     code: ['(?i)\b(?:unlock the power|seamless(?:ly)?|supercharge|empower|elevate|unleash|revolutioniz\w*|next-gen(?:eration)?|cutting-edge|game-chang\w*|world-class|enterprise-grade|effortless(?:ly)?|harness the power|streamline)\b']
     rendered: ['the same pattern over the rendered text', 'imp:marketing-buzzword']
     fix: the words users say, from Words; a specific verb and noun
-  - id: P11
+  - id: S11
     name: fake social proof, round stats, placeholder names
     code: ['(?i)trusted by [\d,.]+\s*[km+]?|\b\d{1,3}(?:,\d{3})+\+|\b99\.9+%|\b10x\b|\b(?:john|jane) (?:doe|smith)\b|\bsarah (?:johnson|chen)\b|\bacme\b|★★★★★']
     rendered: ['model:Q3']
     waive: claims wired to a real source in the repository
     fix: cut, or wire to real data and attribute
-  - id: P12
+  - id: S12
     name: lorem ipsum and filler
     code: ['(?i)\blorem ipsum\b|\bdolor sit amet\b|placeholder text|TODO:? copy']
     rendered: ['the same pattern over the rendered text']
     fix: real copy, or the longest realistic string
-  - id: P13
+  - id: S13
     name: decorative blobs and radial halos
     code: ['class(?:Name)?="(?=[^"]*\babsolute\b)(?=[^"]*\brounded-full\b)(?=[^"]*\bblur-(?:2xl|3xl|\[\d+px\])\b)[^"]*"', 'radial-gradient\([^)]*transparent', 'filter:\s*blur\(\d{2,}px\)']
     rendered: ['imp:radial-halo', 'imp:radial-spotlight-glow']
     fix: remove; a flat tint from the palette if the page needs a surface
-  - id: P14
+  - id: S14
     name: dark mode with neon glow
     code: ['\bshadow-\w+-(?:400|500|600)/\d+\b', 'shadow-\[0_0_', 'drop-shadow-\[0_0_', 'box-shadow:\s*0\s+0\s+\d+px\s+(?:#|rgb)']
     rendered: [glow, 'imp:dark-glow']
     fix: neutral elevation; color only for state
-  - id: P15
+  - id: S15
     name: badges, pills and eyebrows everywhere
-    code: ['\b0\d\s*[/·]']
+    code: ['\b0\d\s*[/·]\s*[A-Za-z]']
     rendered: ['imp:hero-eyebrow-chip', 'imp:kicker-above-heading', 'imp:numbered-section-labels']
     waive: real status badges in app UI
     fix: delete the label or fold it into the heading
-  - id: P16
+  - id: S16
     name: decorative motion (animated gradients, pulse, bounce, marquee)
     code: ['\banimate-(?:bounce|pulse|ping|spin)\b', 'bg-\[length:\d+%']
     rendered: ['imp:bounce-easing', 'imp:pulsing-dot', 'imp:marquee', 'reduced-motion screenshots 500ms apart still differ']
     waive: motion declared in a Motion section, with its reason
     fix: one authored moment; honor prefers-reduced-motion
-  - id: P17
+  - id: S17
     name: hover-scale or lift on everything
     code: ['\bhover:(?:scale-1(?:0[1-9]|[1-9]\d)|-?translate-y-)', ':hover\s*\{[^}]*scale\(']
     rendered: ['hover a non-link card and diff screenshots']
     fix: hover states only on interactive elements; color or underline, not scale
-  - id: P18
+  - id: S18
     name: motion without a reduced-motion guard
     repo: 'motion (animate-, @keyframes, motion.) exists and none of motion-reduce:, motion-safe:, prefers-reduced-motion, useReducedMotion does'
     fix: gate decorative motion
-  - id: P19
+  - id: S19
     name: side-tab accent borders and nested cards
     code: ['\bborder-l-[2-8]\b']
     rendered: ['imp:side-tab', 'imp:nested-cards']
     fix: remove; separate with spacing and type
-  - id: P20
+  - id: S20
     name: template page skeleton
     repo: 'components named Hero, Features, Testimonials, Pricing, FAQ and CTA under one route'
     rendered: ['model:Q5']
     fix: sections ordered by the users' questions from DESIGN.md; cut what has no evidence
-  - id: P21
+  - id: S21
     name: div-built fake screenshots, terminals or dashboards
     rendered: ['model:Q4']
     fix: a real screenshot, or nothing
-  - id: P22
+  - id: S22
     name: missing states (empty, loading, error, disabled)
     repo: 'a data-fetching component with no loading, error or empty branch'
     rendered: ['screenshots with requests forced empty, failing and slow']

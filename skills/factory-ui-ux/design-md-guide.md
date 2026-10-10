@@ -4,7 +4,7 @@ The guide `factory-ui-ux design-md` follows. Adapted from the DESIGN.md format's
 
 ## 1. Detect a UI
 
-Front-end dependencies (react, next, vue, svelte, solid, angular), templates or HTML, SwiftUI or Compose, or a terminal UI with styling. No UI: record `ui: false` for the module in `.factory/system/lenses.yaml` and stop.
+Front-end dependencies (react, next, vue, svelte, solid, angular), templates or HTML, SwiftUI or Compose, or a terminal UI with styling. No UI: say so and stop.
 
 ## 2. Resolve the file
 
@@ -26,7 +26,7 @@ Render the main screens at 390, 768 and 1280 wide (Playwright, as `ui/tools.yaml
 
 ## 6. Draft
 
-Fill [DESIGN.template.md](DESIGN.template.md). Label each principle, position and word `confirmed` (from evidence) or `inferred`. Every principle must pass all four tests, or it is dropped:
+Fill [DESIGN.template.md](DESIGN.template.md), with 3 to 5 principles. Label each principle, position and word `confirmed` (from evidence) or `inferred`. Every principle must pass all four tests, or it is dropped:
 
 1. It comes from evidence: a user quote, the success metric, a constraint, a recorded decision.
 2. It rules out something concrete: a pattern visible in the current UI or a named competitor.
@@ -54,7 +54,9 @@ Never ask for colors, fonts or spacing the code already answers.
 
 ## 9. Write
 
-Write the file once the user confirms it, stamped `<!-- factory:design-schema 1 · reviewed <slug or date> -->`. With the user's approval, add one line to `AGENTS.md` or `CLAUDE.md` pointing agents to it. Committed mode: commit it on the change's branch, or on its own branch when no change is open.
+Write the file once the user confirms it, stamped `<!-- factory:design-schema 1 - reviewed <slug or date> -->`; the stamp is what the factory hook and runner look for. Give the user the one line for `AGENTS.md` or `CLAUDE.md` that points agents to it, for them to add. Committed mode: commit it on the change's branch, or on its own branch when no change is open. Ignored mode: the root file stays untracked unless the user commits it.
+
+Headless mode: write the draft to `<change>/design-draft.md`, commit and push it, and wait for the user as gates.md's Headless mode describes, asking the interview questions in that comment. The run that receives an approver's confirmation writes the design file from the draft with their corrections.
 
 ## Keeping it current
 

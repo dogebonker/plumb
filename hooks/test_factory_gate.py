@@ -84,7 +84,9 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run(root, "src/a.ts")
     assert r.returncode == 2 and "no design file" in r.stderr, r.stderr
     assert run(root, "DESIGN.md").returncode == 0
-    (root / "DESIGN.md").write_text("# Design\n")
+    (root / "DESIGN.md").write_text("# Architecture\n")  # a DESIGN.md that is not a design file
+    assert run(root, "src/a.ts").returncode == 2
+    (root / "DESIGN.md").write_text("<!-- factory:design-schema 1 -->\n# Design\n")
     assert run(root, "src/a.ts").returncode == 0
     (root / "DESIGN.md").unlink()
 

@@ -41,6 +41,7 @@ Draft the changes to `<system>/constraints.md`:
 ## 4. Living product and glossary
 
 - `<system>/product.md`: one section per capability the change shipped, titled in the product's words, with the problem in one line and its rules as SYS IDs.
+- the design file, when the change touched UI: re-extract its tokens (`design.md diff`), add new screens to the primary-action table, carry new terms into Words, and bump its stamp; principles and positions change only by the user's decision.
 - `<system>/glossary.md`: each domain term the product rules and the interface introduced, with a one-line definition in the product's words. An existing term with a new meaning is a question for the user, not an overwrite.
 
 Done when every Decision has an ADR, every change ID has a SYS row, and every new term has a glossary line, all drafted.

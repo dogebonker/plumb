@@ -17,10 +17,11 @@ impeccable:
   install: "npm i -g impeccable@4.1.0"
   code: "cd $NEUTRAL && impeccable detect --json --no-config --no-inline-ignores $REPO/<ui source> > $OUT/imp-src.json"
   rendered: "cd $NEUTRAL && impeccable detect --json --no-config --viewport <w>x<h> $URL/<route> > $OUT/imp-<route>-<w>.json"
+  rendered_needs: "puppeteer and a Chrome it can launch; without them the rendered run is skipped and the Playwright pass covers the page"
   exit: "0 clean, 2 findings, 1 error"
 
 ripgrep:
-  run: "rg -n -P --json <each code pattern of kit/ui/slop-patterns.yaml> <globs from that file> $REPO > $OUT/slop-rg.json"
+  run: "for each pattern: rg -n -P --json -e <its code patterns> <globs from that file> $REPO > $OUT/slop-rg-<id>.json"
 
 playwright:
   version: 1.63.0
@@ -28,14 +29,15 @@ playwright:
   viewports: ["390x844", "768x1024", "1280x800"]
   schemes: [light, dark]
   capture: >-
-    one script per route and viewport: reducedMotion 'reduce', full-page screenshot to $OUT/shots/,
+    one script, kept in the run folder and run from the repository (where @playwright/test resolves), per route and
+    viewport: reducedMotion 'reduce', full-page screenshot to $OUT/shots/,
     page.evaluate of $KIT/ui/slop-metrics.js to $OUT/dom-metrics.json, console errors and failed requests;
     then page.route to force empty, failing (500) and slow responses for the route's data calls, with a
     screenshot of each state
 
 axe:
   version: 4.13.0
-  install: "npm i -D @axe-core/playwright@4.13.0"
+  install: "npm i -D @axe-core/playwright@4.13.0 (in the repository, with the user's agreement)"
   run: "AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']) in the capture script, to $OUT/axe-<route>-<w>.json"
   findings: "violations are candidates; incomplete color-contrast items (gradients, glass, images) go to the model pass"
 

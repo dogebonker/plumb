@@ -7,7 +7,7 @@ argument-hint: "[design-md | critique <routes> | lens <slug>]"
 
 # Factory UI/UX
 
-Mode: $ARGUMENTS (empty: `design-md` when the design file is missing, otherwise `critique` of the main routes)
+Mode: $ARGUMENTS (empty, or only a change slug as the headless runner sends it: `design-md` when the design file is missing, otherwise `critique` of the main routes)
 
 Why each source and tool is here: `docs/research/ui-ux-selection.md` in the factory repository. Patterns and tools: `~/.software-factory/ui/slop-patterns.yaml` and `tools.yaml`.
 
@@ -25,13 +25,13 @@ Restraint is the default: one filled primary action per surface, headline first 
 
 - Read the design file, `.factory/system/product.md`, `glossary.md`, `constraints.md`, and for a change its `01-product.md` (or `04-slices.md`). No design file: run `design-md` first.
 - Make the run folder `.factory/ui/<YYYY-MM-DD-HHMM>/` and make sure `.factory/ui/` is ignored by git (`git check-ignore -q .factory/ui/x`; otherwise append it to the file `git rev-parse --git-path info/exclude` names). Lens mode keeps its outputs in the review's own folder.
-- Check each tool in `tools.yaml`; a missing one is skipped with its install line. Find the running app: the module's `dev_url` in `lenses.yaml`, or ask.
+- Check each tool in `tools.yaml`; a missing one is skipped with its install line. Find the running app: the module's `dev_url` in `lenses.yaml`, or ask; in lens mode without one, run only the code checks and say the screens were not seen.
 
 ## 2. Mechanical pass
 
 Run, as `tools.yaml` says and from a fresh empty working directory:
 
-1. Impeccable's detector over the UI source, then the catalog's code patterns with ripgrep, then the repository checks (P18, P20, P22).
+1. Impeccable's detector over the UI source, then the catalog's code patterns with ripgrep, then the repository checks (S18, S20, S22).
 2. For each route, at each viewport and color scheme: screenshots, `slop-metrics.js`, axe for WCAG 2.2 AA, console errors, then the forced empty, failing and slow states.
 3. Impeccable's detector against the rendered routes.
 

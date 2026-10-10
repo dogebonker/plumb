@@ -15,7 +15,7 @@ omitted:
     reason: "<why>"
 ---
 
-<!-- factory:design-schema 1 · reviewed <slug or date> -->
+<!-- factory:design-schema 1 - reviewed <slug or date> -->
 
 ## Overview
 <Who uses it, in what moment, for what job, in one paragraph, citing product.md and the success metric. Then one specific reference: "a pilot's checklist, not a dashboard".>
@@ -33,7 +33,7 @@ Refuses to look like: <2 or 3 named anti-references, one reason each>
 | --- | --- | --- |
 
 Disclosure: <what is visible by default; at most two levels>
-States: <how running, empty, failed, no change and done each look, so none can be mistaken for another>
+States: <how each state looks (empty, loading, failed, and any this product adds, such as running or no change), so none can be mistaken for another>
 Earning a place: <what a new element must show to be added; "not now" is the default>
 
 ## Words
