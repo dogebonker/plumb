@@ -11,11 +11,11 @@ How a factory skill loads a lens or a language pack. The kit is `~/.software-fac
 
 For each pack:
 
-1. Pinned hash: `packs.<name>.hash` in `~/.software-factory/packs.lock.yaml`.
+1. Pinned hash: `hash` in the pack's line of `~/.software-factory/packs.lock.yaml`.
 2. Installed hash: `jq -r '.skills["<name>"].skillFolderHash' ~/.agents/.skill-lock.json`
-3. Equal: load it. Not installed: tell the user `npx skills add <source>` and continue without it. Different: the pack changed upstream. Tell the user to read its changes and bump the pin, and continue without it. No kit, no pin for the pack, or no `jq`: say which, and continue without it.
+3. Equal: load it. Not installed: tell the user `npx skills add <source>` and continue without it. Different: the pack changed upstream. Tell the user to run `/factory-packs <name>`, and continue without it. No kit, no pin for the pack, or no `jq`: say which, and continue without it.
 
-A pin approves a pack's content, so it follows a read. After the user installs a pack, show them its `SKILL.md` and the files it links; only after they approve it in chat, add its pin: `<name>: { source, hash }`, the hash taken from the skills lock.
+A pin approves a pack's content, so it follows a read: `/factory-packs` shows what changed and writes pins the user approves.
 
 ## Load
 
