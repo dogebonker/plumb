@@ -41,5 +41,15 @@ axe:
   run: "AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']) in the capture script, to $OUT/axe-<route>-<w>.json"
   findings: "violations are candidates; incomplete color-contrast items (gradients, glass, images) go to the model pass"
 
+mockup_capture:
+  version: 1.63.0
+  install: "npx playwright@1.63.0 install chromium (downloads the package and the browser; the user's yes to mockups at the product gate is the agreement)"
+  viewports: ["390, 844", "1280, 800"]
+  schemes: "light, plus dark when the design file's colors include a dark set"
+  run: >-
+    cd $NEUTRAL && npx playwright@1.63.0 screenshot --browser chromium --viewport-size "<w>, <h>"
+    --color-scheme <scheme> --full-page file://<absolute path of the mockup html> <absolute path of the png>
+  note: "the Playwright CLI, run outside the repository: mockups need no test setup in it"
+
 react-doctor:
   note: "the React language pack's checks (kit/languages/react.yaml) run as they do in factory-review"

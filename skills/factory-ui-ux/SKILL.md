@@ -1,8 +1,8 @@
 ---
 name: factory-ui-ux
-description: Product-grounded UI/UX for the factory - create the repository's DESIGN.md, de-slop mechanically, and critique rendered screens against it with anchored, checkable opinions.
+description: Product-grounded UI/UX for the factory - create the repository's DESIGN.md, render optional mockup screenshots at the product gate, de-slop mechanically, and critique rendered screens against it with anchored, checkable opinions.
 disable-model-invocation: true
-argument-hint: "[design-md | critique <routes> | lens <slug>]"
+argument-hint: "[design-md | mockups <slug> | critique <routes> | lens <slug>]"
 ---
 
 # Factory UI/UX
@@ -18,6 +18,7 @@ Restraint is the default: one filled primary action per surface, headline first 
 | Mode | When | Runs |
 | --- | --- | --- |
 | `design-md` | the design file is missing, stale, or the user asks | the guide in [design-md-guide.md](design-md-guide.md) |
+| `mockups <slug>` | the product gate of a change with `ui: true`, when the user wants screenshots | [Mockups](#mockups) |
 | `critique <routes>` | on demand | steps 1 to 4 for the routes |
 | `lens <slug>` | factory-review, on a slice that changes UI files | steps 1 to 4 for the routes the slice touches, slice rules in step 4 |
 
@@ -46,4 +47,16 @@ Follow [critique.md](critique.md): walk the primary job of each screen on the re
 Write each finding as a challenge card (`factory-interface/challenge-card.md`) with the extra Prediction / check field, ranked and capped as `critique.md` says, plus one line on what works. Write `report.md` in the run folder: findings, waivers applied, tools run or skipped, and the screenshots each finding cites.
 
 - `critique`: show the report to the user. Each finding they accept becomes a small change (`/factory-triage ui: <finding>`); a finding against a position of the design file is instead a proposal to amend the design file, decided by the user.
-- `lens`: return only findings that make the slice unsafe to ship (a broken refusal or primary action, a state that lies, a WCAG A or AA failure) as cards anchored to a principle, position or WCAG criterion; everything else becomes a follow-up line.
+- `lens`: when the change has mockup screenshots, compare the rendered slice with them as `critique.md` says. Return only findings that make the slice unsafe to ship (a broken refusal or primary action, a state that lies, a WCAG A or AA failure) as cards anchored to a principle, position or WCAG criterion; everything else becomes a follow-up line.
+
+## Mockups
+
+Pictures of the behavior the product gate agrees, before any code exists: the screens `01-product.md` changes, built from the design file. Not a design exploration and not the implementation.
+
+1. Read `01-product.md` (rules and examples) and the design file (tokens, principles, primary-action table, states contract, Words). No design file: `design-md` first.
+2. Write one static HTML file per screen and state to `.factory/changes/<slug>/mockups/<screen>-<state>.html`: the design file's tokens as CSS variables, no scripts, no external requests. Each screen gets its default state and every state of the design file's states contract it can reach (empty, error, loading). Copy comes from the product examples and the design file's Words, never filler.
+3. Run the catalog's code patterns over the mockups folder (the `ripgrep` line in `tools.yaml`, with that folder as the path and a fresh `mktemp -d` as `$OUT`) and answer its model questions with quoted evidence. Fix every hit the design file does not waive before capturing.
+4. Capture each file as `mockup_capture` in `tools.yaml` says, to `mockups/<screen>-<state>-<width>-<scheme>.png`. Without Playwright, keep the HTML files, say the screenshots were skipped, and give the install line.
+5. Under Mockups in `01-product.md`, list each screen with its primary action and its screenshot paths.
+
+Done when every screen and state named in step 2 has its HTML file and, unless skipped, its screenshots, and none carries an unwaived catalog hit. The user approves them with the product gate; lens mode later compares the rendered slice with them, in both orders.

@@ -49,6 +49,10 @@ From C section 4:
 
 Product UI defaults to restraint: one filled primary action per surface, headline first and detail on demand, honest states, the work named rather than the machinery. Expression (bold display type, motion, illustration) is something a product's DESIGN.md opts into with a principle and a test, never a default.
 
+### UI-7. Mockup screenshots are optional, asked at the product gate
+
+When a change touches UI, the product gate asks once whether it needs mockup screenshots. Yes: `factory-ui-ux mockups` writes static HTML per screen and state from the design file's tokens, Words and states contract, runs the slop catalog over it, and captures it with the Playwright CLI (1.63.0, the version already pinned) at 390 and 1280 wide. The screenshots sit in the change folder and are linked from `01-product.md`, so the user approves the pictures with the rules they show, and review later compares the built screens with them. No: a sketch or ASCII, as before. Why ask rather than always render: a new screen or flow is easier to agree on as a picture, while a tweak to an existing screen is clearer as a sentence, and each render downloads a browser the first time and adds images to the change.
+
 ## What this does not cover
 
 - **Calibration.** The metric thresholds (centered text, rounded-plus-shadow ratio, type-scale steps) are first guesses; they stay advisory until a labeled set of the user's screens confirms them.

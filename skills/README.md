@@ -75,7 +75,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
 | `factory-reconcile` | S7 | Before merge: ADRs, standing constraints, living product and glossary in `.factory/system/`; calibration and lessons into the kit's `principles.md` |
 | `factory-packs` | S7 | Pin check, upstream changes read from changelogs, re-review of changes that relied on a changed rule, pin bumps |
-| `factory-ui-ux` | S9 | The repository's DESIGN.md (created by guide, enforced for UI changes), mechanical de-slop, anchored critique of rendered screens |
+| `factory-ui-ux` | S9 | The repository's DESIGN.md (created by guide, enforced for UI changes), optional mockup screenshots at the product gate, mechanical de-slop, anchored critique of rendered screens |
 | `factory-ci` | S10 | Measured CI history (health, strata, critical path, queue, minutes, dollars, noise floor), ranked fixes with labelled savings, posture through zizmor, each approved fix as a small change and verified after merge |
 | `factory-security` | S11 | Threat model from the code, pinned scanners, the `security-audit` method with routed knowledge, proven findings as small changes |
 | `factory-prune` | S7 | Repository audit with the simplification ladder; protected code filtered out; each approved item runs as a small change |

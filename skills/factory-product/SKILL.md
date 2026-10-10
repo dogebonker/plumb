@@ -39,7 +39,7 @@ Done when you can state today's behavior and the requested change in the user's 
 <the short note you would publish when it ships, written before building>
 
 ## Mockups
-<sketch, link or ASCII for any UI, following the design file's principles and primary-action table; "none" without UI>
+<ui true: screenshot paths from /factory-ui-ux mockups, or a sketch or ASCII when the user declined screenshots, following the design file's principles and primary-action table; "none" without UI>
 
 ## Rules and examples
 ### <business rule>
@@ -63,9 +63,11 @@ Done when you can state today's behavior and the requested change in the user's 
 
 Work the Rules section as Example Mapping: every rule gets at least one requirement and one concrete example. A rule whose example you cannot write yet becomes an open question.
 
+When `ui` is `true` in `status.yaml`, ask the user once whether this change needs mockup screenshots: worth it for a new screen or flow, rarely for a tweak to an existing one. A yes also agrees to the one-time Playwright download that capturing needs. Yes: once Rules and examples are drafted, follow the `mockups` mode of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) for this slug. No: a sketch or ASCII under Mockups, with "screenshots declined".
+
 ## 4. Walk the human through it
 
-Go rule by rule. For each: read back the rule and its examples, ask for the missing or surprising case, and fold the answer in. Then ask the open questions one at a time.
+Go rule by rule. For each: read back the rule and its examples, with the mockup screenshots that show them, ask for the missing or surprising case, and fold the answer in. A change to a rule that a mockup shows updates the mockup. Then ask the open questions one at a time.
 
 Done when every rule has an example the user agreed to and Open questions is empty.
 
