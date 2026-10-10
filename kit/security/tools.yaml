@@ -6,10 +6,13 @@
 #   $OUT         the run folder, .factory/security/<run>/
 #   $CACHE       ~/.cache/factory-security (databases, rule packs, the history mirror), never in the repository
 #   $KIT         ~/.software-factory
-#   $TREE        a fresh empty directory holding the commit under audit:
-#                git -C $REPO archive --format=tar HEAD | tar -x -C $TREE
-#                (committed content only, so run folders and untracked files never reach a scanner;
-#                the report names the commit, and says uncommitted changes were not scanned)
+#   $TREE        a fresh checkout of the commit under audit, from the history mirror (see gitleaks):
+#                GIT_LFS_SKIP_SMUDGE=1 git -c core.hooksPath=/dev/null clone --quiet --no-checkout
+#                $CACHE/mirror/<repo-slug>.git $TREE && git -C $TREE -c core.hooksPath=/dev/null
+#                checkout --quiet --detach <commit>
+#                A checkout, not git archive: .gitattributes export-ignore would let a repository drop
+#                files from an archive. Committed content only, so run folders and untracked files never
+#                reach a scanner; the report names the commit and says uncommitted changes were not scanned.
 #   $MODULE_DIR  one Go module directory; <module-slug> is its path with / replaced by -
 #
 # What a repository can still do to its own scan, and how the run handles it:
