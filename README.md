@@ -258,9 +258,9 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 - **Posture on the way.** Unpinned actions, broad token permissions, secrets reachable from forks: reported beside the speed findings.
 - **Where it plugs in:** on demand, like prune; each accepted proposal runs as a small change.
 
-**S11: `factory-security`, an audit that knows which checks matter here.**
+**S11: `factory-security`, an audit that knows which checks matter here.** Built: [skills/factory-security](skills/factory-security/SKILL.md). What it loads and why, with the research behind each choice: [docs/research/security-selection.md](docs/research/security-selection.md).
 
-- **Scanners first.** Trivy (dependencies, IaC, containers, secrets), Semgrep, Gitleaks, OSV-Scanner and each stack's own audit tool (`npm audit`, `cargo audit`, `govulncheck`, `pip-audit`), pinned and run like the adapters.
+- **Scanners first.** Trivy (dependencies for every ecosystem, IaC, licenses), Opengrep (source patterns), Gitleaks (secrets in history), zizmor (GitHub Actions) and govulncheck (Go reachability), pinned, run from an empty directory so a repository cannot suppress its own findings.
 - **Architecture before checklists.** It reads `.factory/system/` (product, ADRs, constraints) and the code map, and writes a threat model: assets, trust boundaries, entry points, who the attackers are.
 - **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills or [Claude-Code-CyberSecurity-Skill](https://github.com/Masriyan/Claude-Code-CyberSecurity-Skill), are mostly irrelevant to any one repository; which sources to draw from is decided when S11 is designed. The kit keeps a routing index that tags each pinned security skill by stack, component (web API, auth, payments, infrastructure as code, mobile, LLM features) and threat class. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
 - **Findings proven.** Every finding is reproduced from its evidence before it is reported; confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.

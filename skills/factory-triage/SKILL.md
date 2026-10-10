@@ -38,7 +38,7 @@ Done when every module has a language, a language pack and a BDD state, every mo
 | trivial | rename, copy, config, one-line fix | no factory: tell the user to hand it straight to an agent, then stop |
 | small | a few files, no new or changed interface | slices gate only, then build and review |
 | standard | new endpoint, table, screen, or any interface change | all four gates, then build and review |
-| critical | money, auth, migrations. Code behind a money signal counts as money | all four gates; review adds the Money reviewer in money repositories. The threat model is not built yet: say so |
+| critical | money, auth, migrations. Code behind a money signal counts as money | all four gates, plus `/factory-security threat-model` after the architecture gate; review adds the Money reviewer in money repositories |
 
 Pick the track from what the code shows, not from how the task is worded.
 

@@ -24,6 +24,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 18 | Python pack chosen for maintenance and adoption | Accepted |
 | 19 | Prune as a scheduled, approved job | Accepted |
 | 20 | Third-party packs vendored and pinned | Accepted |
+| 21 | factory-security: Cloudflare method, five scanners, routed knowledge | Accepted |
 
 ---
 
@@ -184,3 +185,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** Several of these packs move weekly and some are pre-1.0. An upstream change should never land in the middle of a feature.
 
 **Cost.** Bumps are manual. That is intended.
+
+## 21. factory-security: Cloudflare method, five scanners, routed knowledge
+
+**Decision.** `factory-security` uses Cloudflare's `security-audit` as its method and evidence bar, five pinned scanners (Trivy, Opengrep, Gitleaks, zizmor, govulncheck) run before any judgment, and a routing index that loads at most one knowledge source per agent, chosen by the repository's threat model. Of the 817-skill mukul975 catalog it pins 15; of the Masriyan catalog none, keeping five ideas.
+
+**Why.** The catalogs are mostly offensive, forensic and operational, and many relevant-looking skills fail a full read. The method that already matches the factory's evidence standard is the right core; specific knowledge earns its place only where the method leaves a gap. The full record, with the research: [research/security-selection.md](research/security-selection.md).
+
+**Cost.** Without a sandbox, candidates whose exploitability needs a running system stay `needs_validation`. Several knowledge packs (OpenAI, Trail of Bits, Sentry) work only once installed and pinned.

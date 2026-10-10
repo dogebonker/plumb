@@ -1,0 +1,89 @@
+# Routing index for factory-security. Why each entry is here: docs/research/security-selection.md.
+#
+# lens 1 (method, Cloudflare security-audit): one file per agent, by component.
+# lens 2 (knowledge): at most one entry per agent, chosen when its `when` tags match the threat model.
+# An entry whose pack is not installed and pinned (kit/packs.lock.yaml) is skipped with a notice.
+# `read` names the part to load; `skip` lists known errors in the source that the agent ignores.
+#
+# Component tags (set by the threat model): web-api, frontend, auth, multi-tenant, llm, agent-tools, mcp,
+# rpc, availability, native, desktop-mobile, ci, supply-chain, container, kubernetes, iac, aws, graphql,
+# money, evm, chain-other. Stack tags: nextjs, react, express, node, go, fastapi, django, flask, python, rust.
+
+method:
+  pack: security-audit
+  always: [SKILL.md, ATTACK-CLASSES.md]
+  verify: VALIDATION-AND-REPORTING.md
+  by_component:
+    web-api: WEB-PROTOCOL-AND-AUTH.md
+    auth: WEB-PROTOCOL-AND-AUTH.md
+    frontend: CLIENT-SIDE.md
+    ci: SUPPLY-CHAIN-AND-RELEASE.md
+    supply-chain: SUPPLY-CHAIN-AND-RELEASE.md
+    container: CLOUD-AND-DEPLOYMENT.md
+    kubernetes: CLOUD-AND-DEPLOYMENT.md
+    iac: CLOUD-AND-DEPLOYMENT.md
+    aws: CLOUD-AND-DEPLOYMENT.md
+    multi-tenant: DATA-ISOLATION-AND-LIFECYCLE.md
+    llm: AI-AND-LLM.md
+    agent-tools: AI-AND-LLM.md
+    mcp: AI-AND-LLM.md
+    rpc: PROTOCOLS-RPC-AND-MESSAGING.md
+    graphql: PROTOCOLS-RPC-AND-MESSAGING.md
+    availability: RESOURCE-EXHAUSTION-AND-AVAILABILITY.md
+    native: MEMORY-SAFETY-AND-BINARY.md
+    desktop-mobile: DESKTOP-MOBILE-AND-LOCAL-IPC.md
+
+knowledge:
+  # OpenAI security-best-practices (Apache-2.0): framework rules with stable IDs. Load the rule sections
+  # the component touches, never a whole file; never load its SKILL.md ("make fixes and commit").
+  - {id: openai-nextjs, pack: security-best-practices, read: "Next.js reference, matching rule sections", when: [nextjs]}
+  - {id: openai-react, pack: security-best-practices, read: "React reference, matching rule sections", when: [react, frontend]}
+  - {id: openai-express, pack: security-best-practices, read: "Express reference, matching rule sections", when: [express, node]}
+  - {id: openai-go, pack: security-best-practices, read: "Go backend reference, matching rule sections", when: [go, web-api]}
+  - {id: openai-fastapi, pack: security-best-practices, read: "FastAPI reference, matching rule sections", when: [fastapi]}
+  - {id: openai-django, pack: security-best-practices, read: "Django reference, matching rule sections", when: [django]}
+  - {id: openai-flask, pack: security-best-practices, read: "Flask reference, matching rule sections", when: [flask]}
+
+  # Trail of Bits (CC-BY-SA-4.0): installed and pinned unmodified; never copy its text into factory files.
+  - {id: tob-insecure-defaults, pack: insecure-defaults, read: "the one category file the agent hunts", when: [auth, iac, container, web-api]}
+  - {id: tob-sharp-edges-go, pack: sharp-edges, read: lang-go.md, when: [go]}
+  - {id: tob-sharp-edges-rust, pack: sharp-edges, read: lang-rust.md, when: [rust, native]}
+  - {id: tob-sharp-edges-python, pack: sharp-edges, read: lang-python.md, when: [python]}
+  - {id: tob-sharp-edges-js, pack: sharp-edges, read: lang-javascript.md, when: [node, nextjs, express]}
+  - {id: tob-crypto-apis, pack: sharp-edges, read: crypto-apis reference, when: [auth, money]}
+  - {id: tob-agentic-actions, pack: agentic-actions-auditor, read: references, when: [ci, agent-tools]}
+  - {id: tob-fp-check, pack: fp-check, read: bug-class-verification.md, role: verifier}
+  - {id: tob-variant-analysis, pack: variant-analysis, read: references, role: after-confirmed}
+  - {id: tob-secure-contracts, pack: building-secure-contracts, read: "the scanner for the repository's chain", when: [chain-other]}
+
+  # Sentry (Apache-2.0)
+  - {id: sentry-gha, pack: gha-security-review, read: references, when: [ci]}
+  - {id: sentry-false-positives, pack: security-review, read: "the do-not-flag tables", role: verifier}
+
+  # mukul975/Anthropic-Cybersecurity-Skills (Apache-2.0): 15 of 817. Never run anything under scripts/.
+  - {id: evm-foundry, pack: auditing-foundry-smart-contract-security, read: SKILL.md, when: [evm],
+     skip: ["deprecated Chainlink answeredInRound field", "OpenZeppelin functions removed in v5",
+            "the 64-hex private-key regex (flags any constant)"],
+     add: ["check signatures for replay: nonce, chain id, contract address, deadline"]}
+  - {id: k8s-pss, pack: implementing-kubernetes-pod-security-standards, read: SKILL.md, when: [kubernetes]}
+  - {id: k8s-rbac, pack: auditing-kubernetes-rbac-privilege-escalation, read: "dangerous verb list", when: [kubernetes],
+     skip: ["the offensive privileged-pod step"]}
+  - {id: container-hardening, pack: performing-container-image-hardening, read: SKILL.md, when: [container],
+     skip: ["the dpkg purge step"]}
+  - {id: aws-iam-privesc, pack: detecting-aws-iam-privilege-escalation, read: SKILL.md, when: [aws],
+     add: ["iam:PassRole on * without an iam:PassedToService condition"]}
+  - {id: agent-tool-invocation, pack: securing-agentic-ai-tool-invocation, read: SKILL.md, when: [agent-tools, llm]}
+  - {id: mcp-tool-poisoning, pack: auditing-mcp-servers-for-tool-poisoning, read: SKILL.md, when: [mcp],
+     skip: ["its scanner (may send tool descriptions to a vendor)", "the deprecated SSE transport advice"]}
+  - {id: js-prototype-pollution, pack: exploiting-prototype-pollution-in-javascript, read: "Source Code Detection Patterns", when: [node, express]}
+  - {id: cors, pack: testing-cors-misconfiguration, read: SKILL.md, when: [web-api]}
+  - {id: api-schema-validation, pack: implementing-api-schema-validation-security, read: SKILL.md, when: [web-api],
+     skip: ["the regex denylist fix"]}
+  - {id: graphql-limits, pack: performing-graphql-depth-limit-attack, read: "depth and complexity configuration", when: [graphql]}
+  - {id: jwt, pack: implementing-jwt-signing-and-verification, read: SKILL.md, when: [auth]}
+  - {id: oauth, pack: configuring-oauth2-authorization-flow, read: SKILL.md, when: [auth]}
+  - {id: npm-malicious, pack: detecting-malicious-npm-packages, read: SKILL.md, when: [supply-chain, node]}
+  - {id: dependency-confusion, pack: detecting-dependency-confusion, read: SKILL.md, when: [supply-chain]}
+
+  # Money: the factory's money pack (fin-*), routed exactly as the Money reviewer routes it.
+  - {id: money, pack: "fin-verification + the one fitting fin-* domain skill", read: SKILL.md, when: [money, evm, chain-other]}

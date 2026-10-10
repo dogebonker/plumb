@@ -1,0 +1,6 @@
+# Kit-owned Gitleaks config: the embedded default rules, never the repository's own .gitleaks.toml.
+[extend]
+useDefault = true
+
+[allowlist]
+paths = ['''(^|/)(node_modules|vendor|\.venv)/''']

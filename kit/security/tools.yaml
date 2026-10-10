@@ -1,0 +1,55 @@
+# Scanners for factory-security. Why these and not others: docs/research/security-selection.md (SEC-2).
+#
+# Run conventions, for every tool:
+# - cwd is a new empty directory ($NEUTRAL), so the repository's own tool configs cannot suppress findings;
+#   then list its suppressions (.trivyignore, trivy:ignore, .gitleaks.toml, .gitleaksignore, gitleaks:allow,
+#   nosemgrep, .semgrepignore, zizmor.yml, "zizmor: ignore") as data for the verifier.
+# - output goes to the run folder ($OUT); caches and rule packs live in $CACHE, outside the repository.
+# - every result is a candidate, never a finding.
+# - a tool that is missing or older than its pin is reported as skipped, with its install line.
+
+trivy:
+  version: 0.74.0          # floor 0.72.0; 0.69.4-0.69.6 were malicious (GHSA-69fq-xp46-6x23)
+  install: "release tarball from github.com/aquasecurity/trivy, verified by sha256 and cosign; never trivy-action or setup-trivy by tag"
+  run: >-
+    trivy fs --scanners vuln,misconfig,license --format json --output $OUT/trivy-fs.json
+    --list-all-pkgs=false --exit-code 0 --disable-telemetry --skip-version-check --cache-dir $CACHE/trivy $REPO
+  findings: "HIGH and CRITICAL are candidates; LOW and MEDIUM misconfiguration is advisory"
+
+opengrep:
+  version: 1.30.1
+  fallback: "semgrep 1.178.0 with --metrics off --disable-version-check"
+  install: "release binary from github.com/opengrep/opengrep, verified with cosign"
+  rules: >-
+    Semgrep registry packs, internal use only: fetch once per pin into $CACHE/rules
+    (curl -fsSL https://semgrep.dev/c/p/default, plus p/rust, p/golang, p/python, p/typescript when present),
+    record each file's sha256, never commit them
+  run: >-
+    opengrep scan --config $CACHE/rules/p-default.yml [--config $CACHE/rules/p-<stack>.yml]
+    --taint-intrafile --disable-nosem --json-output $OUT/sast.json $REPO
+
+gitleaks:
+  version: 8.30.1
+  install: "brew install gitleaks (8.30.1 or newer); the git and dir subcommands need 8.19+"
+  run:
+    - >-
+      gitleaks git --no-banner --redact --config $KIT/security/gitleaks.toml --gitleaks-ignore-path $NEUTRAL
+      --ignore-gitleaks-allow --log-opts="--all --full-history" --report-format json
+      --report-path $OUT/gitleaks-history.json --exit-code 0 $REPO
+    - >-
+      gitleaks dir --no-banner --redact --config $KIT/security/gitleaks.toml --gitleaks-ignore-path $NEUTRAL
+      --ignore-gitleaks-allow --report-format json --report-path $OUT/gitleaks-tree.json --exit-code 0 $REPO
+  never: "checking whether a found secret is live: that is a decision for the user, per secret"
+
+zizmor:
+  version: 1.30.1
+  install: "uv tool install zizmor==1.30.1"
+  when: ".github/workflows exists"
+  run: "zizmor --offline --no-config --persona regular --format json --no-exit-codes $REPO > $OUT/zizmor.json"
+  online: "with a read-only GH_TOKEN, drop --offline to add impostor-commit, known-vulnerable-actions, ref-confusion, stale-action-refs"
+
+govulncheck:
+  version: 1.8.0
+  install: "go install golang.org/x/vuln/cmd/govulncheck@v1.8.0"
+  when: "a go.mod exists and Trivy reports Go advisories, or the profile is standard"
+  run: "govulncheck -C $MODULE_DIR -format json ./... > $OUT/govulncheck-<module>.json"
