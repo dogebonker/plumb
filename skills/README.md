@@ -18,7 +18,7 @@ Install them as a set: the skills share `factory-shared/gates.md`. Review needs 
 
 | Skill | Roadmap step | Purpose |
 | --- | --- | --- |
-| `factory-triage` | S1 | Track, slug, branch, `status.yaml`. Money and BDD detection in S2, lens profile in S3 |
+| `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check |
 | `factory-review` | S1 | Allowed-files and frozen-contract checks, `/polish`, human sign-off |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
