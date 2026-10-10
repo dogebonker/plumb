@@ -64,7 +64,7 @@ Consequences: <what gets easier, what gets harder>
 ## Open questions
 ```
 
-- Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves shipped ADRs into `.factory/system/adr/` after merge.
+- Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves them into `.factory/system/adr/` once the change's slices are done, before it merges.
 - When `.factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
 - Track critical: Budgets holds at least one NFR budget.
 - When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.

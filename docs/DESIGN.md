@@ -49,7 +49,7 @@ Rules: nothing project-specific in a skill; a new stack means one adapter file; 
 
 **Packet, Build, Review.** See sections 7 and 8.
 
-**Reconcile.** After merge: fold what shipped into `.factory/system/`, write ADRs, update constraints, tag lessons.
+**Reconcile.** After the last slice is signed off and before the branch merges, so the update ships with the code: fold what shipped into `.factory/system/`, write ADRs, update constraints, tag lessons.
 
 ## 5. Constraints registry
 
