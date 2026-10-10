@@ -16,13 +16,13 @@ The complete specification of the factory. The README explains the why; this doc
 | Layer | Where it lives | Shared across projects | How it gets there |
 | --- | --- | --- | --- |
 | Factory skills | This repository, installed user-level | Yes | One install per machine or server, pinned to a tag |
-| Factory kit | `~/.factory/`, its own git repository | Yes | `git clone` on every machine and server |
+| Factory kit | `~/.software-factory/`, its own git repository | Yes | `git clone` on every machine and server |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
-| Third-party packs | Vendored inside `~/.factory/`, pinned by commit | Yes | Bumped deliberately, changelog reviewed |
+| Third-party packs | Vendored inside `~/.software-factory/`, pinned by commit | Yes | Bumped deliberately, changelog reviewed |
 | Project state | `<repo>/.factory/` | No | Created by triage on first run |
-| Stack specifics | `~/.factory/adapters/<stack>.md` | Yes | Written once per stack |
+| Stack specifics | `~/.software-factory/adapters/<stack>.md` | Yes | Written once per stack |
 
-Rules: nothing project-specific in a skill; a new stack means one adapter file; a new domain means one profile and one NFR catalog; when a repository's owner should not see `.factory/`, it is gitignored and the state lives in a `~/.factory/` branch instead.
+Rules: nothing project-specific in a skill; a new stack means one adapter file; a new domain means one profile and one NFR catalog; when a repository's owner should not see `.factory/`, it is gitignored and the state lives in a `~/.software-factory/` branch instead.
 
 ## 3. Tracks
 
@@ -61,7 +61,7 @@ One `constraints.md` per project. Every functional requirement, NFR and constrai
 | Architecture | NFRs as measurable budgets; constraints with the options they rule out |
 | Interface Design | Every ID mapped to a test, lint rule, monitor, or explicit "human-verified" |
 
-An unmapped ID blocks the Interface Design gate. The registry is seeded from `~/.factory/nfr-catalog/<domain>.md`. In money projects the money pack seeds invariants, which become property tests. Release It! and DDIA supply the elicitation questions: timeouts, retries, bulkheads, consistency, durability, schema evolution.
+An unmapped ID blocks the Interface Design gate. The registry is seeded from `~/.software-factory/nfr-catalog/<domain>.md`. In money projects the money pack seeds invariants, which become property tests. Release It! and DDIA supply the elicitation questions: timeouts, retries, bulkheads, consistency, durability, schema evolution.
 
 ## 6. Interface Design
 
@@ -185,7 +185,7 @@ Never simplified away: frozen interfaces, code enforcing a constraint ID, money 
 **Curated files are the kit.** What shapes first drafts or is vendored stays reviewable in git.
 
 ```
-~/.factory/
+~/.software-factory/
   principles.md
   nfr-catalog/<domain>.md
   profiles/
@@ -200,4 +200,4 @@ Every review finding is tagged by lens and rule, so Pond can count it. Recurring
 
 ## 12. Headless mode
 
-Install the skills user-level, clone `~/.factory/`, run `pond init` against the shared store, provide the runtimes the adapters call. The agent drafts gate documents and opens a plan pull request; approval is a review or a tracker state change, written into `status.yaml` by the runner. Executors run unattended between gates, and each slice opens or updates a pull request with `review.md` attached. Reviews of other people's pull requests use review mode only. Any Agent Skills harness can be the runner; the packet is the portability boundary.
+Install the skills user-level, clone `~/.software-factory/`, run `pond init` against the shared store, provide the runtimes the adapters call. The agent drafts gate documents and opens a plan pull request; approval is a review or a tracker state change, written into `status.yaml` by the runner. Executors run unattended between gates, and each slice opens or updates a pull request with `review.md` attached. Reviews of other people's pull requests use review mode only. Any Agent Skills harness can be the runner; the packet is the portability boundary.

@@ -142,7 +142,7 @@ A typical slice costs four review agents. The worst case, a money slice that tou
 | Simplification | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Packet, review rubric, and the prune job |
 | Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review and reconcile query it |
 
-Every third-party pack is vendored into `~/.factory/` and pinned by commit, so an upstream change never lands in the middle of a feature.
+Every third-party pack is vendored into `~/.software-factory/` and pinned by commit, so an upstream change never lands in the middle of a feature.
 
 ### Lens profiles
 
@@ -186,7 +186,7 @@ The factory uses it in three places:
 What is curated stays in files:
 
 ```
-~/.factory/                      global kit, git-synced to every machine and server
+~/.software-factory/                      global kit, git-synced to every machine and server
   principles.md                  engineering taste, with reasons; shapes first drafts
   nfr-catalog/<domain>.md        default NFRs per domain
   profiles/                      domain-core, crud-service, legacy
@@ -231,4 +231,4 @@ The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer
 
 ## License
 
-[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are vendored into `~/.factory/`, not into this repository.
+[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are vendored into `~/.software-factory/`, not into this repository.

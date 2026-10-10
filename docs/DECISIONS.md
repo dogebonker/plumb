@@ -45,7 +45,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 ## 3. Decisions in files, recall in Pond
 
-**Decision.** Approved decisions are markdown in git: the global kit in `~/.factory/`, the project's `.factory/system/`, and one folder per change. Memory is [Pond](https://github.com/tenequm/pond): every agent session, stored losslessly in one shared store and queried by search, SQL or MCP. Lessons and calibration are computed from Pond at reconcile, not maintained by hand.
+**Decision.** Approved decisions are markdown in git: the global kit in `~/.software-factory/`, the project's `.factory/system/`, and one folder per change. Memory is [Pond](https://github.com/tenequm/pond): every agent session, stored losslessly in one shared store and queried by search, SQL or MCP. Lessons and calibration are computed from Pond at reconcile, not maintained by hand.
 
 **Why.** Decisions need to be read, diffed and reviewed in pull requests like code, so they stay in files. Recall is a different job. Hand-written lesson files only hold what someone remembered to write down, and grep over them misses what was said in a review three repositories ago. Pond keeps the full record across every harness and machine, and its SQL makes counts like "how often was this lens rule overruled" a query instead of a file to keep in sync. It also leaves agent beliefs inspectable: everything in it is a transcript, not an opaque vector memory.
 
@@ -65,7 +65,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 **Why.** Think of building a house. Functional requirements are the rooms. NFRs are how warm and quiet it is. Constraints are the plot, the budget and the zoning law, and they rule options out before anyone draws. Most tools only capture rooms. A requirement without enforcement is a wish.
 
-**Cost.** Writing fit criteria takes thought. Domain NFR catalogs in `~/.factory/` make most of them a copy, not a blank page.
+**Cost.** Writing fit criteria takes thought. Domain NFR catalogs in `~/.software-factory/` make most of them a copy, not a blank page.
 
 ## 6. Tracks that scale process to risk
 
@@ -179,7 +179,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 ## 20. Third-party packs vendored and pinned
 
-**Decision.** Every external pack lives in `~/.factory/` at a pinned commit. Bumps are deliberate and reviewed.
+**Decision.** Every external pack lives in `~/.software-factory/` at a pinned commit. Bumps are deliberate and reviewed.
 
 **Why.** Several of these packs move weekly and some are pre-1.0. An upstream change should never land in the middle of a feature.
 
