@@ -4,7 +4,19 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** design complete, build starting. The [roadmap](#roadmap) starts with a tracer bullet (S1) that runs the whole loop end to end on one real feature.
+**Status:** roadmap S1 to S8 built; not yet run end to end on a real feature.
+
+## TL;DR
+
+1. Install the skills and the kit once:
+   ```bash
+   ln -s ~/Work/software-factory/skills/factory-* ~/.claude/skills/
+   ln -s ~/Work/software-factory/kit ~/.software-factory
+   ```
+   Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill.
+2. In the repository you want to change, start with `/factory-triage <the task in plain words>`.
+3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` per slice, then `/factory-reconcile` before you merge.
+4. You approve every gate and sign off every slice. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
 ---
 
