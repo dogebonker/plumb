@@ -33,6 +33,7 @@ Depth: <what this module hides, in one line>
 | --- | --- |
 | FR-01 | test: <file> :: <name> |
 | NFR-01 | test, lint rule, monitor, or human-verified |
+| SYS-NFR-01 | <reuse its registry enforcement, or add one> |
 
 ## Open questions
 ~~~

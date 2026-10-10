@@ -7,6 +7,7 @@
 | ID | Fit criterion |
 | --- | --- |
 | FR-01 | <the FR's Example line> |
+| SYS-NFR-01 | <fit criterion from the registry> |
 
 ## Frozen contract
 <signatures, interface comments and depth statements, copied from `03-interface.md`. They do not change.>

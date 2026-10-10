@@ -37,7 +37,7 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
   Example: <concrete input> -> <concrete outcome>
 
 ## Standing constraints
-- SYS-NFR-01: <how this change touches it>
+- SYS-NFR-01: <how this change touches it>   (or: none)
 
 ## Slices
 ### 01 <name>

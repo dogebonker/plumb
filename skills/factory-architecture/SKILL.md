@@ -18,7 +18,7 @@ Load the change as gates.md describes, for the `architecture` gate. Read `01-pro
 ## 2. Research
 
 - Read every file in scope fully, with its tests, callers and the data it touches.
-- Read `.factory/system/` when it exists: earlier ADRs bind this change unless it supersedes them.
+- Read `.factory/system/` when it exists: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
 - Search Pond for decisions, rejected designs and incidents touching these modules.
 
 Done when every claim in the Research section has a `path:line` or a Pond session id behind it.

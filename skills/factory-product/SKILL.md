@@ -54,7 +54,7 @@ Done when you can state today's behavior and the requested change in the user's 
 - C-01: <budget, deadline, regulation, team, existing system>
 
 ## Standing constraints
-- SYS-NFR-01: <how this change touches it>
+- SYS-NFR-01: <how this change touches it>   (or: none)
 
 ## Non-goals
 
