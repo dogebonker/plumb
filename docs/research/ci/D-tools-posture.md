@@ -11,7 +11,7 @@ read them; no file in the audited repositories was written.
 | Tool | Installed | Notes |
 |---|---|---|
 | actionlint | 1.7.12 (Homebrew), go1.26.3 | Works. shellcheck and pyflakes are on PATH, so actionlint runs them on `run:` scripts. |
-| gh | 2.92.0 (2026-04-28) | Works. Extensions: only `github/gh-stack`. Two accounts logged in; the active one is `the user's work account`. |
+| gh | 2.92.0 (2026-04-28) | Works. Extensions: only `github/gh-stack`. Two accounts logged in; the active one is the user's work account. |
 | zizmor, pinact, ratchet, frizbee, act | not installed | `which` returns nothing for each. |
 | starslingdev `ci-speedup`, `ci-secure`, `ci-score` | installed as skills in `~/.agents/skills`, 2026-10-02 | See F9. |
 
@@ -79,7 +79,7 @@ A gh extension (gh-workflow-stats) adds an unverified binary holding the user's 
   durations, labelled with runner OS and size; the per-OS multiplier and the free tier are stated, not fetched.
 
 **F4. The active gh account cannot see three of the four repositories.** `gh api repos/dogebonker/edgeflow`,
-`LeaveMyYard/moneylust-app` and `dogebonker/glarity` return 404 for `the user's work account`; `tenequm/pond` is public.
+`LeaveMyYard/moneylust-app` and `dogebonker/glarity` return 404 for the user's work account; `tenequm/pond` is public.
 `gh auth status` shows a second account (`skylightxo`). The settings endpoints
 (`actions/permissions`, `actions/permissions/workflow`) return 403 even for `dogebonker/software-factory`.
 factory-ci must check access from the remote URL first, say which account it used and which data is missing, and

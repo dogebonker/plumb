@@ -1,10 +1,10 @@
 # factory-ui-ux: what it loads, and why
 
-The decision record for S9. Evidence is in [ui-ux/](ui-ux/): A (every design skill installed here, read in full), B (formats for a design file written for agents), C (methods for product-grounded design opinions, and the standards in `ui-hard-gate`), D (mechanical slop detection and browser tooling, tested on planted-slop fixtures). Researched 2026-10-10.
+The decision record for S9. Evidence is in [ui-ux/](ui-ux/): A (every design skill installed here, read in full), B (formats for a design file written for agents), C (methods for product-grounded design opinions, and the user's own standard in `ui-hard-gate`), D (mechanical slop detection and browser tooling, tested on planted-slop fixtures). Researched 2026-10-10.
 
 ## The problem
 
-Existing design skills polish surfaces. None ties a judgment to the product's users, job or success metric, none makes every finding cite a product brief, and only one de-slops mechanically (A). The style skills also contradict each other: taste-skill alone holds 18 contradictions (hero layout, Inter, serifs, radius, motion amount), so loading any two gives opposite verdicts (A F3). And the user's own standard, recorded from their PM's real feedback in `ui-hard-gate`, is restraint and correctness, not expression: 13 of 18 of the PM's own UI changes were removals, renames, defaults or failure-state fixes, and his test for slop is "looks generated rather than designed." (A, C F4).
+Existing design skills polish surfaces. None ties a judgment to the product's users, job or success metric, none makes every finding cite a product brief, and only one de-slops mechanically (A). The style skills also contradict each other: taste-skill alone holds 18 contradictions (hero layout, Inter, serifs, radius, motion amount), so loading any two gives opposite verdicts (A F3). And the user's own standard, recorded from real review feedback in `ui-hard-gate`, is restraint and correctness, not expression: 13 of 18 of the final UI approver's own UI changes were removals, renames, defaults or failure-state fixes, and the test for slop is whether an element looks generated rather than designed (A, C F4).
 
 ## Decisions
 
@@ -17,7 +17,7 @@ Existing design skills polish surfaces. None ties a judgment to the product's us
 
 ### UI-2. The skill drafts, the human decides
 
-The PM's most repeated rule in `ui-hard-gate` is "AI doesn't make design calls" (4 times, C F5). So `factory-ui-ux design-md` follows a creation guide (from B section 4.2 and impeccable's PRODUCT.md flow): detect the UI, read the product evidence, extract tokens from code, render the screens, then draft every principle and position labeled `confirmed` or `inferred`, and interview only on what code cannot answer (at most 3 questions per round, 2 rounds). It never overwrites a design file silently. Principles that read like adjectives ("clean", "modern", "intuitive") are rejected by the guide's tests: each must come from evidence, rule out something visible, be the wrong choice for some other product, and carry a test a reviewer can apply (B F6).
+The most repeated rule in `ui-hard-gate` is "AI doesn't make design calls" (4 times, C F5). So `factory-ui-ux design-md` follows a creation guide (from B section 4.2 and impeccable's PRODUCT.md flow): detect the UI, read the product evidence, extract tokens from code, render the screens, then draft every principle and position labeled `confirmed` or `inferred`, and interview only on what code cannot answer (at most 3 questions per round, 2 rounds). It never overwrites a design file silently. Principles that read like adjectives ("clean", "modern", "intuitive") are rejected by the guide's tests: each must come from evidence, rule out something visible, be the wrong choice for some other product, and carry a test a reviewer can apply (B F6).
 
 ### UI-3. Mechanical checks come before any opinion
 

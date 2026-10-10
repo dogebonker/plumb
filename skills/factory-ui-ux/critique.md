@@ -1,6 +1,6 @@
 # Critique protocol
 
-How factory-ui-ux forms, anchors and ranks opinions. Sources: NN/g heuristic evaluation and severity ratings, the cognitive walkthrough, Shape Up, GOV.UK's design principles, the Linear method, and the standards in the user's `ui-hard-gate`; evidence in `docs/research/ui-ux/C-opinions.md` of the factory repository.
+How factory-ui-ux forms, anchors and ranks opinions. Sources: NN/g heuristic evaluation and severity ratings, the cognitive walkthrough, Shape Up, GOV.UK's design principles, the Linear method, and [ui-hard-gate](../ui-hard-gate/SKILL.md); evidence in `docs/research/ui-ux/C-opinions.md` of the factory repository.
 
 ## Order
 
@@ -35,12 +35,4 @@ An overruled finding is recorded and not raised again for that change. A rule ov
 
 ## The user's standing preferences
 
-From `ui-hard-gate`, the PM's recorded feedback on the user's product; general enough to apply everywhere, while product-specific rules belong in that product's design file:
-
-- show the headline, put detail on demand; "too much" is the most frequent complaint
-- density both ways: neither cramped nor needlessly large
-- honest states: "Something went wrong" is never enough; one loading style; fail closed
-- name the work, never the machinery
-- one filled primary button per surface; at most one secondary link per dialog
-- copy matches what the backend actually does, and states each fact once
-- look at every state in a real browser before handing anything over
+The rules of [ui-hard-gate](../ui-hard-gate/SKILL.md), H1 to H22, apply everywhere as standing preferences; product-specific rules belong in that product's design file, which wins where it is more specific.
