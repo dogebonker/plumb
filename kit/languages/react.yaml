@@ -7,3 +7,9 @@ linter:
     - "react-hooks/exhaustive-deps: warn"
     - "extends: next/core-web-vitals (Next.js only, from @next/eslint-plugin-next)"
     - "tsconfig strict: true"
+checks:                                # run by factory-review Phase 1; skipped with a notice when the tool is not installed
+  install: react-doctor@0.9.14 as a devDependency, with the module's package manager   # proposed by triage; the lockfile then pins it
+  static: npx --no-install react-doctor --no-telemetry --blocking warning {files}   # the slice's changed .jsx/.tsx files
+  runtime: npx --no-install react-doctor scan {dev_url} --format json --no-telemetry   # slices that change .jsx/.tsx, against the running dev server
+# react-scan (aidenybai/react-scan) stays a tool for interactive render debugging in the browser:
+# it has no headless mode, report or exit code, and its maintainers point to react-doctor for automated checks.

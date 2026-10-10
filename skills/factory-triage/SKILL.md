@@ -26,7 +26,7 @@ Done when you can name the modules in scope and all three commands.
 - **BDD per module.** `native` when the module has any of: `*.feature` files, a BDD runner dependency (`@cucumber/cucumber`, `cucumber`, `behave`, `pytest-bdd`, `godog`), or runner config (`cucumber.js`, `cucumber.mjs`, `cucumber.yml`, `behave.ini`, `features/environment.py`). Otherwise `off`.
 - **Money signals.** A payment, exchange or chain SDK in any manifest (`stripe`, `adyen`, `paypal`, `braintree`, `square`, `plaid`, `modern-treasury`, `ccxt`, `ethers`, `viem`, `web3`, `@solana/web3.js`, `bitcoinjs-lib`, `fireblocks`), or money in the schema and code (columns or fields named `amount`, `balance`, `price`, `currency`, `ledger`, `payout`, `refund`). List each signal with its `path:line`.
 
-- **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing.
+- **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing, and each `checks.install` tool the module lacks. For a pack with a `checks.runtime`, find the command that starts the app locally and the URL it serves.
 - **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
 
 Done when every module has a language, a language pack and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
@@ -48,8 +48,8 @@ Ask in one message:
 
 - the track, with a one-line reason
 - the slug (kebab-case, at most four words)
-- the three commands, so the user can correct them
-- the lens profile with a one-line reason, the modules with language, language pack and BDD state, linter rules the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
+- the three commands, plus `dev_command` and `dev_url` when found, so the user can correct them
+- the lens profile with a one-line reason, the modules with language, language pack and BDD state, linter rules and check tools the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)
 
@@ -88,6 +88,8 @@ change_base_commit: <sha>
 test_command: "<full suite>"
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"
+dev_command: ""             # starts the app locally, for runtime checks; empty when none
+dev_url: ""                 # where dev_command serves the app
 baseline_failures: []       # tests already failing at change_base_commit
 gates:
   product:      { state: pending, approved_by: null, approved_at: null, doc_sha256: null }

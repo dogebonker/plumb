@@ -24,6 +24,7 @@ Run each check and record pass or fail with evidence. Rerun all of them whenever
 2. **Frozen contract.** Find each signature from the packet's Frozen contract in the code. Formatting may differ. A change to the name, parameters, types, return type, errors or visibility is a difference.
 3. **Red tests unchanged.** `git diff <test>..HEAD -- <test files from Tests first>` is empty, or each change is logged in `deviations`.
 4. **Green.** `test_command` passes at HEAD, apart from tests in `baseline_failures`.
+5. **Language checks.** For each module the slice changed whose `~/.software-factory/languages/<pack>.yaml` has `checks`: run `static` on the changed files it names. When the slice changes such files and `dev_command` is set, start `dev_command` in the background, wait until `dev_url` answers, run `runtime`, then stop the server. A non-zero exit or a reported issue is a finding. A tool that is not installed is reported as skipped, with its `install` line.
 
 A frozen-contract difference sends the slice back, as gates.md describes.
 
