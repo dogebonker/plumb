@@ -9,11 +9,13 @@ argument-hint: "[path to limit the audit]"
 
 Scope: $ARGUMENTS (empty: the whole repository)
 
-Agents add code more readily than they remove it. Prune is the counterweight: you approve every item, and each one ships as its own small change.
+Agents add code more readily than they remove it. Prune is the counterweight: you approve every item, and each one ships as its own small change. It runs on demand; to run it on a schedule, give `/factory-prune` to your scheduler (for example `/schedule`).
+
+Start on the default branch with no uncommitted changes outside `.factory/`.
 
 ## 1. Audit
 
-- Each module's Dead code command from `~/.software-factory/adapters/<language>.md`, over the scope.
+- For each module in `.factory/system/lenses.yaml` (or each manifest, when there is none), the Dead code command from `~/.software-factory/adapters/<language>.md`, over the scope.
 - The `ponytail-audit` skill when it is installed; otherwise walk the scope yourself with the simplification ladder in [../factory-shared/packs.md](../factory-shared/packs.md).
 
 Each item names its files and lines, what goes or what replaces it, and the lines it would remove.
@@ -24,14 +26,15 @@ Drop every item that touches:
 
 - a signature in any `.factory/changes/*/03-interface.md`
 - code that a row of `.factory/system/constraints.md` names under Enforced by
-- step definitions a scenario still uses (the adapter's BDD step search, then a search of the feature files for each step's text)
+- a step-definition file (the adapter's BDD step search finds them): whether a scenario still uses a step cannot be decided by text search
+- a public or exported symbol of a library module: other code may import it. In a module with a main entry point, a binary or a `dev_command`, unused exports are candidates
 - code behind a money signal, when `money` is `true` in `.factory/system/lenses.yaml`, unless the item only deletes dead code
 
-Done when every remaining item has been checked against all four, and each dropped item is listed with the reason.
+Done when every remaining item has been checked against all five, and each dropped item is listed with the reason.
 
 ## 3. Rank and approve
 
-Rank the remaining items by lines removed against risk, where risk is the callers affected and whether tests cover the code. Show the list to the user; they approve items by number. Write the approved list to `.factory/prune/<YYYY-MM-DD>.md`.
+Rank the remaining items by lines removed against risk, where risk is the callers affected and whether tests cover the code. Show the list to the user; they approve items by number. Write the approved list to `.factory/prune/<YYYY-MM-DD>.md`; in committed mode, commit it on a new branch `factory/prune-<YYYY-MM-DD>`.
 
 ## 4. Hand off
 
