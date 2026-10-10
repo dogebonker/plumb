@@ -24,10 +24,9 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
 | `factory-build` | S1 | Packet, fresh executor, red then green check |
 | `factory-review` | S1 | Allowed-files and frozen-contract checks, `/polish`, human sign-off |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
-| `factory-architecture` | S2 | Architecture gate: research facts, budgets, ADRs |
+| `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
 | `factory-interface` | S2 | Interface gate: human-decided signatures, coverage. Cost card and challenge panel in S4 |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
-| `factory-research` | S4 | Research firewall |
 | `factory-reconcile` | S7 | Fold shipped work back into specs, ADRs and lessons |
 | `factory-prune` | S7 | Repository audit and prune slices |

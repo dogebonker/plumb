@@ -17,12 +17,18 @@ Load the change as gates.md describes, for the `architecture` gate. Read `01-pro
 
 ## 2. Research
 
-- Read every file in scope fully, with its tests, callers and the data it touches.
-- Read `.factory/system/` when it exists: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
-- Search Pond for decisions, rejected designs and incidents touching these modules.
-- Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules.
+Research runs behind a firewall: the agent that answers never sees the task, so its facts carry no bias toward a solution.
 
-Done when every claim in the Research section has a `path:line` or a Pond session id behind it.
+1. Write `<change>/research.md` with a `## Questions` list: how the code in scope works today, what calls it, what data it touches, what Pond records about it. Each question asks about the system as it is; the planned change stays out of the wording. Resuming: keep the questions already answered.
+2. Start one fresh sub-agent. It receives the path of `research.md` and these instructions, nothing else from this conversation:
+
+   > Answer every question in `<research.md path>` from the repository at `<repo root>` and, when its tools are available, from Pond. Write the answers under `## Answers`, numbered like the questions. Facts only, each with `path:line` or a Pond session id; write "not found" where the code and Pond are silent.
+
+3. Gaps become new questions, answered the same way.
+4. Read the files the answers point to, and `.factory/system/`: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
+5. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules.
+
+Done when every question is answered or marked "not found", and every claim in the Research section of `02-architecture.md` cites an answer in `research.md`.
 
 ## 3. Draft `02-architecture.md`
 
@@ -30,7 +36,7 @@ Done when every claim in the Research section has a `path:line` or a Pond sessio
 # Architecture: <slug>
 
 ## Research
-Facts only, each with `path:line` or a Pond session id.
+Facts from `research.md`, each with its `path:line` or Pond session id.
 
 ## Fit
 Where the change lives in the existing system, and what it reuses.
