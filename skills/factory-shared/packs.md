@@ -23,3 +23,7 @@ A pin approves a pack's content, so it follows a read: `/factory-packs` shows wh
 - A language pack: `~/.agents/skills/<name>/SKILL.md` for the index and each rules pack. The executor reads the index, then only the one or two rules the slice needs. It applies them to the code the slice writes, leaves rules the module's linter already enforces to the linter, and skips rules that need a newer language version than the module's `language_version`.
 
 Done when each lens and language pack of the step is loaded or reported to the user as skipped, with the reason.
+
+## Simplification ladder
+
+From [Ponytail](https://github.com/DietrichGebert/ponytail). Stop at the first rung that holds: does it need to exist; is it already in the codebase; does the standard library do it; does the platform; does an installed dependency; can it be one line; only then the minimum code.

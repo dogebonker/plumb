@@ -54,7 +54,7 @@ A frozen-contract difference sends the slice back, as gates.md describes.
    - track small: use your small-diff fast path, without agent fan-out, whatever the diff size
    - findings from a rule under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) are recommended as skip
    - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
-     - design and reuse: `refactoring-guru.mini.md` and the simplification ladder (does it need to exist; is it already in the codebase; does the standard library, the platform or an installed dependency do it; can it be one line; only then the minimum code)
+     - design and reuse: `refactoring-guru.mini.md` and the simplification ladder from packs.md
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
