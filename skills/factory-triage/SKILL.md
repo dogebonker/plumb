@@ -63,7 +63,7 @@ Done when the user has answered all of them.
 
 ```yaml
 profile: domain-core          # domain-core | crud-service | legacy
-domain_model: rich            # from the profile; the architecture gate may change it by a decision
+domain_model: rich            # rich | transaction-scripts | keep, from the profile; the architecture gate decides
 money: false
 domain: web-api              # NFR catalog that seeded the registry, or none
 modules:

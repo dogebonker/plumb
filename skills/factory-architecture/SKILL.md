@@ -20,7 +20,6 @@ Load the change as gates.md describes, for the `architecture` gate. Read `01-pro
 - Read every file in scope fully, with its tests, callers and the data it touches.
 - Read `.factory/system/` when it exists: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
 - Search Pond for decisions, rejected designs and incidents touching these modules.
-
 - Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules.
 
 Done when every claim in the Research section has a `path:line` or a Pond session id behind it.
@@ -59,7 +58,7 @@ Consequences: <what gets easier, what gets harder>
 ```
 
 - Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves shipped ADRs into `.factory/system/adr/` after merge.
-- When `.factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. A different choice updates `lenses.yaml` too.
+- When `.factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
 - Track critical: Budgets holds at least one NFR budget.
 
 ## 4. Walk the human through it

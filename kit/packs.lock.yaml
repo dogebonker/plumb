@@ -1,5 +1,4 @@
-# Pinned packs: the factory loads a pack only when its installed skillFolderHash
-# (~/.agents/.skill-lock.json) matches the pin. Bump a pin after reading the pack's changes.
+# Pinned packs. How pins are checked: factory-shared/packs.md in the factory skills.
 packs:
   clean-architecture: { source: ciembor/agent-rules-books, hash: 8cca091e19723484638c27eb1eedc8cc6479a366 }
   clean-code: { source: ciembor/agent-rules-books, hash: 7a746649e5eb77326cf54d381adf030994f4e311 }
