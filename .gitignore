@@ -1,3 +1,4 @@
 .factory/changes/*/slices/*/polish/
 .DS_Store
 __pycache__/
+.agents/polish/

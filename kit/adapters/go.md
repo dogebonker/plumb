@@ -13,7 +13,7 @@
 - Step definitions: `rg -n "\.(Step|Given|When|Then)\(" <module>`
 
 ## Import graph
-- `go list -f '{{.ImportPath}}: {{join .Imports " "}}' ./...` lists each package's imports
+- `go list -f '{{.ImportPath}}: {{join .Imports " "}}' ./...` lists each package's imports; strip the module path from `go.mod` to compare them with path globs
 
 ## Dead code
-- `deadcode ./...` (golang.org/x/tools/cmd/deadcode) when installed, otherwise `golangci-lint run --enable-only unused`; keep only results in the slice's changed files
+- `deadcode ./...` (golang.org/x/tools/cmd/deadcode) when installed and the module has a main package, otherwise `golangci-lint run --enable-only unused`

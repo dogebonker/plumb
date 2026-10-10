@@ -13,7 +13,7 @@ The module's type checker: `uv run pyright <files>` or `uv run mypy <files>`. Wi
 - Step definitions: `rg -n "@(given|when|then|step)\(" <module>`
 
 ## Import graph
-- `uv run lint-imports` when import-linter is configured; otherwise `rg -n "^(from|import) " <files>` lists each file's imports
+- `rg -n "^\s*(from|import) " <files>` lists each file's imports
 
 ## Dead code
-- `uv run vulture <files>` when vulture is installed
+- `uv run vulture <module path>` when vulture is installed

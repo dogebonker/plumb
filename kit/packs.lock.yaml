@@ -3,13 +3,17 @@ packs:
   a-philosophy-of-software-design: { source: ciembor/agent-rules-books, hash: f8fb69ab4129dc94f77af1e18b3c1cb3bcb3acfb }
   clean-architecture: { source: ciembor/agent-rules-books, hash: 8cca091e19723484638c27eb1eedc8cc6479a366 }
   clean-code: { source: ciembor/agent-rules-books, hash: 7a746649e5eb77326cf54d381adf030994f4e311 }
-  domain-driven-design-distilled: { source: ciembor/agent-rules-books, hash: 1a48b83645d5b937ab941206c9fce7c13ef7db1d }
   domain-driven-design: { source: ciembor/agent-rules-books, hash: c2d2b8e94535ff88fb6fb62da197ba71f95110ab }
+  domain-driven-design-distilled: { source: ciembor/agent-rules-books, hash: 1a48b83645d5b937ab941206c9fce7c13ef7db1d }
+  fin-exchange-integration: { source: nbailo/financial-engineering-skills, hash: d063477a7e15274ce7573f94da606d047eaf73d1 }
+  fin-ledger: { source: nbailo/financial-engineering-skills, hash: 1d1af34c7f0d770451bd3a2b3a251b9c80f4bcae }
   fin-money-core: { source: nbailo/financial-engineering-skills, hash: b0ed6f3b00e3502b7da533e37cb92166ec557772 }
+  fin-onchain: { source: nbailo/financial-engineering-skills, hash: ec3df9712d48169fe09f977a4e6add9b538ce9f9 }
+  fin-payments: { source: nbailo/financial-engineering-skills, hash: 4ca13eed23ddd69d74007d73ea902827a222d692 }
   fin-verification: { source: nbailo/financial-engineering-skills, hash: 732e5b36c897166eabd8b06fd087c88a089251ac }
   patterns-of-enterprise-application-architecture: { source: ciembor/agent-rules-books, hash: 856a904bd14658d9c4f43f3c825b546b41c45b0b }
-  refactoring-guru: { source: ciembor/agent-rules-books, hash: d2a480b38b590c2292b047223290b6a4cfd9b0da }
   refactoring: { source: ciembor/agent-rules-books, hash: e1668f33b38b0907c8aa52547a359163ce360eda }
+  refactoring-guru: { source: ciembor/agent-rules-books, hash: d2a480b38b590c2292b047223290b6a4cfd9b0da }
   release-it: { source: ciembor/agent-rules-books, hash: 4160e30eeeeb7b1057751cdbf257ee22794cb81a }
   rust-skills: { source: leonardomso/rust-skills, hash: fd2a861ab0406a4ac536a55274d14ea6fd1ca9c9 }
   vercel-react-best-practices: { source: vercel-labs/agent-skills, hash: 343db72180d05814949fef7d46be96b5c6ee86b3 }
