@@ -1,7 +1,7 @@
 # React / Next.js modules: package.json depends on react or next.
 index: vercel-react-best-practices     # its SKILL.md lists the rules; rules/<id>.md holds each one
 linter:
-  check: npx tsc --noEmit && npx eslint .
+  check: npx --no-install tsc --noEmit && npx --no-install eslint .   # local binaries only, never a download
   propose:                             # rules the linter enforces instead of the executor
     - "react-hooks/rules-of-hooks: error"
     - "react-hooks/exhaustive-deps: warn"

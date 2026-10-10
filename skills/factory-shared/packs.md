@@ -15,7 +15,7 @@ For each pack:
 2. Installed hash: `jq -r '.skills["<name>"].skillFolderHash' ~/.agents/.skill-lock.json`
 3. Equal: load it. Not installed: tell the user `npx skills add <source>` and continue without it. Different: the pack changed upstream. Tell the user to read its changes and bump the pin, and continue without it. No kit, no pin for the pack, or no `jq`: say which, and continue without it.
 
-After the user installs a pack, add its pin: `<name>: { source, hash }`, the hash taken from the skills lock.
+A pin approves a pack's content, so it follows a read. After the user installs a pack, show them its `SKILL.md` and the files it links; only after they approve it in chat, add its pin: `<name>: { source, hash }`, the hash taken from the skills lock.
 
 ## Load
 
