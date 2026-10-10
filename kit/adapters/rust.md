@@ -9,5 +9,5 @@
 `cargo check --all-targets -p <crate>` (in a single-crate repository, without `-p`)
 
 ## BDD
-- Run one feature: the module's cucumber harness, `cargo test --test <harness> -- <feature file>`
+- Run one feature: the module's cucumber harness, `cargo test --test <harness> -- --input <feature file>`
 - Step definitions: `rg -n "#\[(given|when|then)" <module>`

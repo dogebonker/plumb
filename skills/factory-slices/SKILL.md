@@ -44,6 +44,7 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
 Covers: FR-01
 Modules: <module paths this slice touches>
 Tests first: <test file or feature file> :: <test name or scenario> - <what it asserts>
+Scenarios: <track small, bdd: native modules only: each scenario in full, written from its FR example>
 Allowed files: <paths, test files included>
 Verify: <commands>
 

@@ -44,7 +44,7 @@ Feature: <capability, in the product's words>
 ## Coverage
 | ID | Enforced by |
 | --- | --- |
-| FR-01 | test: <file> :: <name> |
+| FR-01 | test: <file> :: <name>, or scenario: <feature file> :: <scenario> |
 | NFR-01 | test, lint rule, monitor, or human-verified |
 | SYS-NFR-01 | <reuse its registry enforcement, or add one> |
 
@@ -52,7 +52,9 @@ Feature: <capability, in the product's words>
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile.
-- The Test plan turns every FR example into one test, per module by its `bdd` state in `lenses.yaml`: a declarative scenario in native modules, reusing the wording of existing step definitions (the adapter's BDD step search finds them); a test name in the repository's framework elsewhere. Coverage names that scenario or test.
+- The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`.
+- In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
+- Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
 
 ## 3. Compile and cost
 
@@ -70,7 +72,7 @@ Done when every module type-checks or is reported unchecked with its reason, eve
 
 For each module, show the draft with its Cost line and ask the user to accept, edit or rewrite it. A high count is a prompt to ask whether the module hides enough. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again. Then ask the open questions.
 
-Done when the user has decided every module, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
+Done when the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 
 ## 5. Approve
 

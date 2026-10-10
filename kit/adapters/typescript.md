@@ -11,4 +11,4 @@
 
 ## BDD
 - Run one feature: `npx --no-install cucumber-js <feature file>`
-- Step definitions: `rg -n "(Given|When|Then)\(" <module>`
+- Step definitions: `rg -n "(Given|When|Then|defineStep)\(" <module>`

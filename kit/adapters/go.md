@@ -9,5 +9,5 @@
 `go build ./... && go vet ./...` in the module directory
 
 ## BDD
-- Run one feature: `godog run <feature file>`, or the module's `go test` entry that runs godog
-- Step definitions: `rg -n "\.Step\(" <module>`
+- Run one feature: the module's `go test` entry that runs godog (`go test -run <its TestXxx> ./<package>`), pointed at the feature file the way that entry reads its paths
+- Step definitions: `rg -n "\.(Step|Given|When|Then)\(" <module>`

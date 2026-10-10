@@ -39,7 +39,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`, and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
-- its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan, and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
+- its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
 - under Rules in scope, the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md)
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
@@ -50,7 +50,7 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 
 > Read `<packet path>` and every allowed file it lists. Build the slice in two commits. Stage files by path, only files in Allowed files.
 >
-> 1. **Red.** Write the tests under "Tests first". Add each new frozen signature as a stub in the packet's stub form, so the code compiles. A changed signature keeps its old behavior behind the new signature, and existing tests are updated to the new signature and still pass. Run the tests: every new test fails, every other test passes except those in `<baseline_failures>`. List any new test that passes against the stub (a negative case, for example) in your report rather than changing it. Commit as `test(<slug>): slice NN red`.
+> 1. **Red.** Write the tests under "Tests first"; in a BDD module, the feature file and every step definition its scenarios need. Add each new frozen signature as a stub in the packet's stub form, so the code compiles. A changed signature keeps its old behavior behind the new signature, and existing tests are updated to the new signature and still pass. Run the tests: every new test fails, every other test passes except those in `<baseline_failures>`. List any new test that passes against the stub (a negative case, for example) in your report rather than changing it. Commit as `test(<slug>): slice NN red`.
 > 2. **Green.** Implement until every Verify command passes. The tests from the red commit stay exactly as written, and every frozen signature stays exactly as written. Commit as `feat(<slug>): slice NN`.
 >
 > Stop and report, with the reason, when: a frozen signature cannot work as written, a file outside Allowed files must change, a red-commit test is wrong, or a pre-commit hook rejects the red commit.
@@ -73,7 +73,7 @@ When the executor stops:
 3. Run `test_file_command` once per test file (a feature file: the adapter's BDD run command), then `test_command`.
 4. `git checkout <branch>`
 
-Red means: it builds; every new test fails, on an assertion or an error raised through a stub, except those in `red_exempt`; and every other test passes except those in `baseline_failures`.
+Red means: it builds; every new test fails, on an assertion or an error raised through a stub, except those in `red_exempt` (an undefined or pending step is not red: the red commit defines every step); and every other test passes except those in `baseline_failures`.
 
 - Red: set the slice to `red`.
 - Not red, first time: rewind and dispatch a fresh executor (step 3) with the output.

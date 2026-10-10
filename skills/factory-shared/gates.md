@@ -8,7 +8,7 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 | --- | --- | --- | --- |
 | product | `<change>/01-product.md` | `/factory-product` | 100 |
 | architecture | `<change>/02-architecture.md` | `/factory-architecture` | 150 |
-| interface | `<change>/03-interface.md` | `/factory-interface` | 150 |
+| interface | `<change>/03-interface.md` | `/factory-interface` | 200 |
 | slices | `<change>/04-slices.md` | `/factory-slices` | 100 |
 
 Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, architecture and interface; triage marks them `skipped`.
