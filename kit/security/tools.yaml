@@ -1,55 +1,87 @@
 # Scanners for factory-security. Why these and not others: docs/research/security-selection.md (SEC-2).
 #
-# Run conventions, for every tool:
-# - cwd is a new empty directory ($NEUTRAL), so the repository's own tool configs cannot suppress findings;
-#   then list its suppressions (.trivyignore, trivy:ignore, .gitleaks.toml, .gitleaksignore, gitleaks:allow,
-#   nosemgrep, .semgrepignore, zizmor.yml, "zizmor: ignore") as data for the verifier.
-# - output goes to the run folder ($OUT); caches and rule packs live in $CACHE, outside the repository.
-# - every result is a candidate, never a finding.
-# - a tool that is missing or older than its pin is reported as skipped, with its install line.
+# Variables:
+#   $REPO        absolute path of the repository under audit
+#   $NEUTRAL     a fresh empty directory (mktemp -d) used as the working directory, new for every run
+#   $OUT         the run folder, .factory/security/<run>/
+#   $CACHE       ~/.cache/factory-security (databases, rule packs, the history mirror), never in the repository
+#   $KIT         ~/.software-factory
+#   $MODULE_DIR  one Go module directory; <module-slug> is its path with / replaced by -
+#
+# What a repository can still do to its own scan, and how the run handles it:
+# - Trivy reads trivy.yaml and .trivyignore from the working directory: $NEUTRAL stops that. Inline
+#   trivy:ignore and tfsec:ignore comments still apply: they are listed as data.
+# - Gitleaks always reads <source>/.gitleaksignore: the history scan runs on a bare mirror, which has no work
+#   tree, and every .gitleaksignore entry in the repository is itself a candidate.
+# - Opengrep reads the target's .semgrepignore and, without one, skips tests, vendor, build and dist by
+#   default: the report lists the ignore patterns that were in effect.
+# - zizmor: --no-config ignores zizmor.yml; inline "zizmor: ignore" comments are listed as data.
+#
+# Candidates: HIGH and CRITICAL vulnerabilities and misconfigurations, every secret, every SAST and zizmor
+# result. Everything else is advisory. A tool that is missing or older than its pin is skipped, with its
+# install line in the report. Never copy a secret value anywhere: cite file:line, rule and fingerprint.
 
 trivy:
-  version: 0.74.0          # floor 0.72.0; 0.69.4-0.69.6 were malicious (GHSA-69fq-xp46-6x23)
+  version: 0.74.0          # 0.69.4-0.69.6 were malicious (GHSA-69fq-xp46-6x23)
   install: "release tarball from github.com/aquasecurity/trivy, verified by sha256 and cosign; never trivy-action or setup-trivy by tag"
+  before: >-
+    grep the *.tf files for module sources that are not local paths: Trivy downloads them with the user's
+    git and ssh credentials. If any exist, ask the user, or add --misconfig-scanners without terraform.
   run: >-
-    trivy fs --scanners vuln,misconfig,license --format json --output $OUT/trivy-fs.json
-    --list-all-pkgs=false --exit-code 0 --disable-telemetry --skip-version-check --cache-dir $CACHE/trivy $REPO
-  findings: "HIGH and CRITICAL are candidates; LOW and MEDIUM misconfiguration is advisory"
+    cd $NEUTRAL && trivy fs --scanners vuln,misconfig --format json --output $OUT/trivy-fs.json
+    --list-all-pkgs=false --exit-code 0 --disable-telemetry --skip-version-check --offline-scan
+    --skip-dirs $REPO/.factory/security --cache-dir $CACHE/trivy $REPO
+  note: >-
+    --offline-scan keeps Trivy from fetching from repositories a pom.xml names, which would send the user's
+    Maven credentials there; some transitive Maven versions are then unresolved, and the report says so.
+    The vulnerability database itself is still downloaded into $CACHE/trivy.
 
 opengrep:
   version: 1.30.1
-  fallback: "semgrep 1.178.0 with --metrics off --disable-version-check"
   install: "release binary from github.com/opengrep/opengrep, verified with cosign"
   rules: >-
-    Semgrep registry packs, internal use only: fetch once per pin into $CACHE/rules
-    (curl -fsSL https://semgrep.dev/c/p/default, plus p/rust, p/golang, p/python, p/typescript when present),
-    record each file's sha256, never commit them
+    Semgrep registry packs, internal use only: fetch once into $CACHE/rules (https://semgrep.dev/c/p/default,
+    plus p/python and p/rust when present; the other stack packs add little to default), remove the
+    secrets rules (Gitleaks owns secrets, and their matches copy raw values into the output), and record
+    each file's sha256 in the report. Never commit them.
   run: >-
-    opengrep scan --config $CACHE/rules/p-default.yml [--config $CACHE/rules/p-<stack>.yml]
+    cd $NEUTRAL && opengrep scan --config $CACHE/rules/p-default.yml [--config $CACHE/rules/p-<stack>.yml]
     --taint-intrafile --disable-nosem --json-output $OUT/sast.json $REPO
+  fallback: >-
+    semgrep 1.178.0: cd $NEUTRAL && semgrep scan --metrics off --disable-version-check
+    --config $CACHE/rules/p-default.yml --disable-nosem --json-output $OUT/sast.json $REPO
 
 gitleaks:
   version: 8.30.1
-  install: "brew install gitleaks (8.30.1 or newer); the git and dir subcommands need 8.19+"
-  run:
-    - >-
-      gitleaks git --no-banner --redact --config $KIT/security/gitleaks.toml --gitleaks-ignore-path $NEUTRAL
-      --ignore-gitleaks-allow --log-opts="--all --full-history" --report-format json
-      --report-path $OUT/gitleaks-history.json --exit-code 0 $REPO
-    - >-
-      gitleaks dir --no-banner --redact --config $KIT/security/gitleaks.toml --gitleaks-ignore-path $NEUTRAL
-      --ignore-gitleaks-allow --report-format json --report-path $OUT/gitleaks-tree.json --exit-code 0 $REPO
+  install: "brew install gitleaks (8.30.1 or newer)"
+  run: >-
+    git clone --quiet --mirror $REPO $CACHE/mirror/<repo-slug>.git (or git -C it fetch --prune when it exists);
+    cd $NEUTRAL && gitleaks git --no-banner --redact --config $KIT/security/gitleaks.toml
+    --ignore-gitleaks-allow --report-format json --report-path $OUT/gitleaks.json --exit-code 0
+    $CACHE/mirror/<repo-slug>.git
   never: "checking whether a found secret is live: that is a decision for the user, per secret"
 
 zizmor:
   version: 1.30.1
   install: "uv tool install zizmor==1.30.1"
-  when: ".github/workflows exists"
-  run: "zizmor --offline --no-config --persona regular --format json --no-exit-codes $REPO > $OUT/zizmor.json"
-  online: "with a read-only GH_TOKEN, drop --offline to add impostor-commit, known-vulnerable-actions, ref-confusion, stale-action-refs"
+  when: ".github/workflows, an action.yml or a dependabot.yml exists"
+  run: "cd $NEUTRAL && zizmor --offline --no-config --persona regular --format json --no-exit-codes $REPO > $OUT/zizmor.json"
+  online: >-
+    only when the user asks: with a read-only token in GH_TOKEN, drop --offline to add impostor-commit,
+    known-vulnerable-actions, ref-confusion and stale-action-refs
 
 govulncheck:
   version: 1.8.0
   install: "go install golang.org/x/vuln/cmd/govulncheck@v1.8.0"
-  when: "a go.mod exists and Trivy reports Go advisories, or the profile is standard"
-  run: "govulncheck -C $MODULE_DIR -format json ./... > $OUT/govulncheck-<module>.json"
+  when: "a go.mod exists and Trivy reports Go advisories, or the profile is standard or deep"
+  run: >-
+    GOTOOLCHAIN=local GOPROXY=off govulncheck -C $MODULE_DIR -format json ./...
+    > $OUT/govulncheck-<module-slug>.json
+  note: >-
+    without the module cache this fails; ask the user before allowing module downloads (GOPROXY unset),
+    which also send private module paths to the checksum database unless GOPRIVATE covers them
+
+ranking_data:
+  kev: "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
+  epss: "https://epss.empiricalsecurity.com/epss_scores-current.csv.gz"
+  use: "download once per day into $CACHE when the user agrees, and match CVE IDs locally; without them, rank by reachability and severity"

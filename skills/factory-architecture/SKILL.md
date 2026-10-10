@@ -77,4 +77,4 @@ Done when Open questions is empty and every NFR and C, its own and the listed SY
 
 ## 5. Approve
 
-Approve the `architecture` gate as gates.md describes. Next skill: `/factory-interface`.
+Approve the `architecture` gate as gates.md describes. Next skill: `/factory-interface`; on track critical, `/factory-security threat-model` first (headless runs skip it until an approver runs it).

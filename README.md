@@ -4,7 +4,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** roadmap S1 to S8 built; not yet run end to end on a real feature.
+**Status:** roadmap S1 to S8 and S11 built; not yet run end to end on a real feature.
 
 ## TL;DR
 
@@ -152,6 +152,7 @@ A typical slice costs four review agents. The worst case, a money slice that tou
 | Go | [cxuu/golang-skills](https://github.com/cxuu/golang-skills) | `go.mod` |
 | Python | [trailofbits/skills](https://github.com/trailofbits/skills) `modern-python` + [wshobson/agents](https://github.com/wshobson/agents) `python-development` | `pyproject.toml` and friends |
 | Simplification | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Packet, review rubric, and the prune job |
+| Security | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), plus routed packs from OpenAI, Trail of Bits, Sentry and 15 mukul975 skills | `factory-security`; the selection is in [docs/research/security-selection.md](docs/research/security-selection.md) |
 | Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review and reconcile query it |
 
 Every third-party pack is vendored into `~/.software-factory/` and pinned by commit, so an upstream change never lands in the middle of a feature.
@@ -262,8 +263,8 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 
 - **Scanners first.** Trivy (dependencies for every ecosystem, IaC, licenses), Opengrep (source patterns), Gitleaks (secrets in history), zizmor (GitHub Actions) and govulncheck (Go reachability), pinned, run from an empty directory so a repository cannot suppress its own findings.
 - **Architecture before checklists.** It reads `.factory/system/` (product, ADRs, constraints) and the code map, and writes a threat model: assets, trust boundaries, entry points, who the attackers are.
-- **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills or [Claude-Code-CyberSecurity-Skill](https://github.com/Masriyan/Claude-Code-CyberSecurity-Skill), are mostly irrelevant to any one repository; which sources to draw from is decided when S11 is designed. The kit keeps a routing index that tags each pinned security skill by stack, component (web API, auth, payments, infrastructure as code, mobile, LLM features) and threat class. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
-- **Findings proven.** Every finding is reproduced from its evidence before it is reported; confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.
+- **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills or [Claude-Code-CyberSecurity-Skill](https://github.com/Masriyan/Claude-Code-CyberSecurity-Skill), are mostly irrelevant to any one repository. The kit keeps a routing index that tags each approved source by component (web API, auth, payments, infrastructure as code, LLM features and more) and stack: 15 of mukul975's 817 skills made the cut, none of Masriyan's. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
+- **Findings proven.** A finding is `confirmed` only with a full trace and an observed result; what needs a running system and has no sandbox stays `needs_validation` with a plan. Confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.
 - **Where it plugs in:** on demand for a full audit; on track critical as the threat model the design already calls for; and as a review lens on slices that touch a trust boundary.
 
 ## Credits

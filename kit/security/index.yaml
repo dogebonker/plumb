@@ -1,9 +1,13 @@
 # Routing index for factory-security. Why each entry is here: docs/research/security-selection.md.
 #
-# lens 1 (method, Cloudflare security-audit): one file per agent, by component.
-# lens 2 (knowledge): at most one entry per agent, chosen when its `when` tags match the threat model.
-# An entry whose pack is not installed and pinned (kit/packs.lock.yaml) is skipped with a notice.
-# `read` names the part to load; `skip` lists known errors in the source that the agent ignores.
+# lens 1 (method, Cloudflare security-audit): the orchestrator reads SKILL.md; each hunter gets HUNTING.md's
+#   method, candidate gate and result contract, one ATTACK-CLASSES.md block and its component file below.
+# lens 2 (knowledge): per agent, the matching `own` checklist plus at most one pack entry: the first pack
+#   entry in this order whose `when` tags match and whose pack is pinned.
+# An entry whose pack is not installed and pinned (kit/packs.lock.yaml) is skipped with a notice; `own`
+# entries are factory-security's own files. `read` names the part to load (mukul975 entries: SKILL.md,
+# never scripts/); `skip` lists known errors to ignore; `add` lists what the source misses.
+# `role: verifier` entries go to verifiers; `role: after-confirmed` entries run once a finding is confirmed.
 #
 # Component tags (set by the threat model): web-api, frontend, auth, multi-tenant, llm, agent-tools, mcp,
 # rpc, availability, native, desktop-mobile, ci, supply-chain, container, kubernetes, iac, aws, graphql,
@@ -11,7 +15,8 @@
 
 method:
   pack: security-audit
-  always: [SKILL.md, ATTACK-CLASSES.md]
+  orchestrator: SKILL.md
+  hunter: ["HUNTING.md: method, candidate gate, result contract", "ATTACK-CLASSES.md: the one block for the class hunted"]
   verify: VALIDATION-AND-REPORTING.md
   by_component:
     web-api: WEB-PROTOCOL-AND-AUTH.md
@@ -34,12 +39,17 @@ method:
     desktop-mobile: DESKTOP-MOBILE-AND-LOCAL-IPC.md
 
 knowledge:
+  # factory-security's own checklists (skills/factory-security/checklists.md)
+  - {id: own-crypto, own: true, read: "checklists.md: Crypto misuse", when: [auth, money]}
+  - {id: own-packages, own: true, read: "checklists.md: Malicious or hijacked packages", when: [supply-chain]}
+  - {id: own-llm, own: true, read: "checklists.md: LLM and agent features", when: [llm, agent-tools, mcp]}
+
   # OpenAI security-best-practices (Apache-2.0): framework rules with stable IDs. Load the rule sections
   # the component touches, never a whole file; never load its SKILL.md ("make fixes and commit").
   - {id: openai-nextjs, pack: security-best-practices, read: "Next.js reference, matching rule sections", when: [nextjs]}
-  - {id: openai-react, pack: security-best-practices, read: "React reference, matching rule sections", when: [react, frontend]}
+  - {id: openai-react, pack: security-best-practices, read: "React reference, matching rule sections", when: [react]}
   - {id: openai-express, pack: security-best-practices, read: "Express reference, matching rule sections", when: [express, node]}
-  - {id: openai-go, pack: security-best-practices, read: "Go backend reference, matching rule sections", when: [go, web-api]}
+  - {id: openai-go, pack: security-best-practices, read: "Go backend reference, matching rule sections", when: [go]}
   - {id: openai-fastapi, pack: security-best-practices, read: "FastAPI reference, matching rule sections", when: [fastapi]}
   - {id: openai-django, pack: security-best-practices, read: "Django reference, matching rule sections", when: [django]}
   - {id: openai-flask, pack: security-best-practices, read: "Flask reference, matching rule sections", when: [flask]}
@@ -47,7 +57,7 @@ knowledge:
   # Trail of Bits (CC-BY-SA-4.0): installed and pinned unmodified; never copy its text into factory files.
   - {id: tob-insecure-defaults, pack: insecure-defaults, read: "the one category file the agent hunts", when: [auth, iac, container, web-api]}
   - {id: tob-sharp-edges-go, pack: sharp-edges, read: lang-go.md, when: [go]}
-  - {id: tob-sharp-edges-rust, pack: sharp-edges, read: lang-rust.md, when: [rust, native]}
+  - {id: tob-sharp-edges-rust, pack: sharp-edges, read: lang-rust.md, when: [rust]}
   - {id: tob-sharp-edges-python, pack: sharp-edges, read: lang-python.md, when: [python]}
   - {id: tob-sharp-edges-js, pack: sharp-edges, read: lang-javascript.md, when: [node, nextjs, express]}
   - {id: tob-crypto-apis, pack: sharp-edges, read: crypto-apis reference, when: [auth, money]}
@@ -72,7 +82,9 @@ knowledge:
      skip: ["the dpkg purge step"]}
   - {id: aws-iam-privesc, pack: detecting-aws-iam-privilege-escalation, read: SKILL.md, when: [aws],
      add: ["iam:PassRole on * without an iam:PassedToService condition"]}
-  - {id: agent-tool-invocation, pack: securing-agentic-ai-tool-invocation, read: SKILL.md, when: [agent-tools, llm]}
+  - {id: agent-tool-invocation, pack: securing-agentic-ai-tool-invocation, read: SKILL.md, when: [agent-tools],
+     skip: ["an approval prompt that shows only a hash of the action"],
+     add: ["review from source: which code builds each tool call, which inputs reach its arguments, who confirms it"]}
   - {id: mcp-tool-poisoning, pack: auditing-mcp-servers-for-tool-poisoning, read: SKILL.md, when: [mcp],
      skip: ["its scanner (may send tool descriptions to a vendor)", "the deprecated SSE transport advice"]}
   - {id: js-prototype-pollution, pack: exploiting-prototype-pollution-in-javascript, read: "Source Code Detection Patterns", when: [node, express]}
@@ -85,5 +97,5 @@ knowledge:
   - {id: npm-malicious, pack: detecting-malicious-npm-packages, read: SKILL.md, when: [supply-chain, node]}
   - {id: dependency-confusion, pack: detecting-dependency-confusion, read: SKILL.md, when: [supply-chain]}
 
-  # Money: the factory's money pack (fin-*), routed exactly as the Money reviewer routes it.
-  - {id: money, pack: "fin-verification + the one fitting fin-* domain skill", read: SKILL.md, when: [money, evm, chain-other]}
+  # Money: the factory's money pack, routed as factory-review's Money reviewer routes it.
+  - {id: money, pack: fin-verification, with: "fin-ledger | fin-payments | fin-onchain | fin-exchange-integration, the one that fits; fin-money-core when none fits", read: SKILL.md, when: [money, evm, chain-other]}

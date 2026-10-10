@@ -1,6 +1,6 @@
 ---
 name: factory-review
-description: Review a green factory slice - mechanical checks, /polish with lens rubrics, APoSD and Money reviewers, regression proofs, human sign-off into review.md.
+description: Review a green factory slice - mechanical checks, /polish with lens rubrics, APoSD, Security and Money reviewers, regression proofs, human sign-off into review.md.
 disable-model-invocation: true
 argument-hint: "[slug]"
 ---
@@ -44,7 +44,7 @@ A frozen-contract difference sends the slice back, as gates.md describes.
 
    Each receives:
 
-   > Review `git diff <base>..HEAD -- . ':!.factory'` in `<repo>` through `<lens files>`. The agreed contract is `<packet path>`; judge what the code does behind it. Write at most three findings to `<tmp>/<lens>.md`, each as a challenge card (`<absolute path of factory-interface/challenge-card.md>`) read for code: Where quotes the changed line, Alternative is the code change, and Response will be fix or skip. Severity `block` or `fix` needs an anchor: a constraint ID in the packet's Covers, or the interface comment of a frozen signature the code contradicts; every other finding is a `note`.
+   > Review `git diff <base>..HEAD -- . ':!.factory'` in `<repo>` through `<lens files>`. The agreed contract is `<packet path>`; judge what the code does behind it. Write at most three findings to `<tmp>/<lens>.md`, each as a challenge card (`<absolute path of factory-interface/challenge-card.md>`) read for code: Where quotes the changed line, Alternative is the code change, and Response will be fix or skip. Severity `block` or `fix` needs an anchor: a constraint ID in the packet's Covers, the interface comment of a frozen signature the code contradicts, or a threat ID in `.factory/system/threat-model.md`; every other finding is a `note`.
 
 3. Tell the user, in your own message before the call:
    - the slice's Covers and Frozen contract are agreed and are not design findings

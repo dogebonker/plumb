@@ -1,6 +1,7 @@
 # Kit-owned Gitleaks config: the embedded default rules, never the repository's own .gitleaks.toml.
+# The only path allowed is factory-security's own run folder, whose reports must not be rescanned.
 [extend]
 useDefault = true
 
 [allowlist]
-paths = ['''(^|/)(node_modules|vendor|\.venv)/''']
+paths = ['''(^|/)\.factory/security/''']
