@@ -53,5 +53,5 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
-| `factory-reconcile` | S7 | Before merge: ADRs, standing constraints, living product and glossary in `.factory/system/` |
+| `factory-reconcile` | S7 | Before merge: ADRs, standing constraints, living product and glossary in `.factory/system/`; calibration and lessons into the kit's `principles.md` |
 | `factory-prune` | S7 | Repository audit and prune slices |

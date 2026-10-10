@@ -57,7 +57,7 @@ Consequences: <what gets easier, what gets harder>
 ## Open questions
 ~~~
 
-- Signatures are in the repository's language and style, complete enough to compile.
+- Signatures are in the repository's language and style, complete enough to compile, and follow the Principles in `~/.software-factory/principles.md`.
 - The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`.
 - In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
 - Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
@@ -95,7 +95,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
    > - Severity `block` or `fix` needs an anchor: a constraint ID or a number on a module's Cost line. Every other card is a `note`.
    > - Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
 
-3. Collect the cards into `<change>/challenges.md`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`; recommend the APoSD side, since APoSD arbitrates at interface level.
+3. Collect the cards into `<change>/challenges.md`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. A card whose lens and rule are listed under Quiet rules in `~/.software-factory/principles.md` becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`; recommend the APoSD side, since APoSD arbitrates at interface level.
 
 Done when every lens has its cards, or its dropped objection, in `challenges.md`.
 

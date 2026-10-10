@@ -27,7 +27,7 @@ Research runs behind a firewall: the agent that answers never sees the task, so 
 
 4. Copy questions and answers into `<change>/research.md`, then `git worktree remove <tmp>/repo`. Gaps become new questions, answered the same way. A resumed run keeps the questions already answered.
 5. Read the files the answers point to, and `.factory/system/`: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
-6. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules.
+6. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules and the Principles in `~/.software-factory/principles.md`.
 
 Done when every question is answered or marked "not found", and every claim in the Research section of `02-architecture.md` cites an answer in `research.md`.
 

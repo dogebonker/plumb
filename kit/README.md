@@ -10,6 +10,7 @@ git -C ~/.software-factory init
 
 | Path | What it holds |
 | --- | --- |
+| `principles.md` | Your principles and quiet rules, kept up to date by reconcile from your answers |
 | `nfr-catalog/<domain>.md` | Default promises per domain, offered by triage when a project's constraints registry is created |
 | `profiles/<profile>.yaml` | Lens profiles: which design-book lenses load in which step, and the default domain model |
 | `languages/<pack>.yaml` | Language packs per stack: the index pack, extra rule packs, linter rules to propose, and review checks (React: react-doctor) |

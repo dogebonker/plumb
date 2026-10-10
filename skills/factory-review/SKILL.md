@@ -52,12 +52,13 @@ A frozen-contract difference sends the slice back, as gates.md describes.
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this slice
    - fixes land as a new commit, never amended into an earlier one
    - track small: use your small-diff fast path, without agent fan-out, whatever the diff size
+   - findings from a rule under Quiet rules in `~/.software-factory/principles.md` are recommended as skip
    - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
      - design and reuse: `refactoring-guru.mini.md` and the simplification ladder (does it need to exist; is it already in the codebase; does the standard library, the platform or an installed dependency do it; can it be one line; only then the minimum code)
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument.
-5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist becomes a `note`. Present the rest to the user beside polish's report, `block` first, each with fix or skip. Apply approved card fixes after polish's own fixes, each only if its quoted line still reads the same in the working tree.
+5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md`, becomes a `note`. Present the rest to the user beside polish's report, `block` first, each with fix or skip. Apply approved card fixes after polish's own fixes, each only if its quoted line still reads the same in the working tree.
 6. A fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage the changed source files by path and commit them as `fix(<slug>): slice NN review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
 8. Each test that commit adds or changes proves itself: `git checkout <fix commit>~1 -- <the commit's non-test files that existed before it>` and delete the non-test files it added, run the test (it must fail), then `git checkout HEAD -- <all of those files>`. After an interruption, that last command restores the fix. A test that still passes is reported, not kept as proof.
