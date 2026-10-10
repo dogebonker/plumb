@@ -4,12 +4,12 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 
 ## The chain
 
-| Gate | Document | Skill |
-| --- | --- | --- |
-| product | `<change>/01-product.md` | `/factory-product` |
-| architecture | `<change>/02-architecture.md` | `/factory-architecture` |
-| interface | `<change>/03-interface.md` | `/factory-interface` |
-| slices | `<change>/04-slices.md` | `/factory-slices` |
+| Gate | Document | Skill | Line budget |
+| --- | --- | --- | --- |
+| product | `<change>/01-product.md` | `/factory-product` | 100 |
+| architecture | `<change>/02-architecture.md` | `/factory-architecture` | 150 |
+| interface | `<change>/03-interface.md` | `/factory-interface` | 150 |
+| slices | `<change>/04-slices.md` | `/factory-slices` | 100 |
 
 Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, architecture and interface; triage marks them `skipped`.
 
@@ -26,6 +26,8 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 ## Draft a gate document
 
 Every gate document ends with an `## Open questions` section, empty before approval. An existing document resumes from its open questions instead of being redrafted.
+
+A document fits its line budget (`wc -l`) before approval. Over budget, cut repetition and prose first. Still over, the change is too big for one pass: propose splitting it into smaller changes, each with its own triage.
 
 ## Approve a gate
 
