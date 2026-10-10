@@ -78,20 +78,30 @@ Done when every module type-checks or is reported unchecked with its reason, eve
 
 Fresh reviewers challenge the draft, one lens each, the way a future reader would: they see the documents, never this conversation.
 
-1. The panel: `a-philosophy-of-software-design` at full size (`<name>.md`), the profile's `challenge` lenses at size `mini`, and `fin-money-core` (`SKILL.md`) when `money` is `true` in `lenses.yaml`. Each passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md) or is reported skipped.
-2. Start one fresh sub-agent per lens, all at once. Each receives these instructions and nothing else:
+1. The panel, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes or reported skipped:
 
-   > Challenge the interface in `<03-interface.md path>` through the rules in `<lens file>`. The constraint IDs are in `<01-product.md path>` (track small: none) and `.factory/system/constraints.md`. Write at most three cards to `<tmp>/<lens>.md`, each in the form of `<challenge-card.md path>`. Every card quotes a signature from the document, argues for the current design first, then states the objection, an alternative signature and what the alternative costs. Severity `block` or `fix` needs an anchor: a constraint ID or a number on a module's Cost line; every other card is a `note`. Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
+   | Lens | When | File under `~/.agents/skills/<name>/` |
+   | --- | --- | --- |
+   | `a-philosophy-of-software-design` | always; it also gets each module's language pack index | `<name>.md` (full size) |
+   | the profile's `challenge` lenses | always | `<name>.mini.md` |
+   | `fin-money-core` | `money: true` in `lenses.yaml` | `SKILL.md` |
 
-3. Collect the cards into `<change>/challenges.md`, grouped by lens. Drop a card whose quoted signature is not in the document; a `block` or `fix` card whose anchor does not exist becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`.
+2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once. Each receives these instructions and nothing else:
 
-`challenge-card.md` sits in this skill's folder; pass its absolute path.
+   > Challenge the interface in `<change>/03-interface.md` through the rules in `<lens file>`. Read only the files named here.
+   > - Constraint IDs: `<change>/01-product.md` (when it exists) and `.factory/system/constraints.md`.
+   > - Write at most three cards to `<tmp>/<lens>.md`, each in the form of `<absolute path of challenge-card.md in this skill's folder>`. Lens / rule names the rule as the lens file words it.
+   > - Every card quotes a signature from the interface, argues for the current design first, then gives the objection, an alternative signature and what the alternative costs.
+   > - Severity `block` or `fix` needs an anchor: a constraint ID or a number on a module's Cost line. Every other card is a `note`.
+   > - Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
+
+3. Collect the cards into `<change>/challenges.md`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`; recommend the APoSD side, since APoSD arbitrates at interface level.
 
 Done when every lens has its cards, or its dropped objection, in `challenges.md`.
 
 ## 5. The human decides
 
-For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, recorded as its Response; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through steps 3 and 4 again. Then ask the open questions.
+For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through steps 3 and 4 again. Then ask the open questions.
 
 Done when every card has a Response, the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 

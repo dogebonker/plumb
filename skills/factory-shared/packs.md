@@ -4,7 +4,7 @@ How a factory skill loads a lens or a language pack. The kit is `~/.software-fac
 
 ## Pick
 
-- **Lenses.** The repository profile is `profile` in `.factory/system/lenses.yaml`; its lenses per step are in `~/.software-factory/profiles/<profile>.yaml`. Load at most two lenses in any step, in the profile's order.
+- **Lenses.** The repository profile is `profile` in `.factory/system/lenses.yaml`; its lenses per step are in `~/.software-factory/profiles/<profile>.yaml`. One agent loads at most two lenses in any step, in the profile's order; the interface challenge panel gives each reviewer a single lens.
 - **Language pack.** Each module's `pack` in `lenses.yaml` names `~/.software-factory/languages/<pack>.yaml`: an `index` pack and optional extra `rules` packs. They load in packets only.
 
 ## Check the pin
