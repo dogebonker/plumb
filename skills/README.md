@@ -39,7 +39,7 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 
 ## Run one change
 
-`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` once per slice. Each skill resumes from `.factory/changes/<slug>/status.yaml`, so start a fresh session whenever a skill tells you to.
+`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` once per slice, then `/factory-reconcile` before merging. Each skill resumes from `.factory/changes/<slug>/status.yaml`, so start a fresh session whenever a skill tells you to.
 
 ## Skills
 
@@ -53,5 +53,5 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
-| `factory-reconcile` | S7 | Fold shipped work back into specs, ADRs and lessons |
+| `factory-reconcile` | S7 | Before merge: ADRs, standing constraints, living product and glossary in `.factory/system/` |
 | `factory-prune` | S7 | Repository audit and prune slices |

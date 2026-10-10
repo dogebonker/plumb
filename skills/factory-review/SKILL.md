@@ -101,6 +101,6 @@ Ask the user to read `git diff <base>..<head> -- . ':!.factory'` and `review.md`
 
 ## 6. Hand off
 
-1. Delete `<tmp>`. More slices left: set `notes_for_fresh_session` to "Slice NN done. Next: /factory-build <slug>." All done: "All slices done."
+1. Delete `<tmp>`. More slices left: set `notes_for_fresh_session` to "Slice NN done. Next: /factory-build <slug>." All done: "All slices done. Next: /factory-reconcile <slug>."
 2. Committed mode: `git add .factory/changes/<slug>` and commit `chore(factory): slice NN signed off`.
-3. Tell the user to start a fresh session for the next slice, or that the change is ready to merge from `<branch>`.
+3. Tell the user to start a fresh session for the next slice, or, when all slices are done, to run `/factory-reconcile <slug>` before merging.
