@@ -45,6 +45,9 @@ assert approver_reviews([ok], {"bob"}) == []
 
 # The next skill follows the gates, then the slices, then reconcile.
 assert next_skill(parse_status(STATUS.format(p=PENDING))) == "factory-product"
+ui_status = parse_status(STATUS.format(p=PENDING).replace("mode: headless", "mode: headless\nui: true"))
+assert next_skill(ui_status, has_design=False) == "factory-ui-ux"
+assert next_skill(ui_status, has_design=True) == "factory-product"
 approved_all = STATUS.format(p="{ state: approved }").replace("state: pending", "state: approved")
 assert next_skill(parse_status(approved_all)) is None  # no slices yet: nothing to build
 built = approved_all.replace("slices: []", "slices:\n  - { id: 1, name: t, state: green, head_commit: abc }")

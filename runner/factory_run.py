@@ -86,10 +86,12 @@ def command(body):
     return ("sign-off", m.group(1)) if m else None
 
 
-def next_skill(status):
+def next_skill(status, has_design=True):
     """The skill a change needs next, or None when it is finished."""
     if status["scalars"].get("reconciled") == "true":
         return None
+    if status["scalars"].get("ui") == "true" and not has_design:
+        return "factory-ui-ux"
     for gate, _ in GATES:
         if status["gates"].get(gate, {}).get("state") not in ("approved", "skipped"):
             return f"factory-{gate}"
@@ -302,7 +304,8 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     text, recorded = verify(repo, ref, change, text, approvals, may_skip)
     if recorded and verify(repo, ref, change, text, approvals, may_skip)[1]:
         raise RuntimeError("status.yaml has duplicate or malformed gate or slice lines; fix it by hand")
-    skill = next_skill(parse_status(text))
+    has_design = any(blob_sha256(repo, ref, f) for f in ("DESIGN.md", ".factory/system/design.md"))
+    skill = next_skill(parse_status(text), has_design)
     waiting = parse_status(text)["scalars"].get("waiting_since")
     replies = []
     if waiting:

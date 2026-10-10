@@ -1,0 +1,61 @@
+# Creating the design file
+
+The guide `factory-ui-ux design-md` follows. Adapted from the DESIGN.md format's own guidance and impeccable's product-context flow; evidence in `docs/research/ui-ux/B-design-md.md` of the factory repository. The skill drafts; the user decides every principle and position.
+
+## 1. Detect a UI
+
+Front-end dependencies (react, next, vue, svelte, solid, angular), templates or HTML, SwiftUI or Compose, or a terminal UI with styling. No UI: record `ui: false` for the module in `.factory/system/lenses.yaml` and stop.
+
+## 2. Resolve the file
+
+- No root `DESIGN.md`: the file is the root `DESIGN.md`.
+- A root `DESIGN.md` that is a design file (DESIGN.md frontmatter, or the factory's stamp comment): refresh it. Show the diff and ask before replacing any prose.
+- A root `DESIGN.md` that holds something else (architecture, for example): the file is `.factory/system/design.md`; tell the user why.
+
+## 3. Read the product evidence
+
+`.factory/system/product.md`, `glossary.md`, `constraints.md` (accessibility promises), the latest `01-product.md` (problem, user, success metric), a `PRODUCT.md` if present, and Pond for the users' own words and complaints.
+
+## 4. Extract tokens from code
+
+In this order: CSS variables, Tailwind config or `@theme`, theme files, `*.tokens` or `tokens.json`, components, global CSS. Every token cites its source file. Nothing is invented; what the code lacks goes under `omitted:` with a reason.
+
+## 5. See the UI
+
+Render the main screens at 390, 768 and 1280 wide (Playwright, as `ui/tools.yaml` says) and sample computed styles. From that, infer each screen's primary action and the current look, including any slop it already carries.
+
+## 6. Draft
+
+Fill [DESIGN.template.md](DESIGN.template.md). Label each principle, position and word `confirmed` (from evidence) or `inferred`. Every principle must pass all four tests, or it is dropped:
+
+1. It comes from evidence: a user quote, the success metric, a constraint, a recorded decision.
+2. It rules out something concrete: a pattern visible in the current UI or a named competitor.
+3. Its opposite is the right choice for some other product. ("Clean", "modern" and "intuitive" fail here.)
+4. It has a Test line a reviewer can apply to a screen without asking the author.
+
+## 7. Interview only where the code cannot answer
+
+Show the draft first. Then ask at most 3 questions per round, at most 2 rounds, picking from:
+
+- the primary user and their moment, only when `product.md` lacks it
+- what the product must never be mistaken for, offering 2 or 3 named anti-references from its category
+- forced trade-offs derived from the success metric (density over calm, experts over first-timers, one way over many); the chosen side becomes a principle's title
+- the primary action of screens where the inference was ambiguous
+- term pairs where code strings and user quotes disagree
+- brand commitments that cannot change (logo, colors, faces)
+
+Never ask for colors, fonts or spacing the code already answers.
+
+## 8. Validate
+
+- `design.md lint <file>` reports 0 errors.
+- Every token cites a source file; every principle has Because, Rules out and Test; every position cites a source.
+- Known Gaps lists everything still `inferred`.
+
+## 9. Write
+
+Write the file once the user confirms it, stamped `<!-- factory:design-schema 1 · reviewed <slug or date> -->`. With the user's approval, add one line to `AGENTS.md` or `CLAUDE.md` pointing agents to it. Committed mode: commit it on the change's branch, or on its own branch when no change is open.
+
+## Keeping it current
+
+Code owns the token values; the user owns principles and positions. At reconcile, a change that touched UI re-extracts tokens (`design.md diff`), adds new screens to the primary-action table, syncs new terms from `glossary.md` into Words, and bumps the stamp. Principles and positions change only by a decision the user records; a principle overruled three times in review is raised for rewrite through calibration.

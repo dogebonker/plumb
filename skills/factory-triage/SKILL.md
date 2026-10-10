@@ -27,6 +27,7 @@ Done when you can name the modules in scope and all three commands.
 - **Money signals.** A payment, exchange or chain SDK in any manifest (`stripe`, `adyen`, `paypal`, `braintree`, `square`, `plaid`, `modern-treasury`, `ccxt`, `ethers`, `viem`, `web3`, `@solana/web3.js`, `bitcoinjs-lib`, `fireblocks`), or money in the schema and code (columns or fields named `amount`, `balance`, `price`, `currency`, `ledger`, `payout`, `refund`). List each signal with its `path:line`.
 
 - **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing, and each `checks.install` tool the module lacks. For a pack with a `checks.runtime`, find the module's command that starts the app locally and the URL it serves.
+- **UI.** The change touches UI when it changes files of a module with front-end dependencies (react, next, vue, svelte, solid, angular), templates, or styles. Note whether a design file exists (gates.md, Load a change).
 - **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
 
 Done when every module has a language, a language pack and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
@@ -102,6 +103,7 @@ gates:
 slices: []                  # filled by factory-slices
 sent_back: null             # { gate, slice, reason } while a gate must be revisited
 stubbing: false             # true only while the interface gate compiles its stubs
+ui: false                   # true when the change touches UI: it then needs the design file
 reconciled: false           # set by factory-reconcile
 mode: interactive           # interactive | headless
 waiting_since: null         # headless: GitHub time of the question the change waits on
@@ -117,4 +119,4 @@ notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
 
 ## 6. Hand off
 
-Tell the user the next skill: `/factory-product <slug>`, or `/factory-slices <slug>` on track small.
+Tell the user the next skill: `/factory-ui-ux design-md` when `ui` is `true` and the design file is missing; otherwise `/factory-product <slug>`, or `/factory-slices <slug>` on track small.

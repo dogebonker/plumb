@@ -25,6 +25,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 19 | Prune as a scheduled, approved job | Accepted |
 | 20 | Third-party packs vendored and pinned | Accepted |
 | 21 | factory-security: Cloudflare method, five scanners, routed knowledge | Accepted |
+| 22 | factory-ui-ux: an enforced DESIGN.md, mechanical de-slop, anchored critique | Accepted |
 
 ---
 
@@ -193,3 +194,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** The catalogs are mostly offensive, forensic and operational, and many relevant-looking skills fail a full read. The method that already matches the factory's evidence standard is the right core; specific knowledge earns its place only where the method leaves a gap. The full record, with the research: [research/security-selection.md](research/security-selection.md).
 
 **Cost.** Without a sandbox, candidates whose exploitability needs a running system stay `needs_validation`. Several knowledge packs (OpenAI, Trail of Bits, Sentry) work only once installed and pinned.
+
+## 22. factory-ui-ux: an enforced DESIGN.md, mechanical de-slop, anchored critique
+
+**Decision.** Every repository with a UI keeps a `DESIGN.md` in Google Labs' format, extended with the product's principles, positions and words; a change that touches UI cannot proceed without it (gate rules, hook, runner). The skill drafts it from code and evidence and the user decides every position. Reviews run impeccable's detector, the factory's slop catalog, a computed-style script and axe in a real browser before any opinion, and every opinion is a challenge card anchored to the design file with a check. No installed style skill is loaded.
+
+**Why.** Installed design skills polish surfaces, contradict each other and get accessibility wrong; none grounds a judgment in the product. The user's recorded standard is restraint, and "AI doesn't make design calls". Models judge design quality near chance, so they answer closed questions instead of scoring. The full record: [research/ui-ux-selection.md](research/ui-ux-selection.md).
+
+**Cost.** Writing the design file takes a short interview. The slop thresholds are guesses until calibrated on the user's own screens. The tools need a local install.

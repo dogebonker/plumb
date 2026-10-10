@@ -39,7 +39,7 @@ Done when you can state today's behavior and the requested change in the user's 
 <the short note you would publish when it ships, written before building>
 
 ## Mockups
-<sketch, link or ASCII for any UI; "none" without UI>
+<sketch, link or ASCII for any UI, following the design file's principles and primary-action table; "none" without UI>
 
 ## Rules and examples
 ### <business rule>

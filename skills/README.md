@@ -67,7 +67,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | --- | --- | --- |
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check |
-| `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), `/polish` with lens rubrics, APoSD, Security and Money reviewers, regression proofs, human sign-off |
+| `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), `/polish` with lens rubrics, APoSD, UI/UX, Security and Money reviewers, regression proofs, human sign-off |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
 | `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
@@ -75,5 +75,6 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
 | `factory-reconcile` | S7 | Before merge: ADRs, standing constraints, living product and glossary in `.factory/system/`; calibration and lessons into the kit's `principles.md` |
 | `factory-packs` | S7 | Pin check, upstream changes read from changelogs, re-review of changes that relied on a changed rule, pin bumps |
+| `factory-ui-ux` | S9 | The repository's DESIGN.md (created by guide, enforced for UI changes), mechanical de-slop, anchored critique of rendered screens |
 | `factory-security` | S11 | Threat model from the code, pinned scanners, the `security-audit` method with routed knowledge, proven findings as small changes |
 | `factory-prune` | S7 | Repository audit with the simplification ladder; protected code filtered out; each approved item runs as a small change |

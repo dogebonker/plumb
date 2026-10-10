@@ -77,6 +77,10 @@ def check(change, status, rel):
     gates = status["gates"]
     if len(gates) < len(GATES):
         return "cannot read all four gates in status.yaml; keep each gate as a one-line { } map (gates.md)."
+    root = change.parent.parent.parent
+    if status["scalars"].get("ui") == "true" and not any(
+            (root / f).exists() for f in ("DESIGN.md", ".factory/system/design.md")):
+        return "this change touches UI and the repository has no design file. Run /factory-ui-ux design-md."
     if status["stubbing"] and gates["interface"]["state"] == "pending":
         return None
     for gate, doc in GATES:
@@ -132,7 +136,7 @@ def main():
     except ValueError:
         return 0
     changes = root / ".factory" / "changes"
-    if rel.startswith(".factory/") or not changes.is_dir():
+    if rel.startswith(".factory/") or rel == "DESIGN.md" or not changes.is_dir():
         return 0
     branch = git(root, "symbolic-ref", "--short", "HEAD")
     for status_file in sorted(changes.glob("*/status.yaml")):

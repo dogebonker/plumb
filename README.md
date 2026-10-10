@@ -4,7 +4,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** roadmap S1 to S8 and S11 built; not yet run end to end on a real feature.
+**Status:** roadmap S1 to S8, S9 and S11 built; not yet run end to end on a real feature.
 
 ## TL;DR
 
@@ -244,7 +244,7 @@ The factory is built with its own loop.
 
 Three specialist skills, each with the factory's habits: mechanical evidence before model judgment, opinions anchored to the product's own goals, and every proposed change run as a small factory change you approve.
 
-**S9: `factory-ui-ux`, a designer with taste and a spine.** Today's design skills polish surfaces: they rarely remove AI slop and hold no view on what the product should be. This one does both.
+**S9: `factory-ui-ux`, a designer with taste and a spine.** Built: [skills/factory-ui-ux](skills/factory-ui-ux/SKILL.md), with every UI change requiring the repository's `DESIGN.md`. What it loads and why: [docs/research/ui-ux-selection.md](docs/research/ui-ux-selection.md). Today's design skills polish surfaces: they rarely remove AI slop and hold no view on what the product should be. This one does both.
 
 - **Taste brief first.** From the product gate (problem, success metric, who the user is) it writes the product's design principles into `.factory/system/design.md`, positions included: what this product refuses to look like, the one primary action per screen, the words users actually say. Every later judgment cites the brief, not generic best practice.
 - **De-slop as a mechanical pass.** A catalog of slop patterns (gradient heroes, emoji bullets, interchangeable card grids, centered everything, filler copy, decorative motion) checked from code and from real screenshots before any taste opinion.

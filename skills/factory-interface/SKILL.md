@@ -58,7 +58,7 @@ Consequences: <what gets easier, what gets harder>
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile, and follow the Principles in `~/.software-factory/principles.md`.
-- The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`.
+- The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`. When `ui` is `true`, it also covers each state the design file's States position names (empty, running, failed, no change, done) for the screens this change touches.
 - In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
 - Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
 

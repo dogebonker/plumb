@@ -28,7 +28,8 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 2. Read `status.yaml`. Check out its `branch`.
 3. **Check the chain.** Walk the gates in order. The first `approved` gate whose `hash(doc)` differs from its `doc_sha256` goes back to `pending`, and so does every later gate that is not `skipped`. Tell the user which document changed.
 4. A gate skill whose own gate is `approved` or `skipped` says so, names the next skill, and stops. To revise an approved gate, the user edits its document: the chain check reopens it.
-5. A gate skill drafts only when every earlier gate is `approved` or `skipped`. Otherwise name the first gate that is not, and its skill. Stop. Build and review need all four `approved` or `skipped`.
+5. **Design file.** A change with `ui: true` in `status.yaml` needs the repository's design file: the root `DESIGN.md`, or `.factory/system/design.md` when the root name holds something else. Without it, every skill stops and points to `/factory-ui-ux design-md`; the factory hook blocks source edits too.
+6. A gate skill drafts only when every earlier gate is `approved` or `skipped`. Otherwise name the first gate that is not, and its skill. Stop. Build and review need all four `approved` or `skipped`.
 
 ## Draft a gate document
 

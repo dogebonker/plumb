@@ -1,0 +1,43 @@
+# Tools for factory-ui-ux. Why these and not others: docs/research/ui-ux-selection.md (UI-3).
+#
+# Variables: $REPO (absolute repository path), $NEUTRAL (fresh mktemp -d, the working directory), $OUT (the run
+# folder, .factory/ui/<run>/), $URL (the running app), $KIT (~/.software-factory).
+# Every result is a candidate. What DESIGN.md declares (a brand hue, a chosen face, allowed motion) is a waiver
+# recorded in the report, never an inline ignore in the repository. A missing tool is skipped, with its install line.
+
+design-md:
+  version: 0.4.0
+  install: "npm i -g @google/design.md@0.4.0"
+  lint: "design.md lint <design file>"          # 0 errors required
+  diff: "design.md diff <old> <new>"            # tokens re-extracted at reconcile
+
+impeccable:
+  version: 4.1.0
+  source: pbakaus/impeccable (Apache-2.0); only its detector is used, never its skill
+  install: "npm i -g impeccable@4.1.0"
+  code: "cd $NEUTRAL && impeccable detect --json --no-config --no-inline-ignores $REPO/<ui source> > $OUT/imp-src.json"
+  rendered: "cd $NEUTRAL && impeccable detect --json --no-config --viewport <w>x<h> $URL/<route> > $OUT/imp-<route>-<w>.json"
+  exit: "0 clean, 2 findings, 1 error"
+
+ripgrep:
+  run: "rg -n -P --json <each code pattern of kit/ui/slop-patterns.yaml> <globs from that file> $REPO > $OUT/slop-rg.json"
+
+playwright:
+  version: 1.63.0
+  install: "npm i -D @playwright/test@1.63.0 && npx playwright install chromium (in the repository, with the user's agreement)"
+  viewports: ["390x844", "768x1024", "1280x800"]
+  schemes: [light, dark]
+  capture: >-
+    one script per route and viewport: reducedMotion 'reduce', full-page screenshot to $OUT/shots/,
+    page.evaluate of $KIT/ui/slop-metrics.js to $OUT/dom-metrics.json, console errors and failed requests;
+    then page.route to force empty, failing (500) and slow responses for the route's data calls, with a
+    screenshot of each state
+
+axe:
+  version: 4.13.0
+  install: "npm i -D @axe-core/playwright@4.13.0"
+  run: "AxeBuilder({ page }).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']) in the capture script, to $OUT/axe-<route>-<w>.json"
+  findings: "violations are candidates; incomplete color-contrast items (gradients, glass, images) go to the model pass"
+
+react-doctor:
+  note: "the React language pack's checks (kit/languages/react.yaml) run as they do in factory-review"

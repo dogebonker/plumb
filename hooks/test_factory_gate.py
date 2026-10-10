@@ -78,6 +78,16 @@ with tempfile.TemporaryDirectory() as tmp:
     r = run(root, "src/a.ts")
     assert r.returncode == 2 and "03-interface.md changed" in r.stderr, r.stderr
 
+    # A change that touches UI needs the design file; DESIGN.md itself is always editable.
+    st.write_text(status(approved, slices=building).replace("feature: demo", "feature: demo\nui: true"))
+    (change / "03-interface.md").write_text("# interface\n")
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and "no design file" in r.stderr, r.stderr
+    assert run(root, "DESIGN.md").returncode == 0
+    (root / "DESIGN.md").write_text("# Design\n")
+    assert run(root, "src/a.ts").returncode == 0
+    (root / "DESIGN.md").unlink()
+
     # A finished change is not gated.
     st.write_text(status(approved, slices="slices:\n  - { id: 1, name: tracer, state: done }"))
     assert run(root, "src/z.ts").returncode == 0
