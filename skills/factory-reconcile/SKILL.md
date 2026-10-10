@@ -49,17 +49,17 @@ Done when every Decision has an ADR, every change ID has a SYS row, and every ne
 
 Your answers to lens findings tune the kit's `~/.software-factory/principles.md`.
 
-1. Count, per lens and rule, how often a finding was accepted (accept, modify, fix) and how often it was rejected (overrule, skip): in this change's `challenges.md` Responses and the `[lens/rule]` findings and lens cards of its `review.md` files, and, through Pond (read `schema://pond-sql` first), in every `challenges.md` and `review.md` the factory wrote in other projects.
+1. Count, per lens and rule, how often a finding was accepted (accept, modify, fix) and how often it was rejected (overrule, skip): in this change's `challenges.md` Responses and the `[lens/rule]` findings and lens cards of its `review.md` files, and, through Pond (read `schema://pond-sql` first), in every `challenges.md` and `review.md` the factory wrote for other changes, in this project or any other. Each answer counts once: leave this change's own files out of the Pond count.
 2. Draft the kit changes:
    - a rule accepted three times or more becomes a principle, with its reason taken from the findings' objections
-   - a rule rejected three times or more joins Quiet rules, unless it comes from a `fin-*` pack or guards security (authentication, authorization, secrets, injection)
+   - a rule rejected three times or more joins Quiet rules, unless it is a money or security rule as `principles.md` defines
    - a quiet rule accepted since it went quiet leaves Quiet rules
-   - a finding fixed in three changes or more, whatever its lens, becomes a lesson: a proposed principle, or a linter rule for the module's language pack (`linter.propose`)
+   - a finding with the same `[lens/rule]` tag, fixed in three changes or more, becomes a lesson: a proposed principle, or a linter rule for the module's language pack (`linter.propose`)
 3. Without Pond, count this change's files only, and say so.
 
 ## 6. Confirm and write
 
-Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change. Write them once the user confirms; apply their corrections first. Kit changes are committed in `~/.software-factory` (`git -C ~/.software-factory commit`), and pushed only when the user asks.
+Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change. Write them once the user confirms; apply their corrections first. Kit changes are committed in `~/.software-factory`, staging only the files reconcile changed, and pushed only when the user asks.
 
 ## 7. Record
 

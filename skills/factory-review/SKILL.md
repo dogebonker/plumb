@@ -24,7 +24,7 @@ Run each check and record pass or fail with evidence. "The adapter" is `~/.softw
 2. **Frozen contract.** Find each signature from the packet's Frozen contract in the code. Formatting may differ. A change to the name, parameters, types, return type, errors or visibility is a difference.
 3. **Red tests unchanged.** `git diff <test>..HEAD -- <test files from Tests first>` is empty, or each change is logged in `deviations`.
 4. **Green.** `test_command` passes at HEAD, apart from tests in `baseline_failures`.
-5. **Lint.** `check_command`; each failure in the slice's changed files is a finding.
+5. **Lint.** `check_command`; each failure in the slice's changed files is a finding. No `check_command`: skipped.
 6. **Language checks.** For each module whose `~/.software-factory/languages/<pack>.yaml` has `checks`, `{files}` is the slice's changed files with the listed `extensions`: `git diff --name-only --diff-filter=d <base>..HEAD`, made relative to the module path. No such files: skip the module. Otherwise, from the module directory:
    - `static` on `{files}`. Each issue it reports is a finding.
    - `runtime`, on tracks standard and critical, when the module has a `dev_url` and the tool resolves (`npx --no-install <tool> --version`). If `dev_url` already answers, use that server and leave it running. Otherwise start the module's `dev_command` in the background, wait up to 60 seconds for `dev_url`, run the scan, and stop the server you started on every outcome. Each issue in the JSON is a finding.
@@ -38,8 +38,8 @@ A frozen-contract difference sends the slice back, as gates.md describes.
 
 1. Committed mode: commit `.factory/changes/<slug>` first (`chore(factory): slice NN review`), so polish sees a clean tree.
 2. On tracks standard and critical, start the lens reviewers in the background, one fresh sub-agent each, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes:
-   - **APoSD**, when the diff adds a public symbol that is not in the packet's Frozen contract: `a-philosophy-of-software-design.md` (full size) and the module's language pack index.
-   - **Money**, on track critical when `money` is `true` in `lenses.yaml`: `fin-verification/SKILL.md`, the one domain skill that fits the slice (`fin-ledger`, `fin-payments`, `fin-onchain` or `fin-exchange-integration`), and `fin-money-core` only when the slice's risk is arithmetic or idempotency itself.
+   - **APoSD**, when the diff adds a public symbol in a non-test file that is not in the packet's Frozen contract: `a-philosophy-of-software-design.md` (full size) and the module's language pack index.
+   - **Money**, on track critical when `money` is `true` in `lenses.yaml`: `fin-verification/SKILL.md` with the one domain skill that fits the slice (`fin-ledger`, `fin-payments`, `fin-onchain` or `fin-exchange-integration`), or with `fin-money-core` when none fits. `fin-money-core` joins a domain skill only when the slice's risk is arithmetic or idempotency itself. Each pack is read through its `SKILL.md`.
 
    Each receives:
 
@@ -50,21 +50,19 @@ A frozen-contract difference sends the slice back, as gates.md describes.
    - `.factory/` is planning state, outside the review: write the diff with `-- . ':!.factory'`
    - the check command is `check_command`. Fix its failures only inside the Allowed files; failures elsewhere are findings
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this slice
-   - fixes land as a new commit, never amended into an earlier one
+   - leave your fixes uncommitted: the review commits them
    - track small: use your small-diff fast path, without agent fan-out, whatever the diff size
-   - findings from a rule under Quiet rules in `~/.software-factory/principles.md` are recommended as skip
+   - findings from a rule under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) are recommended as skip
    - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
      - design and reuse: `refactoring-guru.mini.md` and the simplification ladder (does it need to exist; is it already in the codebase; does the standard library, the platform or an installed dependency do it; can it be one line; only then the minimum code)
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
-4. Invoke the `polish` skill with the bare sha `<base>` as its argument.
-5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md`, becomes a `note`. Present the rest to the user beside polish's report, `block` first, each with fix or skip. Apply approved card fixes after polish's own fixes, each only if its quoted line still reads the same in the working tree.
+4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
+5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Present the rest to the user once polish ends, `block` first, each with fix or skip. Apply approved card fixes after polish's own fixes, each only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
 6. A fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage the changed source files by path and commit them as `fix(<slug>): slice NN review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
-8. Each test that commit adds or changes proves itself: `git checkout <fix commit>~1 -- <the commit's non-test files that existed before it>` and delete the non-test files it added, run the test (it must fail), then `git checkout HEAD -- <all of those files>`. After an interruption, that last command restores the fix. A test that still passes is reported, not kept as proof.
+8. Each test that commit adds or changes proves itself: `git restore -s <fix commit>~1 -SW -- <the commit's non-test files>`, run the test (it must fail), then `git restore -s HEAD -SW -- <the same files>`. After an interruption, that last command restores the fix. A commit with no non-test files has nothing to prove. A test that still passes is reported, not kept as proof.
 9. Rerun Phase 1. All checks pass: record the fix commit as `head_commit`. A check the fix commit broke: `git revert` it, tell the user which fix caused it, and keep `head_commit` as it was.
-
-When polish ends, clean or not, continue with step 5 below.
 
 ## 4. Write `slices/NN/review.md`
 
@@ -78,7 +76,7 @@ Range: <base>..<head>
 - Frozen contract: pass
 - Red tests unchanged: pass | <deviation entries>
 - Red: <test> failed on the new tests. Green: <head> passes test_command.
-- Lint: pass | <findings>
+- Lint: pass | <findings> | skipped
 - Language checks: pass | <issues> | skipped: <reason>
 - Dependency rule: pass | <findings> | no layers
 - Dead code: pass | <findings> | skipped: <reason>

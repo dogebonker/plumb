@@ -117,13 +117,13 @@ Built on `/polish`: parallel read-only agents (cleanliness, design and reuse, ef
 | Refactoring.Guru, Ponytail | Rubric inside the design and reuse agent | one lens file |
 | Language pack (high impact) | Rubric inside design and efficiency | one lens file |
 | Gherkin | Checklist inside cleanliness, BDD-native modules only | about zero |
-| APoSD | Own agent, only when a frozen interface was touched | conditional |
+| APoSD | Own agent, only when the slice adds public surface beyond the frozen interface | conditional |
 | Money | Own agent, only in money repositories | conditional |
 
 | Track | Review runs |
 | --- | --- |
 | Small | Phase 1 + the fast path (under about 50 changed lines, no fan-out) |
-| Standard | Phase 1 + four agents + APoSD if an interface was touched |
+| Standard | Phase 1 + four agents + APoSD if the slice adds public surface beyond the frozen interface |
 | Critical | Standard + Money |
 
 Book-lens findings use the challenge card; without an anchor they cap at "skip". Findings are written to `review.md`; approve and skip answers feed calibration. Regression tests must fail when their fix is reverted. UI polish runs separately, only on slices that touch UI.

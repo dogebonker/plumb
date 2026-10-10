@@ -13,7 +13,7 @@
 - Step definitions: `rg -n "#\[(given|when|then)" <module>`
 
 ## Import graph
-- `rg -n "^\s*(pub(\([^)]*\))? )?use " <files>` lists each file's imports, crate-local and from workspace crates
+- `rg -U -n "^\s*(pub(\([^)]*\))? )?use [^;]+;" <files>` lists each file's imports, grouped `use` blocks included, crate-local and from workspace crates
 
 ## Dead code
 - `cargo check --all-targets -p <crate> --message-format short 2>&1 | rg "never (used|read|constructed)"`

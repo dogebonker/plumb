@@ -121,7 +121,7 @@ Review is built on a `/polish` skill: parallel read-only agents for cleanliness,
 
 - **Phase 1 grows.** The import graph (Clean Architecture's dependency rule), interface conformance against the frozen stubs, a dead-code tool and the language pack's linter rules all run as scripts.
 - **Books become rubric, not extra agents.** Refactoring.Guru and Ponytail's simplification ladder ride inside the design and reuse agent; the language pack rides inside design and efficiency.
-- **Two agents are conditional.** An APoSD reviewer runs only if a frozen interface was touched; a Money reviewer runs only in repositories that move money.
+- **Two agents are conditional.** An APoSD reviewer runs only when a slice adds public surface beyond the frozen interface; a Money reviewer runs only on critical slices in repositories that move money.
 - **A frozen signature change is not a fix.** It sends the slice back to Interface Design.
 
 A typical slice costs four review agents. The worst case, a money slice that touches an interface, costs six.
