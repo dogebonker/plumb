@@ -14,7 +14,7 @@ Triage turns a task into a tracked change: a track, a branch, `status.yaml`, and
 ## 1. Read the task and the repository
 
 - If the task is empty, ask for it and stop.
-- Read `CLAUDE.md` / `AGENTS.md`, the manifest (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, ...) and the test setup. Find three exact commands: the full test suite, a single test file, and lint plus type check.
+- Read `CLAUDE.md` / `AGENTS.md`, the manifest (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, ...) and the test setup. Find three exact commands: the full test suite, a single test file, and lint plus type check (default: `linter.check` of the module's language pack).
 - Read the code the task names, enough to judge how many modules it touches and whether it adds or changes an interface.
 - Search Pond for prior work on the same area (`pond_search`, project filter set to this repository). Note session ids worth reading in the gates. If Pond tools are not available, note that and continue.
 
@@ -26,6 +26,7 @@ Done when you can name the modules in scope and all three commands.
 - **BDD per module.** `native` when the module has any of: `*.feature` files, a BDD runner dependency (`@cucumber/cucumber`, `cucumber`, `behave`, `pytest-bdd`, `godog`), or runner config (`cucumber.js`, `cucumber.mjs`, `cucumber.yml`, `behave.ini`, `features/environment.py`). Otherwise `off`.
 - **Money signals.** A payment, exchange or chain SDK in any manifest (`stripe`, `adyen`, `paypal`, `braintree`, `square`, `plaid`, `modern-treasury`, `ccxt`, `ethers`, `viem`, `web3`, `@solana/web3.js`, `bitcoinjs-lib`, `fireblocks`), or money in the schema and code (columns or fields named `amount`, `balance`, `price`, `currency`, `ledger`, `payout`, `refund`). List each signal with its `path:line`.
 
+- **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing.
 - **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
 
 Done when every module has a language and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
@@ -48,7 +49,7 @@ Ask in one message:
 - the track, with a one-line reason
 - the slug (kebab-case, at most four words)
 - the three commands, so the user can correct them
-- the lens profile with a one-line reason, the modules with language and BDD state, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
+- the lens profile with a one-line reason, the modules with language, language pack and BDD state, linter rules the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)
 
@@ -70,6 +71,7 @@ modules:
   - path: .
     language: go
     language_version: "1.22"
+    pack: go                # react | rust | go | python | none
     bdd: off                # native | off; adopt is set only by the user
 ```
 

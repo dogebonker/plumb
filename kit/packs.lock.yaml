@@ -5,4 +5,6 @@ packs:
   domain-driven-design-distilled: { source: ciembor/agent-rules-books, hash: 1a48b83645d5b937ab941206c9fce7c13ef7db1d }
   patterns-of-enterprise-application-architecture: { source: ciembor/agent-rules-books, hash: 856a904bd14658d9c4f43f3c825b546b41c45b0b }
   refactoring: { source: ciembor/agent-rules-books, hash: e1668f33b38b0907c8aa52547a359163ce360eda }
+  rust-skills: { source: leonardomso/rust-skills, hash: fd2a861ab0406a4ac536a55274d14ea6fd1ca9c9 }
+  vercel-react-best-practices: { source: vercel-labs/agent-skills, hash: 343db72180d05814949fef7d46be96b5c6ee86b3 }
   working-effectively-with-legacy-code: { source: ciembor/agent-rules-books, hash: 258a511ceef5c0978a2d7350842fb9df55a2cf99 }

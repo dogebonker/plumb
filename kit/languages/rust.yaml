@@ -1,0 +1,12 @@
+# Rust modules: Cargo.toml.
+index: rust-skills                     # its SKILL.md lists the rules; rules/<id>.md holds each one
+rules: []
+linter:
+  check: cargo clippy --all-targets -- -D warnings
+  propose:                             # from the pack's lint-* rules, for [lints.clippy] in Cargo.toml
+    - "correctness = deny"
+    - "suspicious = warn"
+    - "style = warn"
+    - "complexity = warn"
+    - "perf = warn"
+    - "undocumented_unsafe_blocks = warn"

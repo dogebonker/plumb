@@ -40,7 +40,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`
 - its tests, allowed files and verify commands, from `04-slices.md`
-- under Rules in scope, the paths of the profile's `packet` lenses that pass the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), size `nano`
+- under Rules in scope, the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md)
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 

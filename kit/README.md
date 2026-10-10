@@ -12,4 +12,5 @@ git -C ~/.software-factory init
 | --- | --- |
 | `nfr-catalog/<domain>.md` | Default promises per domain, offered by triage when a project's constraints registry is created |
 | `profiles/<profile>.yaml` | Lens profiles: which design-book lenses load in which step, and the default domain model |
+| `languages/<pack>.yaml` | Language packs per stack: the index pack, extra rule packs, and linter rules to propose |
 | `packs.lock.yaml` | The pinned hash of every pack the profiles name |

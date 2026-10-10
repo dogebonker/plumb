@@ -1,0 +1,10 @@
+# React / Next.js modules: package.json depends on react or next.
+index: vercel-react-best-practices     # its SKILL.md lists the rules; rules/<id>.md holds each one
+rules: []                              # extra packs beyond the index
+linter:
+  check: npx tsc --noEmit && npx eslint .
+  propose:                             # rules the linter enforces instead of the executor
+    - "react-hooks/rules-of-hooks: error"
+    - "react-hooks/exhaustive-deps: warn"
+    - "@next/next core-web-vitals config (Next.js only)"
+    - "tsconfig strict: true"
