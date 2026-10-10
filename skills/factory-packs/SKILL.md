@@ -27,7 +27,7 @@ Done when every pin is current, not installed or moved, and every unpinned pack 
 For each moved pack, and each newly installed pack the user wants pinned:
 
 1. `~/.agents/skills/<name>/CHANGELOG.md` when it exists: the entries above the pin's `version` (all of them for a new pack).
-2. Without a changelog: `gh api "repos/<source>/commits?path=<the pack's folder>&since=<pinned_at>"`, then the changed files of each commit (`gh api repos/<source>/commits/<sha>`).
+2. Without a changelog: `gh api "repos/<source>/commits?path=<folder>&since=<pinned_at>"`, where `<folder>` is the folder of the pack's `skillPath` in the skills lock (a pack at the repository root has none: leave out `path`), then the changed files of each commit (`gh api repos/<source>/commits/<sha>`).
 3. Summarize for the user: rules added, rules changed, rules removed, each by its name or ID.
 
 Done when every moved pack has a summary of its rule changes, or the note that the change could not be read.
