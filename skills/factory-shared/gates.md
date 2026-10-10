@@ -27,9 +27,9 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 
 Every gate document ends with an `## Open questions` section, empty before approval. An existing document resumes from its open questions instead of being redrafted.
 
-A document fits its line budget (`wc -l`) before approval. Over budget, cut repetition and prose first. Still over, the change is too big for one pass: propose splitting it into smaller changes, each with its own triage.
-
 ## Approve a gate
+
+Before asking for approval, check the line budget with `wc -l`. Over budget: cut repeated statements and narrative, keeping every ID, example, signature and decision. Still over: propose splitting the change into smaller changes, each with its own triage, and let the user choose between splitting and accepting the overrun.
 
 Only after the user explicitly approves the document in chat:
 
