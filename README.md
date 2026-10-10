@@ -239,6 +239,33 @@ Book rules are priors. Your project history, in Pond, wins.
 
 The factory is built with its own loop.
 
+### Future releases
+
+Three specialist skills, each with the factory's habits: mechanical evidence before model judgment, opinions anchored to the product's own goals, and every proposed change run as a small factory change you approve.
+
+**S9: `factory-ui-ux`, a designer with taste and a spine.** Today's design skills polish surfaces: they rarely remove AI slop and hold no view on what the product should be. This one does both.
+
+- **Taste brief first.** From the product gate (problem, success metric, who the user is) it writes the product's design principles into `.factory/system/design.md`, positions included: what this product refuses to look like, the one primary action per screen, the words users actually say. Every later judgment cites the brief, not generic best practice.
+- **De-slop as a mechanical pass.** A catalog of slop patterns (gradient heroes, emoji bullets, interchangeable card grids, centered everything, filler copy, decorative motion) checked from code and from real screenshots before any taste opinion.
+- **Opinions with a cost.** Findings use the challenge card: the current design argued fairly first, then the objection, a concrete alternative and what it costs, anchored to the brief or the success metric. It recommends cutting things, not only restyling them.
+- **Seen, not imagined.** Screens rendered in a real browser at each breakpoint, with accessibility, empty and error states, and React Doctor's runtime scan where it applies.
+- **Where it plugs in:** mockups in the product gate, UI states in the interface gate, and review of slices that touch UI.
+
+**S10: `factory-ci`, "why is my CI so slow?"** One question, an answer with numbers.
+
+- **Measured, not guessed.** Reads the workflows and recent runs (`gh run list`, per-job and per-step timings), builds the critical path, and finds where the minutes go: missing caches, redundant setup, serial jobs that could fan out, unsharded test suites, full-history checkouts, sleep-based readiness, workflows triggered on paths they don't need.
+- **Ranked by saving.** Each proposal comes with the wall-clock and runner minutes it saves, measured where it can be, and how sure that number is.
+- **Posture on the way.** Unpinned actions, broad token permissions, secrets reachable from forks: reported beside the speed findings.
+- **Where it plugs in:** on demand, like prune; each accepted proposal runs as a small change.
+
+**S11: `factory-security`, an audit that knows which checks matter here.**
+
+- **Scanners first.** Trivy (dependencies, IaC, containers, secrets), Semgrep, Gitleaks, OSV-Scanner and each stack's own audit tool (`npm audit`, `cargo audit`, `govulncheck`, `pip-audit`), pinned and run like the adapters.
+- **Architecture before checklists.** It reads `.factory/system/` (product, ADRs, constraints) and the code map, and writes a threat model: assets, trust boundaries, entry points, who the attackers are.
+- **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills, are mostly irrelevant to any one repository. The kit keeps a routing index that tags each pinned security skill by stack, component (web API, auth, payments, infrastructure as code, mobile, LLM features) and threat class. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
+- **Findings proven.** Every finding is reproduced from its evidence before it is reported; confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.
+- **Where it plugs in:** on demand for a full audit; on track critical as the threat model the design already calls for; and as a review lens on slices that touch a trust boundary.
+
 ## Credits
 
 The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer.com/). The design leans on the authors of the projects and books linked above. Nothing from those books is reproduced here; the lens packs link to their own distilled rule sets.
