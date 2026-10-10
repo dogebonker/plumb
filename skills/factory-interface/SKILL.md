@@ -43,7 +43,7 @@ Depth: <what this module hides, in one line>
 
 For each module, show the draft and ask the user to accept, edit or rewrite it. Apply their changes verbatim: their wording of a signature wins over yours. Then ask the open questions.
 
-Done when the user has decided every module, Coverage maps every FR, NFR and C from the earlier gates, and Open questions is empty. An unmapped ID blocks approval.
+Done when the user has decided every module, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 
 ## 4. Approve
 

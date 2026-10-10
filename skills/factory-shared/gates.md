@@ -15,6 +15,11 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 
 `hash(doc)` = `shasum -a 256 <doc> | cut -d' ' -f1`
 
+## IDs
+
+- `FR-NN`, `NFR-NN`, `C-NN` belong to one change and are defined in its gate documents.
+- `SYS-FR-NN`, `SYS-NFR-NN`, `SYS-C-NN` are standing rows in `.factory/system/constraints.md`. A change lists the ones it touches under Standing constraints in its first gate document, then treats them like its own IDs: a budget or ruled-out options in architecture, an enforcement in interface Coverage, a covering slice.
+
 ## Load a change
 
 1. Slug empty: a gate skill uses the only change whose own gate is `pending`; build and review use the rule they state. Several or none: ask.

@@ -64,7 +64,7 @@ Consequences: <what gets easier, what gets harder>
 
 Present the Decisions first, each with the main alternative it rejects. Then the Budgets, then the open questions. Fold every answer into the document.
 
-Done when Open questions is empty and every NFR and C has a budget or the options it rules out.
+Done when Open questions is empty and every NFR and C, its own and the listed SYS ones, has a budget or the options it rules out.
 
 ## 5. Approve
 

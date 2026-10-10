@@ -67,7 +67,8 @@ modules:
     bdd: off                # native | off; adopt is set only by the user
 ```
 
-5. Write `.factory/changes/<slug>/status.yaml`:
+5. When `.factory/system/constraints.md` is missing, create it from [constraints.md](../factory-shared/constraints.md) with the example rows removed.
+6. Write `.factory/changes/<slug>/status.yaml`:
 
 ```yaml
 feature: <slug>
@@ -92,9 +93,9 @@ pond_sessions: []           # prior sessions worth reading, from step 1
 notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
 ```
 
-6. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
-7. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
-8. Committed mode: `git add .factory/changes/<slug> .factory/system/lenses.yaml` and commit `chore(factory): triage <slug>`.
+7. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
+8. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
+9. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): triage <slug>`.
 
 ## 6. Hand off
 

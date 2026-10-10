@@ -18,6 +18,7 @@ Load the change as gates.md describes, for the `product` gate.
 ## 2. Gather
 
 - The task in `status.yaml`, and the sessions in `pond_sessions`, read from the end (latest decisions win).
+- Read `.factory/system/constraints.md`.
 - Search Pond for earlier requests, complaints and decisions about the same behavior.
 - Read the code in scope only far enough to describe today's behavior in user terms.
 
@@ -51,6 +52,9 @@ Done when you can state today's behavior and the requested change in the user's 
 
 ## Constraints
 - C-01: <budget, deadline, regulation, team, existing system>
+
+## Standing constraints
+- SYS-NFR-01: <how this change touches it>
 
 ## Non-goals
 

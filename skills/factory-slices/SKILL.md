@@ -18,13 +18,13 @@ Load the change as gates.md describes, for the `slices` gate. Read every earlier
 ## 2. Gather
 
 - Read the files in scope fully, with their tests, to name real test files, allowed files and verify commands.
-- Track small: read the sessions in `pond_sessions`, from the end.
+- Track small: read the sessions in `pond_sessions`, from the end, and `.factory/system/constraints.md`.
 
 Done when every slice can name existing or new files by path.
 
 ## 3. Draft `04-slices.md`
 
-Track `small` has no earlier documents: write Goal and Requirements here too. Other tracks start at Slices.
+Track `small` has no earlier documents: write Goal, Requirements and Standing constraints here too. Other tracks start at Slices.
 
 ```markdown
 # Slices: <slug>
@@ -35,6 +35,9 @@ Track `small` has no earlier documents: write Goal and Requirements here too. Ot
 ## Requirements
 - FR-01: WHEN <trigger>, the system SHALL <response>
   Example: <concrete input> -> <concrete outcome>
+
+## Standing constraints
+- SYS-NFR-01: <how this change touches it>
 
 ## Slices
 ### 01 <name>
@@ -50,7 +53,7 @@ Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
 - Slices are vertical. A slice that only adds a layer (all models, then all handlers) is replaced by one that cuts through.
-- Every ID in Coverage of `03-interface.md` (track small: every FR above) is covered by a slice. When Coverage names a test, that slice writes it.
+- Every ID in Coverage of `03-interface.md` (track small: every FR and SYS ID above) is covered by a slice. When Coverage names a test, that slice writes it.
 
 ## 4. Walk the human through it
 

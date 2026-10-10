@@ -36,7 +36,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice. Copy, never paraphrase:
 
 - the slice's heading from `04-slices.md` as Goal
-- the covered IDs with their fit criteria (each FR's Example line) from `01-product.md`, or from `04-slices.md` on track small
+- the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`
 - its tests, allowed files and verify commands, from `04-slices.md`
