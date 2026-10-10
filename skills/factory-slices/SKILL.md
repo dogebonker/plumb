@@ -42,6 +42,7 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
 ## Slices
 ### 01 <name>
 Covers: FR-01
+Modules: <module paths this slice touches>
 Tests first: <test file> :: <test name> - <what it asserts>
 Allowed files: <paths, test files included>
 Verify: <commands>
@@ -52,6 +53,7 @@ Verify: <commands>
 Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
+- A slice touching more than two modules is a sign of a shallow interface: raise it as an open question.
 - Slices are vertical. A slice that only adds a layer (all models, then all handlers) is replaced by one that cuts through.
 - Every ID in Coverage of `03-interface.md` (track small: every FR and SYS ID above) is covered by a slice. When Coverage names a test, that slice writes it.
 

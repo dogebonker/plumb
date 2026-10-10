@@ -22,6 +22,7 @@ Load the change as gates.md describes, for the `interface` gate. Read `01-produc
 
 ## <module path>
 Depth: <what this module hides, in one line>
+Cost: <n> public methods, <n> parameters, <n> error variants exposed, <n> configuration options exposed, <n> pass-through methods
 
 ```<language>
 <signature>
@@ -40,12 +41,24 @@ Depth: <what this module hides, in one line>
 
 - Signatures are in the repository's language and style, complete enough to compile.
 
-## 3. The human decides
+## 3. Compile and cost
 
-For each module, show the draft and ask the user to accept, edit or rewrite it. Apply their changes verbatim: their wording of a signature wins over yours. Then ask the open questions.
+Prove the signatures compile against the real code, using `~/.software-factory/adapters/<language>.md` for each module's language. Without an adapter for a language, tell the user that module stays unchecked.
+
+1. The working tree must be clean apart from `.factory/`.
+2. Write every module's signatures as stubs in their real files, in the adapter's stub form.
+3. Run the adapter's typecheck. A failure is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat.
+4. Fill each module's Cost line by counting in the stubs. A pass-through method forwards to another method with nearly the same signature.
+5. Undo the stubs: `git restore --worktree -- <files that existed>` and delete the files that did not. `git status --short` shows only `.factory/` again.
+
+Done when every module with an adapter type-checks, every Cost line is filled, and the tree is back to its state before step 2.
+
+## 4. The human decides
+
+For each module, show the draft with its Cost line and ask the user to accept, edit or rewrite it. A high count is a prompt to ask whether the module hides enough. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again. Then ask the open questions.
 
 Done when the user has decided every module, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 
-## 4. Approve
+## 5. Approve
 
 Approve the `interface` gate as gates.md describes. Next skill: `/factory-slices`.

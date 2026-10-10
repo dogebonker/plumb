@@ -209,7 +209,7 @@ Book rules are priors. Your project history, in Pond, wins.
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Every decision with context, reasoning and trade-off |
 | [docs/LANDSCAPE.md](docs/LANDSCAPE.md) | The tools surveyed and the gaps they leave |
 | [templates/](templates/) | The challenge card template, for the S4 challenge panel. Other templates live with the skills that use them |
-| [kit/](kit/) | Starter content for `~/.software-factory/`: NFR catalogs, lens profiles, language packs, pack pins |
+| [kit/](kit/) | Starter content for `~/.software-factory/`: NFR catalogs, lens profiles, language packs, stack adapters, pack pins |
 | [skills/](skills/) | Where the factory skills land, starting with S1 |
 | [assets/](assets/) | Diagrams used in this README |
 
