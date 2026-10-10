@@ -4,42 +4,35 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from factory_run import command, next_skill, record, set_scalar
+from factory_run import command, next_skill, parse_status, triage_skips, verify
 
 STATUS = """feature: demo
 branch: factory/demo
 mode: headless
-approvers: [alice]
-waiting_since: null
+waiting_since: 2026-10-10T09:00:00Z
 gates:
-  product:      {{ state: {p}, approved_by: null, approved_at: null, doc_sha256: null }}
-  architecture: {{ state: {a}, approved_by: null, approved_at: null, doc_sha256: null }}
-  interface:    {{ state: {i}, approved_by: null, approved_at: null, doc_sha256: null }}
-  slices:       {{ state: {s}, approved_by: null, approved_at: null, doc_sha256: null }}
-slices:
-{slices}
-reconciled: {r}
+  product:      {p}
+  architecture: {{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }}
+  interface:    {{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }}
+  slices:       {{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }}
+slices: []
+reconciled: false
 """
-
-
-def status(p="pending", a="pending", i="pending", s="pending", slices="", r="false"):
-    return STATUS.format(p=p, a=a, i=i, s=s, slices=slices, r=r)
-
+PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
 
 # Commands are the first line of an approver's review.
 assert command("approve product\nlooks good") == ("approve", "product")
 assert command("Sign off slice 01") == ("sign-off", "01")
 assert command("please approve product") is None
+assert command("") is None
 
 # The next skill follows the gates, then the slices, then reconcile.
-assert next_skill(status()) == "factory-product"
-assert next_skill(status(p="skipped", a="skipped", i="skipped")) == "factory-slices"
-done = {"p": "approved", "a": "approved", "i": "approved", "s": "approved"}
-assert next_skill(status(**done, slices="  - { id: 1, name: t, state: pending }")) == "factory-build"
-assert next_skill(status(**done, slices="  - { id: 1, name: t, state: green, head_commit: abc }")) == "factory-review"
-assert next_skill(status(**done, slices="  - { id: 1, name: t, state: done }")) == "factory-reconcile"
-assert next_skill(status(**done, slices="  - { id: 1, name: t, state: done }", r="true")) is None
-assert "waiting_since: 2026" in set_scalar(status(), "waiting_since", "2026-10-10T10:00:00Z")
+assert next_skill(parse_status(STATUS.format(p=PENDING))) == "factory-product"
+approved_all = STATUS.format(p="{ state: approved }").replace("state: pending", "state: approved")
+assert next_skill(parse_status(approved_all)) is None  # no slices yet: nothing to build
+built = approved_all.replace("slices: []", "slices:\n  - { id: 1, name: t, state: green, head_commit: abc }")
+assert next_skill(parse_status(built)) == "factory-review"
+assert next_skill(parse_status(built.replace("state: green", "state: done"))) == "factory-reconcile"
 
 with tempfile.TemporaryDirectory() as tmp:
     repo = Path(tmp)
@@ -48,46 +41,98 @@ with tempfile.TemporaryDirectory() as tmp:
         return subprocess.run(["git", "-c", "commit.gpgsign=false", "-C", str(repo), *args],
                               capture_output=True, text=True, check=True).stdout.strip()
 
+    def check(text, approvals, may_skip=frozenset()):
+        return verify(repo, "HEAD", change, text, approvals, may_skip)
+
     git("init", "-q", "-b", "factory/demo")
     git("config", "user.email", "t@t")
     git("config", "user.name", "t")
-    change = repo / ".factory" / "changes" / "demo"
-    change.mkdir(parents=True)
-    (change / "01-product.md").write_text("# product v1\n")
+    change = ".factory/changes/demo"
+    (repo / change).mkdir(parents=True)
+    (repo / change / "01-product.md").write_bytes(b"# product v1\r\n")  # CRLF hashes as bytes
     git("add", ".")
     git("commit", "-qm", "v1")
     v1 = git("rev-parse", "HEAD")
-    digest = hashlib.sha256(b"# product v1\n").hexdigest()
+    digest = hashlib.sha256(b"# product v1\r\n").hexdigest()
+    review = {"login": "alice", "body": "approve product", "commit": v1, "at": "2026-10-10T10:00:00Z"}
 
-    # An approval at the commit holding the current document is recorded.
-    text, recorded = record(repo, change, status(), [
-        {"login": "alice", "body": "approve product", "commit_id": v1, "submitted_at": "2026-10-10T10:00:00Z"}])
-    assert recorded == ["product approved by alice"], recorded
-    assert f"doc_sha256: {digest}" in text and "approved_by: alice" in text
+    # An approval of the current document is recorded, and clears the wait.
+    text, notes = check(STATUS.format(p=PENDING), [review])
+    assert notes == ["product approved by alice"], notes
+    assert f"doc_sha256: {digest}" in text and "waiting_since: null" in text
 
-    # An approval of an older version of the document is not.
-    (change / "01-product.md").write_text("# product v2\n")
+    # An approval the agent wrote itself, with no review behind it, is undone.
+    forged = STATUS.format(p=f"{{ state: approved, approved_by: bot, approved_at: x, doc_sha256: {digest} }}")
+    text, notes = check(forged, [])
+    assert notes == ["product reset to pending: no matching approval"], notes
+    assert parse_status(text)["gates"]["product"]["state"] == "pending"
+
+    # An approval of an older version of the document does not count.
+    (repo / change / "01-product.md").write_bytes(b"# product v2\n")
     git("commit", "-qam", "v2")
-    _, recorded = record(repo, change, status(), [
-        {"login": "alice", "body": "approve product", "commit_id": v1, "submitted_at": "2026-10-10T10:00:00Z"}])
-    assert recorded == [], recorded
+    _, notes = check(STATUS.format(p=PENDING), [review])
+    assert notes == [], notes
 
     # Approving a later gate before an earlier one does nothing.
-    _, recorded = record(repo, change, status(), [
-        {"login": "alice", "body": "approve slices", "commit_id": v1, "submitted_at": "2026-10-10T10:00:00Z"}])
-    assert recorded == []
+    v2 = git("rev-parse", "HEAD")
+    _, notes = check(STATUS.format(p=PENDING),
+                      [{**review, "body": "approve slices", "commit": v2}])
+    assert notes == [], notes
 
-    # A sign-off at or after the slice's head commit, with review.md written, finishes the slice.
-    (change / "slices" / "01").mkdir(parents=True)
-    (change / "slices" / "01" / "review.md").write_text("# Review\n\n## Sign-off\n<name>, <ISO time>\n")
+    # A sign-off counts only at a commit that holds review.md and contains the slice's head commit.
+    head_status = approved_all.replace("slices: []", f"slices:\n  - {{ id: 1, name: t, state: green, head_commit: {v2} }}")
+    gates_ok = []
+    for gate, doc in [("product", "01-product.md"), ("architecture", "02-architecture.md"),
+                      ("interface", "03-interface.md"), ("slices", "04-slices.md")]:
+        if gate != "product":
+            (repo / change / doc).write_text(f"# {gate}\n")
+    git("add", ".")
+    git("commit", "-qm", "docs")
+    docs = git("rev-parse", "HEAD")
+    for gate, doc in [("product", "01-product.md"), ("architecture", "02-architecture.md"),
+                      ("interface", "03-interface.md"), ("slices", "04-slices.md")]:
+        h = hashlib.sha256((repo / change / doc).read_bytes()).hexdigest()
+        head_status = head_status.replace(f"  {gate}:", f"  {gate}: {{ state: approved, approved_by: alice, "
+                                          f"approved_at: x, doc_sha256: {h} }} #", 1)
+        gates_ok.append({**review, "body": f"approve {gate}", "commit": docs})
+    sign = {**review, "body": "sign off slice 01", "commit": docs}
+    _, notes = check(head_status, [*gates_ok, sign])
+    assert notes == [], notes  # no review.md at that commit yet
+    (repo / change / "slices" / "01").mkdir(parents=True)
+    (repo / change / "slices" / "01" / "review.md").write_text("# Review\n")
     git("add", ".")
     git("commit", "-qm", "review")
-    head = git("rev-parse", "HEAD")
-    green = status(**done, slices=f"  - {{ id: 1, name: t, state: green, head_commit: {v1} }}")
-    text, recorded = record(repo, change, green, [
-        {"login": "alice", "body": "sign off slice 01", "commit_id": head, "submitted_at": "2026-10-10T11:00:00Z"}])
-    assert recorded == ["slice 01 signed off by alice"], recorded
-    assert "state: done" in text
-    assert "alice, 2026-10-10T11:00:00Z" in (change / "slices" / "01" / "review.md").read_text()
+    reviewed = git("rev-parse", "HEAD")
+    text, notes = check(head_status, [*gates_ok, {**sign, "commit": reviewed}])
+    assert notes == ["slice 01 signed off by alice"], notes
+    assert parse_status(text)["slices"][0]["state"] == "done"
+
+    # A gate the agent marked skipped is reset unless triage skipped it.
+    skipped = STATUS.format(p="{ state: skipped }")
+    text, notes = check(skipped, [])
+    assert notes == ["product reset to pending: triage did not skip it"], notes
+    assert check(skipped, [], {"product"})[1] == []
+
+    # Only the commit that created status.yaml on the branch's own line decides which gates triage skipped.
+    status_path = f"{change}/status.yaml"
+    (repo / status_path).write_text(STATUS.format(p="{ state: skipped }"))
+    git("add", ".")
+    git("commit", "-qm", "triage")
+    (repo / status_path).write_text(STATUS.format(p="{ state: skipped }").replace(
+        "architecture: { state: pending", "architecture: { state: skipped"))
+    git("commit", "-qam", "agent skips architecture")
+    assert triage_skips(repo, "HEAD", status_path) == {"product"}
+
+    # A duplicated gate line survives one rewrite, so a second check still finds work: the runner refuses it.
+    dup = STATUS.format(p=PENDING).replace("gates:\n", f"gates:\n  product: {PENDING}\n").replace(
+        f"  product:      {PENDING}", f"  product: {{ state: approved, approved_by: bot, approved_at: x, doc_sha256: {digest} }}")
+    text, notes = check(dup, [])
+    assert notes and check(text, [])[1], (notes, check(text, [])[1])
+
+    # A quoted done state is reset too.
+    quoted = head_status.replace("state: green", 'state: "done"')
+    text, notes = check(quoted, gates_ok)
+    assert notes == ["slice 01 reset to green: no matching sign-off"], notes
+    assert parse_status(text)["slices"][0]["state"] == "green"
 
 print("factory_run: all checks passed")

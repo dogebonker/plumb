@@ -53,14 +53,14 @@ Ask in one message:
 - only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)
 
-- the mode: `interactive` (this chat) or `headless` (the runner drives it through a pull request), and for headless the GitHub logins whose reviews count as approvals
+- the mode: `interactive` (this chat) or `headless` (the runner drives it through a pull request; who approves is configured on the runner)
 
 Done when the user has answered all of them.
 
 ## 5. Create the change
 
 1. The working tree must be clean apart from `.factory/`. If it is not, list the changes and ask the user to commit or stash them.
-2. Record `change_base_commit` = `git rev-parse HEAD`. On the default branch, create `factory/<slug>`. On any other branch, ask whether to work there or create `factory/<slug>`.
+2. Record `change_base_commit` = `git rev-parse HEAD`. On the default branch, create `factory/<slug>`. On any other branch, ask whether to work there or create `factory/<slug>`; a headless change always uses `factory/<slug>`, where the runner finds it.
 3. Ignored mode: append `.factory/` to `.git/info/exclude`, so the repository's own files stay untouched.
 4. Write `.factory/system/lenses.yaml` with the confirmed values:
 
@@ -104,8 +104,7 @@ sent_back: null             # { gate, slice, reason } while a gate must be revis
 stubbing: false             # true only while the interface gate compiles its stubs
 reconciled: false           # set by factory-reconcile
 mode: interactive           # interactive | headless
-approvers: []               # headless: GitHub logins whose reviews approve
-waiting_since: null         # headless: when the change last stopped for its approvers
+waiting_since: null         # headless: GitHub time of the question the change waits on
 deviations: []              # { slice, file, reason }
 pond_sessions: []           # prior sessions worth reading, from step 1
 notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
@@ -113,8 +112,8 @@ notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
 
 7. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
 8. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
-9. Headless mode needs committed mode: the pull request carries the documents. Push the branch and open a draft pull request (`gh pr create --draft`) titled `factory: <slug>`.
-10. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): triage <slug>`.
+9. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): triage <slug>`.
+10. Headless mode needs committed mode: the pull request carries the documents. Push the branch and open a draft pull request (`gh pr create --draft`) titled `factory: <slug>`.
 
 ## 6. Hand off
 

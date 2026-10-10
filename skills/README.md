@@ -39,13 +39,19 @@ Self-check: `python3 hooks/test_factory_gate.py`.
 
 ## Headless mode
 
-`runner/factory_run.py` drives changes whose `mode` is `headless` through their pull request: it records approvals from approvers' reviews (`approve <gate>`, `sign off slice NN`), passes their other replies to the next skill, and runs that skill through a headless harness (default `claude -p`). Run one pass per cron tick or CI job:
+`runner/factory_run.py` drives changes whose `mode` is `headless` through their pull request, one `factory/<slug>` branch and one pull request per change. On every pass it re-derives approvals from approvers' APPROVED reviews (`approve <gate>`, `sign off slice NN`) and resets any it cannot back, passes approvers' replies to a waiting change, and runs the next skill through a headless harness (default `claude -p`). Run one pass per cron tick or CI job, in a clone used only by the runner:
 
 ```bash
-python3 runner/factory_run.py <repository> --harness "claude -p"
+python3 runner/factory_run.py <clone> --approvers alice,bob --harness "claude -p"
 ```
 
-The server needs the skills installed, the kit, `gh` signed in, the runtimes the adapters call, and a harness allowed to edit files and run them unattended. Self-check: `python3 runner/test_factory_run.py`.
+- Approvers come only from `--approvers`. The login `gh` runs as on the server never counts, even when listed, so give the runner its own GitHub account.
+- Gates that interactive triage skipped stay skipped; any other `skipped` gate is reset to pending.
+- The server needs the skills installed, the kit, `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
+- Interactive triage creates the change and its pull request; the runner takes over from there.
+- The hard-gate hook guards the harness's editing tools only. Headless enforcement rests on the runner resetting what no approval backs.
+
+Self-check: `python3 runner/test_factory_run.py`.
 
 ## Run one change
 

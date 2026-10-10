@@ -31,17 +31,18 @@ def git(cwd, *args):
 
 
 def field(text, key):
-    m = re.search(rf"\b{key}:\s*\"?([^,\"}}\s]+)", text)
+    m = re.search(rf"\b{key}:\s*[\"']?([^,\"'}}\s]+)", text)
     return m.group(1) if m else None
 
 
 def parse_status(text):
-    status = {"branch": None, "stubbing": False, "gates": {}, "slices": []}
+    status = {"branch": None, "stubbing": False, "gates": {}, "slices": [], "scalars": {}}
     section = None
     for line in text.splitlines():
         top = re.match(r"^(\w+):\s*(.*)$", line)
         if top:
-            section, value = top.group(1), top.group(2).split("#")[0].strip().strip('"')
+            section, value = top.group(1), top.group(2).split("#")[0].strip().strip("\"'")
+            status["scalars"][section] = None if value in ("", "null") else value
             if section == "branch":
                 status["branch"] = value
             elif section == "stubbing":
@@ -53,7 +54,8 @@ def parse_status(text):
                                               "doc_sha256": field(gate.group(2), "doc_sha256")}
         item = re.match(r"^\s*-\s*\{(.*)\}", line)
         if section == "slices" and item:
-            status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state")})
+            status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state"),
+                                     "head_commit": field(item.group(1), "head_commit")})
     return status
 
 
