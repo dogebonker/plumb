@@ -47,6 +47,7 @@ Ask in one message:
 - the slug (kebab-case, at most four words)
 - the three commands, so the user can correct them
 - the modules with language and BDD state, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
+- only when `.factory/system/constraints.md` does not exist: the closest domain in `~/.software-factory/nfr-catalog/` and its rows, for the user to keep, drop or tune. Without the kit, say so and point to `kit/README.md` in the factory repository
 - whether `.factory/` is committed in this repository or ignored (only when `.factory/` does not exist yet; otherwise reuse the mode of an existing `status.yaml`)
 
 Done when the user has answered all of them.
@@ -60,6 +61,7 @@ Done when the user has answered all of them.
 
 ```yaml
 money: false
+domain: web-api              # NFR catalog that seeded the registry, or none
 modules:
   - path: .
     language: go
@@ -67,7 +69,7 @@ modules:
     bdd: off                # native | off; adopt is set only by the user
 ```
 
-5. When `.factory/system/constraints.md` is missing, create it from [constraints.md](../factory-shared/constraints.md) with the example rows removed.
+5. When `.factory/system/constraints.md` is missing, create it from [constraints.md](../factory-shared/constraints.md) with the example rows removed. Add each catalog row the user kept as `SYS-NFR-NN`: Kind is the catalog key, Statement the promise, Fit criterion the tuned budget, Source `nfr-catalog/<domain>`, Enforced by the catalog's kind until a change names the exact test or monitor.
 6. Write `.factory/changes/<slug>/status.yaml`:
 
 ```yaml

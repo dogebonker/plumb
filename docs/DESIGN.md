@@ -16,7 +16,7 @@ The complete specification of the factory. The README explains the why; this doc
 | Layer | Where it lives | Shared across projects | How it gets there |
 | --- | --- | --- | --- |
 | Factory skills | This repository, installed user-level | Yes | One install per machine or server, pinned to a tag |
-| Factory kit | `~/.software-factory/`, its own git repository | Yes | `git clone` on every machine and server |
+| Factory kit | `~/.software-factory/`, its own git repository | Yes | Copied once from this repository's `kit/`, then `git clone` on every other machine and server |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
 | Third-party packs | Vendored inside `~/.software-factory/`, pinned by commit | Yes | Bumped deliberately, changelog reviewed |
 | Project state | `<repo>/.factory/` | No | Created by triage on first run |
