@@ -13,9 +13,8 @@ Scripts first, then `/polish`, then the human. Requires the `polish` skill. Belo
 
 ## 1. Load the slice
 
-- Slug empty: use the only change in `.factory/changes/` with a `green` slice. Several or none: ask.
-- Read `status.yaml` and the slice's `packet.md`. Check out the `branch`. The slice must be `green`: otherwise point to `/factory-build <slug>` and stop.
-- `shasum -a 256 .factory/changes/<slug>/plan.md | cut -d' ' -f1` must equal `gates.plan.doc_sha256`. On a mismatch, set the gate to `pending` and tell the user to run `/factory-plan <slug>`. Stop.
+- Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a `green` slice. Otherwise point to `/factory-build <slug>` and stop.
+- Read the slice's `packet.md`.
 
 ## 2. Phase 1: mechanical checks
 
@@ -26,7 +25,7 @@ Run each check and record pass or fail with evidence. Rerun all of them whenever
 3. **Red tests unchanged.** `git diff <test>..HEAD -- <test files from Tests first>` is empty, or each change is logged in `deviations`.
 4. **Green.** `test_command` passes at HEAD, apart from tests in `baseline_failures`.
 
-A frozen-contract difference sends the slice back: set `gates.plan.state` to `pending`, set `sent_back` to `{ slice: NN, reason }`, add the reason to Open questions in `plan.md`, and tell the user to run `/factory-plan <slug>`. Stop.
+A frozen-contract difference sends the slice back, as gates.md describes.
 
 ## 3. Phase 2: /polish
 

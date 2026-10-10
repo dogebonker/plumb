@@ -15,9 +15,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 
 ## 1. Check the gate
 
-- Slug empty: use the only change in `.factory/changes/` with a slice not `done`. Several or none: ask.
-- Read `status.yaml`. Check out its `branch` (this also leaves a detached HEAD from an interrupted red check).
-- `gates.plan.state` must be `approved` and `shasum -a 256 .factory/changes/<slug>/plan.md | cut -d' ' -f1` must equal `doc_sha256`. On a mismatch, set the gate to `pending` and tell the user to run `/factory-plan <slug>` for approval. Stop.
+- Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Checking out the branch also leaves a detached HEAD from an interrupted red check.
 - Pick the first slice not `done` and resume by its state:
   - `pending`: step 2.
   - `rewind`: rewind (below), then step 2.
@@ -37,12 +35,12 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 
 Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice. Copy, never paraphrase:
 
-- the covered IDs with their fit criteria (each FR's Example line), and NFR budgets
-- the frozen signatures, interface comments and depth statements it touches, from Interface
-- the Research facts it needs, with their `path:line`
-- its tests, test files, allowed files and verify commands, from Slices
+- the covered IDs with their fit criteria (each FR's Example line) from `01-product.md`, or from `04-slices.md` on track small
+- the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
+- the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`
+- its tests, allowed files and verify commands, from `04-slices.md`
 
-Done when an engineer who has never seen the plan could build the slice from the packet alone.
+Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 
 ## 3. Dispatch the executor
 
@@ -64,7 +62,7 @@ When the executor stops:
 - **Pre-commit hook:** ask the user whether red commits may use `--no-verify`, and continue the executor with the answer.
 - **A new test passes against the stub:** ask the user to keep it (record its name in the slice's `red_exempt`) or have the executor rewrite it.
 
-**Send back:** set `gates.plan.state` to `pending`, set `sent_back` to `{ slice: NN, reason }`, add the reason to Open questions in `plan.md`, and tell the user to run `/factory-plan <slug>`. Stop.
+**Send back:** as gates.md describes.
 
 ## 4. Prove red
 

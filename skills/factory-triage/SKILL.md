@@ -25,9 +25,9 @@ Done when you can name the modules in scope and all three commands.
 | Track | When | What runs |
 | --- | --- | --- |
 | trivial | rename, copy, config, one-line fix | no factory: tell the user to hand it straight to an agent, then stop |
-| small | a few files, no new or changed interface | short plan (goal, requirements, slices), then build and review |
-| standard | new endpoint, table, screen, or any interface change | full plan, build and review |
-| critical | money, auth, migrations | S1 runs it as standard. The Money reviewer and threat model are not built yet: say so |
+| small | a few files, no new or changed interface | slices gate only, then build and review |
+| standard | new endpoint, table, screen, or any interface change | all four gates, then build and review |
+| critical | money, auth, migrations | runs as standard. The Money reviewer and threat model are not built yet: say so |
 
 Pick the track from what the code shows, not from how the task is worded.
 
@@ -60,18 +60,22 @@ test_command: "<full suite>"
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"
 baseline_failures: []       # tests already failing at change_base_commit
-gates:
-  plan: { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
-slices: []                  # filled by factory-plan
-sent_back: null             # { slice, reason } while the plan must be revisited
+gates:                      # track small: product, architecture and interface are skipped
+  product:      { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
+  architecture: { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
+  interface:    { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
+  slices:       { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
+slices: []                  # filled by factory-slices
+sent_back: null             # { gate, slice, reason } while a gate must be revisited
 deviations: []              # { slice, file, reason }
 pond_sessions: []           # prior sessions worth reading, from step 1
-notes_for_fresh_session: "Triage done. Next: /factory-plan <slug>."
+notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
 ```
 
-5. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
-6. Committed mode: `git add .factory/changes/<slug>` and commit `chore(factory): triage <slug>`.
+5. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
+6. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
+7. Committed mode: `git add .factory/changes/<slug>` and commit `chore(factory): triage <slug>`.
 
 ## 5. Hand off
 
-Tell the user: run `/factory-plan <slug>`.
+Tell the user the next skill: `/factory-product <slug>`, or `/factory-slices <slug>` on track small.
