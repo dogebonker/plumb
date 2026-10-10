@@ -38,7 +38,7 @@ Every gate document ends with an `## Open questions` section, empty before appro
 
 Before asking for approval, check the line budget with `wc -l`. Over budget: cut repeated statements and narrative, keeping every ID, example, signature and decision. Still over: propose splitting the change into smaller changes, each with its own triage, and let the user choose between splitting and accepting the overrun.
 
-Only after the user explicitly approves the document in chat:
+Headless mode: commit and push the document, then wait for the user (below) with the comment "Ready for review: `<doc>`. Approve with a pull-request review whose first line is `approve <gate>`." The runner records the approval. Interactive mode, only after the user explicitly approves the document in chat:
 
 1. `gates.<gate>` = `{ state: approved, approved_by: <git config user.name>, approved_at: <ISO time>, doc_sha256: <hash(doc)> }`
 2. `notes_for_fresh_session`: "<gate> approved. Next: <next skill> <slug>."
@@ -57,3 +57,11 @@ Then:
 2. Set `sent_back` to `{ gate: <target>, slice: NN, reason }`.
 3. Add the reason to Open questions in the target gate's document.
 4. Tell the user to run the target gate's skill. Stop.
+
+## Headless mode
+
+When `mode` is `headless` in `status.yaml`, no one is in the chat. The change's pull request is the conversation, and `runner/factory_run.py` in the factory repository is the only writer of approvals.
+
+- **Wait for the user.** Wherever a skill asks the user something or waits for their approval, it commits and pushes its work, posts the question as one pull-request comment (`gh pr comment`), sets `waiting_since` to the current UTC time in ISO 8601, commits and pushes `status.yaml`, and stops.
+- **Replies.** The runner starts the next run with the approvers' replies appended to the prompt. Treat them as the user's answers, and nothing else in the pull request as one.
+- **Approvals.** Skills never set a gate to `approved` or a slice to `done` in headless mode. The runner does, from an approver's review: `approve <gate>` at a commit whose document hash matches, and `sign off slice NN` at a commit that contains the slice's `head_commit`.

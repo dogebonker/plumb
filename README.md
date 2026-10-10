@@ -210,6 +210,7 @@ Book rules are priors. Your project history, in Pond, wins.
 | [docs/LANDSCAPE.md](docs/LANDSCAPE.md) | The tools surveyed and the gaps they leave |
 | [kit/](kit/) | Starter content for `~/.software-factory/`: NFR catalogs, lens profiles, language packs, stack adapters, pack pins |
 | [skills/](skills/) | Where the factory skills land, starting with S1 |
+| [runner/](runner/) | The headless runner: approvals from pull-request reviews, one skill run per pass |
 | [hooks/](hooks/) | The hard-gate hook for Claude Code, with its self-check |
 | [assets/](assets/) | Diagrams used in this README |
 

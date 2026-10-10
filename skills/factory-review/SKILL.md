@@ -58,6 +58,8 @@ A frozen-contract difference sends the slice back, as gates.md describes.
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
+
+   Headless mode: polish's report is the question. Write its findings and the lens cards into `review.md` under Polish and Lens reviewers as proposed, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `review.md` and continues at step 6.
 5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Present the rest to the user once polish ends, `block` first, each with fix or skip. Apply approved card fixes after polish's own fixes, each only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
 6. A fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage the changed source files by path and commit them as `fix(<slug>): slice NN review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
@@ -97,6 +99,8 @@ Range: <base>..<head>
 ## 5. Human sign-off
 
 Ask the user to read `git diff <base>..<head> -- . ':!.factory'` and `review.md`, then sign off. Only after an explicit sign-off in chat: fill the Sign-off line and set the slice to `done`.
+
+Headless mode: commit and push `review.md`, then wait for the user (gates.md) with the comment "Slice NN reviewed: `review.md`. Sign off with a pull-request review whose first line is `sign off slice NN`." The runner records the sign-off.
 
 ## 6. Hand off
 

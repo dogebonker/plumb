@@ -37,6 +37,16 @@ What it leaves to others:
 
 Self-check: `python3 hooks/test_factory_gate.py`.
 
+## Headless mode
+
+`runner/factory_run.py` drives changes whose `mode` is `headless` through their pull request: it records approvals from approvers' reviews (`approve <gate>`, `sign off slice NN`), passes their other replies to the next skill, and runs that skill through a headless harness (default `claude -p`). Run one pass per cron tick or CI job:
+
+```bash
+python3 runner/factory_run.py <repository> --harness "claude -p"
+```
+
+The server needs the skills installed, the kit, `gh` signed in, the runtimes the adapters call, and a harness allowed to edit files and run them unattended. Self-check: `python3 runner/test_factory_run.py`.
+
 ## Run one change
 
 `/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` once per slice, then `/factory-reconcile` before merging. Each skill resumes from `.factory/changes/<slug>/status.yaml`, so start a fresh session whenever a skill tells you to.
