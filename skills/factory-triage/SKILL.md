@@ -8,6 +8,7 @@ argument-hint: "<task description>"
 # Factory triage
 
 Task: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Triage turns a task into a tracked change: a track, a branch, `status.yaml`, and the repository profile in `.factory/system/lenses.yaml`.
 
@@ -89,6 +90,7 @@ modules:
 feature: <slug>
 task: "<the task in one line>"
 track: standard             # small | standard | critical
+track_proposed: standard    # the track triage recommended, kept when the user chose another
 factory_dir: committed      # committed | ignored
 branch: <branch from 5.2>
 change_base_commit: <sha>
@@ -111,6 +113,8 @@ waiting_since: null         # headless: GitHub time of the question the change w
 deviations: []              # { slice, file, reason }
 pond_sessions: []           # prior sessions worth reading, from step 1
 notes_for_fresh_session: "Triage done. Next: <first gate skill> <slug>."
+history:                    # append-only events (factory-shared/gates.md, History)
+  - { at: <ISO time>, step: factory-triage, event: step_start, ref: "-", detail: "session <id>, factory <sha>" }
 ```
 
 7. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.

@@ -4,7 +4,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** roadmap S1 to S11 built; not yet run end to end on a real feature.
+**Status:** roadmap S1 to S12 built; not yet run end to end on a real feature.
 
 ## TL;DR
 
@@ -153,7 +153,7 @@ A typical slice costs four review agents. The worst case, a money slice that tou
 | Python | [trailofbits/skills](https://github.com/trailofbits/skills) `modern-python` + [wshobson/agents](https://github.com/wshobson/agents) `python-development` | `pyproject.toml` and friends |
 | Simplification | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Packet, review rubric, and the prune job |
 | Security | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), plus routed packs from OpenAI, Trail of Bits, Sentry and 15 mukul975 skills | `factory-security`; the selection is in [docs/research/security-selection.md](docs/research/security-selection.md) |
-| Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review and reconcile query it |
+| Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review, reconcile and retro query it |
 
 Every third-party pack is vendored into `~/.software-factory/` and pinned by commit, so an upstream change never lands in the middle of a feature.
 
@@ -194,7 +194,7 @@ The factory uses it in three places:
 
 - **Gates and research** search Pond for prior decisions, rejected designs and incidents that touch the same modules before drafting.
 - **Review** checks findings against what was already accepted or overruled, so the same argument does not come back.
-- **Reconcile** queries Pond for recurring findings and accept or overrule counts per lens rule. Lessons and calibration are computed, not hand-maintained. A rule that keeps getting accepted is promoted into `principles.md`.
+- **Reconcile** counts accept and overrule answers per lens rule across repositories, and runs retro on the change's sessions. Lessons and calibration are computed, not hand-maintained. A rule that keeps getting accepted is promoted into `principles.md`.
 
 What is curated stays in files:
 
@@ -206,8 +206,8 @@ What is curated stays in files:
   lenses/                        vendored packs, pinned by commit
   adapters/<stack>.md            typecheck stubs, run tests at a commit, import graph, dead code, BDD runner
 
-<repo>/.factory/system/          living product, architecture, constraints, glossary, ADRs, lenses.yaml
-<repo>/.factory/changes/<slug>/  status.yaml, gate docs, slices/NN/{packet,review}.md
+<repo>/.factory/system/          living product, architecture, constraints, glossary, ADRs, lenses.yaml, playbook.md
+<repo>/.factory/changes/<slug>/  status.yaml, gate docs, slices/NN/{packet,review}.md, retro.md
 ```
 
 Book rules are priors. Your project history, in Pond, wins.
@@ -266,6 +266,12 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 - **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills or [Claude-Code-CyberSecurity-Skill](https://github.com/Masriyan/Claude-Code-CyberSecurity-Skill), are mostly irrelevant to any one repository. The kit keeps a routing index that tags each approved source by component (web API, auth, payments, infrastructure as code, LLM features and more) and stack: 15 of mukul975's 817 skills made the cut, none of Masriyan's. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
 - **Findings proven.** A finding is `confirmed` only with a full trace and an observed result; what needs a running system and has no sandbox stays `needs_validation` with a plan. Confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.
 - **Where it plugs in:** on demand for a full audit; on track critical as the threat model the design already calls for; and as a review lens on slices that touch a trust boundary.
+
+**S12: `factory-retro`, a factory that gets better in each repository.** Built: [skills/factory-retro](skills/factory-retro/SKILL.md). What it learns and why: [docs/research/retro-selection.md](docs/research/retro-selection.md).
+
+- **Measured.** At the end of every change, reconcile runs retro: 8 friction metrics (questions to you, waiting, rework, retries, repeated findings, tokens), compared with the repository's earlier changes of the same track. The factory now keeps an append-only `history` of what happened in each change, so nothing it learns from is overwritten.
+- **Environment first.** A lesson becomes a check (a test, a linter rule, a hook) when it can, then a pointer, and only then a line in the repository's playbook, `.factory/system/playbook.md`, which every factory skill reads.
+- **Evidence-gated memory.** An entry needs an outside signal seen in two changes, cites the code it applies to, counts whether it held, and retires when it stops earning its place; at most 25, each approved by you. Session text is data: it can never write an instruction.
 
 ## Credits
 

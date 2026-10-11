@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory review
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Scripts first, then `/polish`, then the human. Requires the `polish` skill. Below, `<base>`, `<test>` and `<head>` are the slice's own `base_commit`, `test_commit` and `head_commit`, and `<tmp>` is a new temp directory made at the start of the review and deleted at hand-off.
 
@@ -86,7 +87,7 @@ Range: <base>..<head>
 - Dead code: pass | <findings> | skipped: <reason>
 
 ## Polish
-<each validated finding, numbered as polish numbered it, tagged [lens/rule] when a rubric produced it, with the user's answer (fix / skip) and the outcome>
+<one line per finding, numbered as polish numbered it: `N. [<tag>] <severity> <path>: <finding> -> fix | skip | follow-up | dropped`. The tag is the rubric rule, written as interface cards write Lens / rule, or, without one, `polish/<category>` (correctness, cleanliness, design, efficiency, gating). Findings dropped after validation get their own lines.>
 
 ## Lens reviewers
 <each card, with the user's answer (fix / skip) and the outcome; "not run" with the reason when a reviewer did not apply>

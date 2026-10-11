@@ -10,7 +10,7 @@ ln -s ~/Work/software-factory/skills/factory-* ~/Work/software-factory/skills/ui
 
 The skills read the kit at `~/.software-factory/`. Set it up once from [kit/](../kit/README.md).
 
-Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
+Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates, the playbook contract). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
 
 ## Hard gates
 
@@ -78,5 +78,6 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-ui-ux` | S9 | The repository's DESIGN.md (created by guide, enforced for UI changes), optional mockup screenshots at the product gate, mechanical de-slop, anchored critique of rendered screens |
 | `factory-ci` | S10 | Measured CI history (health, strata, critical path, queue, minutes, dollars, noise floor), ranked fixes with labelled savings, posture through zizmor, each approved fix as a small change and verified after merge |
 | `ui-hard-gate` | S9 | Not a factory gate skill: the pre-review UI gate (reference first, every state captured, 22 rules, first-pass presentation); factory-ui-ux applies its rules as standing preferences |
+| `factory-retro` | S12 | Runs at the end of every change, inside reconcile: friction metrics against earlier changes, environment fixes first, an evidence-gated per-repository playbook every skill reads |
 | `factory-security` | S11 | Threat model from the code, pinned scanners, the `security-audit` method with routed knowledge, proven findings as small changes |
 | `factory-prune` | S7 | Repository audit with the simplification ladder; protected code filtered out; each approved item runs as a small change |

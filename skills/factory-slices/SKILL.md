@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory slices
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate cuts the agreed design into slices an executor can build one at a time.
 

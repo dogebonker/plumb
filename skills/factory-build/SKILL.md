@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory build
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 You orchestrate. A fresh executor writes the code from the packet alone. You prove the result mechanically.
 
@@ -18,13 +19,13 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 - Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Checking out the branch also leaves a detached HEAD from an interrupted red check.
 - Pick the first slice not `done` and resume by its state:
   - `pending`: step 2.
-  - `rewind`: rewind (below), then step 2.
-  - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. Otherwise rewind, then step 3.
+  - `rewind`: rewind (below, cause `sent_back`), then step 2.
+  - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. Otherwise rewind (cause `interrupted`), then step 3.
   - `red`: step 5.
   - `green`: tell the user to run `/factory-review <slug>`. Stop.
 - The working tree must be clean apart from `.factory/`.
 
-**Rewind** undoes a slice's code without touching `.factory/` or rewriting history:
+**Rewind** undoes a slice's code without touching `.factory/` or rewriting history, and appends a `rewind` event with its cause (gates.md, History):
 
 1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.factory'`, and ask the user to confirm.
 2. `git restore --source=<base_commit> --staged --worktree -- . ':!.factory'` then `git clean -fd -- . ':!.factory'`.
@@ -40,7 +41,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`, and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
 - its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
-- under Rules in scope, the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
+- under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); then the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 
@@ -57,7 +58,7 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 >
 > Report: both commit shas, the tail of the failing run from step 1, the tail of the passing run from step 2, and anything you stopped on.
 
-When the executor stops:
+When the executor stops, append an `executor_stop` event with the reason:
 
 - **Frozen signature or wrong test:** send the slice back.
 - **File outside the list:** ask the user. Allowed: log `{ slice, file, reason }` in `deviations`, append the file to the packet's Allowed files, and continue the executor. Refused: send the slice back.
@@ -76,12 +77,12 @@ When the executor stops:
 Red means: it builds; every new test fails, on an assertion or an error raised through a stub, except those in `red_exempt` (an undefined or pending step is not red: the red commit defines every step); and every other test passes except those in `baseline_failures`.
 
 - Red: set the slice to `red`.
-- Not red, first time: rewind and dispatch a fresh executor (step 3) with the output.
+- Not red, first time: append a `red_retry` event, rewind (cause `red_retry`) and dispatch a fresh executor (step 3) with the output.
 - Not red, second time: show the user the output and ask how to proceed.
 
 ## 5. Prove green
 
-At the branch head, run every Verify command and `test_command`. Green means all pass, apart from tests in `baseline_failures`. On failure, continue the executor with the output, or dispatch a fresh one if it is gone. Record `head_commit` and set the slice to `green`.
+At the branch head, run every Verify command and `test_command`. Green means all pass, apart from tests in `baseline_failures`. On failure, append a `green_retry` event and continue the executor with the output, or dispatch a fresh one if it is gone. Record `head_commit` and set the slice to `green`.
 
 ## 6. Hand off
 

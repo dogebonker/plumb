@@ -61,6 +61,10 @@ with tempfile.TemporaryDirectory() as tmp:
         assert run(root, allowed).returncode == 0, allowed
     assert run(root, "src/b.ts").returncode == 2
 
+    # The append-only history after slices changes nothing the hook reads.
+    st.write_text(status(approved, slices=building) + 'history:\n  - { at: now, step: factory-build, event: step_start, ref: "1", detail: "state: done" }\n')
+    assert run(root, "src/a.ts").returncode == 0 and run(root, "src/b.ts").returncode == 2
+
     # Track small: skipped gates count as passed.
     small = [(g, "skipped", "null") for g, _ in GATES[:3]] + [approved[3]]
     st.write_text(status(small, slices=building))

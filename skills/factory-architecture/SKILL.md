@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory architecture
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides how the change fits the existing system. Interfaces come next, in `/factory-interface`.
 

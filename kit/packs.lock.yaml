@@ -34,3 +34,4 @@ packs:
   testing-cors-misconfiguration: { source: mukul975/Anthropic-Cybersecurity-Skills, hash: 602b8979ee3e2a383dde9209a3c526e133033eee, pinned_at: 2026-08-16 }
   vercel-react-best-practices: { source: vercel-labs/agent-skills, hash: 343db72180d05814949fef7d46be96b5c6ee86b3, pinned_at: 2026-10-08 }
   working-effectively-with-legacy-code: { source: ciembor/agent-rules-books, hash: 258a511ceef5c0978a2d7350842fb9df55a2cf99, pinned_at: 2026-09-10 }
+  writing-for-agents: { source: mattpocock/skills, hash: ad2925850efb8973a72d2e666f7a975f9a2d4a9b, pinned_at: 2026-10-11 }

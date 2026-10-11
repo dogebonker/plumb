@@ -25,11 +25,12 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 ## Load a change
 
 1. Slug empty: a gate skill uses the only change whose own gate is `pending`; build and review use the rule they state. Several or none: ask.
-2. Read `status.yaml`. Check out its `branch`.
-3. **Check the chain.** Walk the gates in order. The first `approved` gate whose `hash(doc)` differs from its `doc_sha256` goes back to `pending`, and so does every later gate that is not `skipped`. Tell the user which document changed.
+2. Read `status.yaml`. Check out its `branch`. Append a `step_start` event to `history` (History, below).
+3. **Check the chain.** Walk the gates in order. The first `approved` gate whose `hash(doc)` differs from its `doc_sha256` goes back to `pending`, and so does every later gate that is not `skipped`. Append a `gate_reopened` event with cause `chain`. Tell the user which document changed.
 4. A gate skill whose own gate is `approved` or `skipped` says so, names the next skill, and stops. To revise an approved gate, the user edits its document: the chain check reopens it.
 5. **Design file.** A change with `ui: true` in `status.yaml` needs the repository's design file: the root `DESIGN.md`, or `.factory/system/design.md` when the root name holds something else; either way it carries the stamp `factory:design-schema` that `/factory-ui-ux` writes. Without it, every skill stops and points to `/factory-ui-ux design-md`; the factory hook blocks source edits too.
 6. A gate skill drafts only when every earlier gate is `approved` or `skipped`. Otherwise name the first gate that is not, and its skill. Stop. Build and review need all four `approved` or `skipped`.
+7. **Playbook.** Read `.factory/system/playbook.md` as [playbook.md](playbook.md) says, when it exists.
 
 ## Draft a gate document
 
@@ -55,9 +56,23 @@ When build or review finds that the approved design cannot hold, pick the target
 Then:
 
 1. Set the target gate and every later gate to `pending`.
-2. Set `sent_back` to `{ gate: <target>, slice: NN, reason }`.
+2. Set `sent_back` to `{ gate: <target>, slice: NN, reason }`, and append a `sent_back` event (ref: the slice; detail: the target gate and reason).
 3. Add the reason to Open questions in the target gate's document.
 4. Tell the user to run the target gate's skill. Stop.
+
+## History
+
+`history` in `status.yaml` is append-only: one flow-map line per event, never edited or removed, so `/factory-retro` can count what happened after the fields it summarizes are overwritten.
+
+```yaml
+history:
+  - { at: 2026-10-11T09:12:03Z, step: factory-build, event: step_start, ref: "01", detail: "session <id>, factory <sha>" }
+```
+
+- `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`.
+- `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice; detail: target gate and reason).
+- From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
+- `detail` is one line in double quotes.
 
 ## Headless mode
 

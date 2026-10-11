@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory reconcile
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Reconcile runs once, after the last slice is signed off and before the branch merges, so the project's living documents ship with the code they describe. Below, `<change>` is `.factory/changes/<slug>` and `<system>` is `.factory/system`.
 
@@ -50,20 +51,25 @@ Done when every Decision has an ADR, every change ID has a SYS row, and every ne
 
 Your answers to lens findings tune the kit's `~/.software-factory/principles.md`.
 
-1. Count, per lens and rule, how often a finding was accepted (accept, modify, fix) and how often it was rejected (overrule, skip): in this change's `challenges.md` Responses and the `[lens/rule]` findings and lens cards of its `review.md` files, and, through Pond (read `schema://pond-sql` first), in every `challenges.md` and `review.md` the factory wrote for other changes, in this project or any other. Each answer counts once: leave this change's own files out of the Pond count.
+1. Count, per lens and rule (tags starting with `polish/` are not lens rules and are not counted), how often a finding was accepted (accept, modify, fix) and how often it was rejected (overrule, skip): in this change's `challenges.md` Responses and the `[lens/rule]` findings and lens cards of its `review.md` files, and in the `.factory/changes/*/challenges.md` and `review.md` files of this repository's other changes and of every other repository where the factory ran. Read those files from each repository's git; Pond (read `schema://pond-sql` first) only finds the repositories, because the files are often written in pieces that no single tool call holds. Each answer counts once.
 2. Draft the kit changes:
    - a rule accepted three times or more becomes a principle, with its reason taken from the findings' objections
    - a rule rejected three times or more joins Quiet rules, unless it is a money or security rule as `principles.md` defines
    - a quiet rule accepted since it went quiet leaves Quiet rules
    - a finding with the same `[lens/rule]` tag, fixed in three changes or more, becomes a lesson: a proposed principle, or a linter rule for the module's language pack (`linter.propose`)
-3. Without Pond, count this change's files only, and say so.
+   - a playbook entry active in two repositories' `.factory/system/playbook.md` and seen in three changes or more becomes a proposed principle or linter rule the same way
+3. Without Pond, count this repository's changes only, and say so.
 
-## 6. Confirm and write
+## 6. Retro
 
-Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change. Write them once the user confirms; apply their corrections first. Kit changes are committed in the factory repository (`~/.software-factory` links into it), staging only the files reconcile changed, and pushed only when the user asks.
+Follow [../factory-retro/SKILL.md](../factory-retro/SKILL.md) for this change. Its drafts join the confirmation below.
 
-## 7. Record
+## 7. Confirm and write
+
+Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line and kit change, and everything retro drafted: `retro.md`, the playbook changes and counters, the environment fixes, proposals for the factory repository and suspicious items. Write them once the user confirms; apply their corrections first. Kit changes are committed in the factory repository (`~/.software-factory` links into it), staging only the files reconcile changed, and pushed only when the user asks.
+
+## 8. Record
 
 1. Set `reconciled: true` and `notes_for_fresh_session: "Reconciled. Ready to merge."` in `status.yaml`.
-2. Committed mode: `git add .factory/system .factory/changes/<slug>` and commit `chore(factory): reconcile <slug>`.
+2. Committed mode: `git add .factory/system .factory/changes/<slug>` (the playbook and `retro.md` included) and commit `chore(factory): reconcile <slug>`.
 3. Tell the user the change is ready to merge from `<branch>`.

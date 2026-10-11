@@ -92,7 +92,7 @@ severity       | block / fix / note
 
 Severity is earned: only anchored challenges can block or require a fix. Three per lens at most. Zero findings is allowed if the reviewer names the strongest objection it dropped. Reviewers never see the drafting chat. Lens conflicts go to the human; the call becomes an ADR.
 
-**Calibration.** Answers are recorded in Pond; reconcile counts them per lens rule with a Pond query. Overruled three times: demoted to a note. Accepted three times: promoted into `principles.md`. Money and security rules never demote.
+**Calibration.** Answers are recorded in each change's `challenges.md` and `review.md`; reconcile counts them per lens rule from git, using Pond to find the repositories. Overruled three times: demoted to a note. Accepted three times: promoted into `principles.md`. Money and security rules never demote.
 
 **Precedence.** APoSD arbitrates at interface level. Inside a module, code-level rules apply in their smallest form. Small functions never override deep modules. A language pack decides how to express something; book lenses decide where boundaries go.
 
@@ -196,7 +196,7 @@ Never simplified away: frozen interfaces, code enforcing a constraint ID, money 
 <repo>/.factory/changes/<slug>/  status.yaml, gate docs, slices/NN/{packet,review}.md
 ```
 
-Every review finding is tagged by lens and rule, so Pond can count it. Recurring findings are promoted to principles or lint rules; overruled rules are demoted at the next reconcile. Book rules are priors; project history wins.
+Every review finding is tagged by lens and rule, so reconcile can count it. Recurring findings are promoted to principles or lint rules; overruled rules are demoted at the next reconcile. Book rules are priors; project history wins.
 
 ## 12. Headless mode
 

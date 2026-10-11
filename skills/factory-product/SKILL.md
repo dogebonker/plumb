@@ -8,6 +8,7 @@ argument-hint: "[slug]"
 # Factory product
 
 Slug: $ARGUMENTS
+Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides what the change does for its users, in their vocabulary: behavior, rules and outcomes. Technology enters at architecture.
 

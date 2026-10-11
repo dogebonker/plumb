@@ -27,6 +27,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 21 | factory-security: Cloudflare method, five scanners, routed knowledge | Accepted |
 | 22 | factory-ui-ux: an enforced DESIGN.md, mechanical de-slop, anchored critique | Accepted |
 | 23 | factory-ci: its own measurement, a catalog with guards, savings that must beat the noise | Accepted |
+| 24 | factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository | Accepted |
 
 ---
 
@@ -48,7 +49,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 ## 3. Decisions in files, recall in Pond
 
-**Decision.** Approved decisions are markdown in git: the global kit in `~/.software-factory/`, the project's `.factory/system/`, and one folder per change. Memory is [Pond](https://github.com/tenequm/pond): every agent session, stored losslessly in one shared store and queried by search, SQL or MCP. Lessons and calibration are computed from Pond at reconcile, not maintained by hand.
+**Decision.** Approved decisions are markdown in git: the global kit in `~/.software-factory/`, the project's `.factory/system/`, and one folder per change. Memory is [Pond](https://github.com/tenequm/pond): every agent session, stored losslessly in one shared store and queried by search, SQL or MCP. Lessons and calibration are computed at reconcile from the factory's own files, found across repositories through Pond, not maintained by hand.
 
 **Why.** Decisions need to be read, diffed and reviewed in pull requests like code, so they stay in files. Recall is a different job. Hand-written lesson files only hold what someone remembered to write down, and grep over them misses what was said in a review three repositories ago. Pond keeps the full record across every harness and machine, and its SQL makes counts like "how often was this lens rule overruled" a query instead of a file to keep in sync. It also leaves agent beliefs inspectable: everything in it is a transcript, not an opaque vector memory.
 
@@ -211,3 +212,12 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** On the user's own repositories, ci-speedup's success-only, unbounded sample described pipelines that were red at the time, and its verifier rejected its own report. The measurement needs about one API call per run and a few hundred lines. Run-to-run noise of 9 to 31% means a saving is claimed only when it beats the noise measured on the same repository. The full record: [research/ci-selection.md](research/ci-selection.md).
 
 **Cost.** GitHub Actions only. Merge-queue time and checks from other apps are not measured yet. A fix's saving can take weeks of runs to confirm.
+
+## 24. factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository
+
+**Decision.** Reconcile ends every change with `factory-retro`. Retro measures the change's friction against the repository's earlier changes, then turns each lesson into a check where it can, a pointer where it cannot, and only then a line in the repository's `.factory/system/playbook.md`, which every factory skill reads. Entries need an outside signal seen in two changes, cite the code they apply to, carry counters, and retire when they stop earning their place. The user approves every change. To make this countable, the factory keeps an append-only `history` in `status.yaml`, tags every review finding by rule, and names lens rules exactly.
+
+**Why.** Memory that admits every experience does worse than a fixed memory, and agent-written context files rarely help; outside evidence, itemized entries, pruning and caps are what worked. Before this, `status.yaml` overwrote the history retro needs. The full record: [research/retro-selection.md](research/retro-selection.md).
+
+**Cost.** A few lines per step to append events. The thresholds are judgment until retro's own counters confirm them. Retro needs Pond for session numbers.
+
