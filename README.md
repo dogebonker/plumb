@@ -79,7 +79,7 @@ flowchart LR
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
 | Build | Fresh executor; new tests must fail on the base commit before code is written | code + tests |
 | Review | Scripts first, then parallel review agents, then your approval | `slices/NN/review.md` |
-| Reconcile | Folds what shipped back into living specs, ADRs, constraints and lessons | updated `.factory/system/` |
+| Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.factory/system/` |
 
 ### Tracks
 

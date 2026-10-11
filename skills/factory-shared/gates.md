@@ -49,17 +49,23 @@ Headless mode: commit and push the document, then wait for the user (below) with
 
 ## Send back
 
-When build or review finds that the approved design cannot hold, pick the target gate:
+When build, review or reconcile's acceptance step finds that the approved design cannot hold, pick the target gate:
 
 - a frozen signature cannot work as written: `interface` (track small: `slices`)
 - a red-commit test is wrong, or the user refused a file outside Allowed files: `slices`
+- an example failed in the running product at reconcile's acceptance step: `slices`, with no slice (`slice: null`); the fix comes as a new slice
 
 Then:
 
 1. Set the target gate and every later gate to `pending`.
-2. Set `sent_back` to `{ gate: <target>, slice: NN, reason }`, and append a `sent_back` event (ref: the slice; detail: the target gate and reason).
+2. Set `sent_back` to `{ gate: <target>, slice: <NN or null>, reason }`, and append a `sent_back` event (ref: the slice, or `-`; detail: the target gate and reason).
 3. Add the reason to Open questions in the target gate's document.
-4. Tell the user to run the target gate's skill. Stop.
+4. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): send back <slug> to <gate>`.
+5. Tell the user to run the target gate's skill. Stop.
+
+## Models
+
+Sub-agents run on the session's model, except where a skill says *smaller model*: the harness's mid-size model (in Claude Code, the Agent tool's `model: sonnet`), or the session's model when that is not larger. Only agents whose output a later step checks against files get it: research answers, which cite `path:line` that the architecture gate reads, and retro's candidates, which retro tries to disprove. The executor, the reviewers, the challenge panel and the acceptance agent keep the session's model, because their mistakes cost review time or pass unseen.
 
 ## History
 
@@ -71,7 +77,7 @@ history:
 ```
 
 - `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`.
-- `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice; detail: target gate and reason).
+- `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice, or `-`; detail: target gate and reason).
 - From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
 - `factory_updated` (detail: "<old>..<new>"), from the Factory version check at Load.
 - `detail` is one line in double quotes.

@@ -94,8 +94,12 @@ with tempfile.TemporaryDirectory() as tmp:
     assert run(root, "src/a.ts").returncode == 0
     (root / "DESIGN.md").unlink()
 
-    # A finished change is not gated.
-    st.write_text(status(approved, slices="slices:\n  - { id: 1, name: tracer, state: done }"))
+    # A change whose slices are all done stays gated until it is reconciled: reconcile's acceptance step
+    # sends defects back as new slices, never as edits.
+    done = status(approved, slices="slices:\n  - { id: 1, name: tracer, state: done }")
+    st.write_text(done)
+    assert run(root, "src/z.ts").returncode == 2
+    st.write_text(done + "reconciled: true\n")
     assert run(root, "src/z.ts").returncode == 0
 
 print("factory_gate: all checks passed")

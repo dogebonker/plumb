@@ -27,11 +27,12 @@ Done when you can name the modules in scope and all three commands.
 - **BDD per module.** `native` when the module has any of: `*.feature` files, a BDD runner dependency (`@cucumber/cucumber`, `cucumber`, `behave`, `pytest-bdd`, `godog`), or runner config (`cucumber.js`, `cucumber.mjs`, `cucumber.yml`, `behave.ini`, `features/environment.py`). Otherwise `off`.
 - **Money signals.** A payment, exchange or chain SDK in any manifest (`stripe`, `adyen`, `paypal`, `braintree`, `square`, `plaid`, `modern-treasury`, `ccxt`, `ethers`, `viem`, `web3`, `@solana/web3.js`, `bitcoinjs-lib`, `fireblocks`), or money in the schema and code (columns or fields named `amount`, `balance`, `price`, `currency`, `ledger`, `payout`, `refund`). List each signal with its `path:line`.
 
-- **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing, and each `checks.install` tool the module lacks. For a pack with a `checks.runtime`, find the module's command that starts the app locally and the URL it serves.
+- **Language pack.** `react` for a module whose `package.json` depends on `react` or `next`, `rust`, `go` or `python` by manifest, otherwise `none`. Compare the module's linter config with `linter.propose` in `~/.software-factory/languages/<pack>.yaml` and list what is missing, and each `checks.install` tool the module lacks.
+- **Run command.** For each module a user runs (an app, a service, a CLI): the command that starts it locally, or for a CLI the command that invokes it, and for a server the local URL it serves. A library records `none`. Review's runtime checks and reconcile's acceptance step use them.
 - **UI.** The change touches UI when it changes files of a module with front-end dependencies (react, next, vue, svelte, solid, angular), templates, or styles. Note whether a design file exists (gates.md, Load a change).
 - **Lens profile.** One of `~/.software-factory/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
 
-Done when every module has a language, a language pack and a BDD state, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
+Done when every module has a language, a language pack, a BDD state and a run command or `none`, every money signal has a location, and a profile is proposed. When `.factory/system/lenses.yaml` exists, note where your findings differ from it.
 
 ## 3. Pick the track
 
@@ -77,8 +78,8 @@ modules:
     language: go
     language_version: "1.22"
     pack: go                # react | rust | go | python | none
-    dev_command: ""         # packs with runtime checks: starts the app locally
-    dev_url: ""             # where dev_command serves the app
+    dev_command: ""         # starts the app locally, or invokes the CLI; none for a library
+    dev_url: ""             # the local URL dev_command serves; empty for a CLI or a library
     layers: []              # path globs, innermost first; set by the architecture gate
     bdd: off                # native | off; adopt is set only by the user
 ```
@@ -98,7 +99,7 @@ factory_commit: <sha>       # git -C ~/.software-factory rev-parse HEAD: the fac
 test_command: "<full suite>"
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"
-baseline_failures: []       # tests already failing at change_base_commit
+baseline_failures: []       # tests failing or flaky at change_base_commit
 gates:
   product:      { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
   architecture: { state: pending, approved_by: null, approved_at: null, doc_sha256: null }
@@ -119,10 +120,10 @@ history:                    # append-only events (factory-shared/gates.md, Histo
 ```
 
 7. Track small: set `product`, `architecture` and `interface` to `{ state: skipped }`.
-8. Run `test_command` once. Record every failing test by name in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build.
+8. Run `test_command` twice. Record by name every test that failed in either run in `baseline_failures`. Red and green are judged against this list, so a repository with failing or flaky tests can still build. Tests that failed in only one run are flaky.
 9. Committed mode: `git add .factory/changes/<slug> .factory/system` and commit `chore(factory): triage <slug>`.
 10. Headless mode needs committed mode: the pull request carries the documents. Push the branch and open a draft pull request (`gh pr create --draft`) titled `factory: <slug>`. Tell the user the runner starts once an approver reviews it with an APPROVED review whose first line is `start`.
 
 ## 6. Hand off
 
-Tell the user the next skill: `/factory-ui-ux design-md` when `ui` is `true` and the design file is missing; otherwise `/factory-product <slug>`, or `/factory-slices <slug>` on track small.
+Name the flaky tests from step 5.8, if any, as candidates for a fix of their own. Tell the user the next skill: `/factory-ui-ux design-md` when `ui` is `true` and the design file is missing; otherwise `/factory-product <slug>`, or `/factory-slices <slug>` on track small.

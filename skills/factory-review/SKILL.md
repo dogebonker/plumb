@@ -59,6 +59,7 @@ A frozen-contract difference sends the slice back, as gates.md describes.
    - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
      - design and reuse: `refactoring-guru.mini.md` and the simplification ladder from packs.md
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
+     - cleanliness: each test under the packet's Tests first asserts the outcome its line names, and for an FR the outcome of its Example in Covers; a test that only calls the code, or only checks that it does not throw, is a finding tagged `[factory/example-asserted]`
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
 

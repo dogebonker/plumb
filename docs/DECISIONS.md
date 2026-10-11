@@ -29,6 +29,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 23 | factory-ci: its own measurement, a catalog with guards, savings that must beat the noise | Accepted |
 | 24 | factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository | Accepted |
 | 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
+| 26 | From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work | Accepted |
 
 ---
 
@@ -230,3 +231,16 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 **Cost.** Objections raised after round 3 reach the user only if they ask for another round. A factory update mid-change costs one confirmation.
 
+
+## 26. From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work
+
+**Decision.** Four changes, from Tereza Tížková's talk on Factory's missions ([research/talk-tizkova-factory.md](research/talk-tizkova-factory.md)):
+
+- Reconcile starts with acceptance: a fresh agent, in an empty directory and told not to read the code, tries every FR example on the locally running product and reports pass, fail or not run with evidence. A defect the user confirms sends the change back to the slices gate, and the fix comes as a new slice; a wrong example the user corrects becomes the standing fit criterion. Triage records a run command for every module a user runs (`none` for a library), not only for packs with runtime checks. To make the send-back hold: the runner keeps a slice signed off under an earlier slices approval `done` (before, a send-back to the slices gate left every earlier slice `green` with no sign-off it could ever match), send-backs are committed, and the hook keeps gating source edits until a change is reconciled, not only until its last slice is done.
+- Triage runs the test suite twice; a test that fails in either run joins `baseline_failures`, and those that failed once are named as flaky.
+- The executor writes each red test to assert the outcome its Tests first line names, and review's cleanliness agent flags a test that only calls the code (`[factory/example-asserted]`).
+- Research and retro's candidate reader run on a smaller model; every other agent keeps the session's model.
+
+**Why.** Every check the factory ran was a test the executor wrote or a reviewer reading code; nothing confirmed the agreed examples in the running system, which is the failure the talk's user-testing validator caught. A red test can fail only because it calls a stub and then pass green with no assertion. One baseline run cannot tell a flaky test from a passing one, and a flaky old test fails red or green and costs a retry. Smaller models fit only where a later step checks the output against files; the scarce resource here is review time, not tokens.
+
+**Cost.** One agent per change, and a run command to record per runnable module. The acceptance firewall is an instruction, not a sandbox. A second suite run per triage, which catches only tests that flake often. Research answers from a smaller model may need more follow-up questions.

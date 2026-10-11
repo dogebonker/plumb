@@ -22,7 +22,7 @@ Research runs behind a firewall: the agent that answers never sees the task, so 
 
 1. Write a `## Questions` list: how the code in scope works today, what calls it, what data it touches, what Pond records about it. Each question names only code, data and records that exist at `change_base_commit`. Before dispatching, compare the list with `01-product.md` and reword any question that names a rule or outcome from it.
 2. Put the questions in a new temp directory outside the repository, as `questions.md`, and check out a clean copy there: `git worktree add --detach <tmp>/repo <change_base_commit>`. That copy has no `.factory/changes/` and no factory branch checked out.
-3. Start one fresh sub-agent. It receives these instructions, nothing else from this conversation:
+3. Start one fresh sub-agent on the smaller model (gates.md, Models). It receives these instructions, nothing else from this conversation:
 
    > Answer every question in `<tmp>/questions.md` from the code at `<tmp>/repo` and, through Pond's tools, from sessions dated before `<date of change_base_commit>`. Write the answers to `<tmp>/answers.md`, numbered like the questions. Facts only, each with `path:line` or a Pond session id; write "not found" where the code and Pond are silent.
 

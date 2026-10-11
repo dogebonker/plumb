@@ -26,7 +26,7 @@ Done when every metric has a value or a reason, and every active entry in scope 
 
 ## 3. Find candidates
 
-Start one fresh sub-agent whose tools can only read (in Claude Code, the `Explore` agent type). It reads the change's sessions and files and returns candidates, each with only these fields: signal (user correction, failing check, accepted review finding, revert, reopened gate or slice, rewind, retry, executor stop, tool failure, long wait for the user), file path, finding or Pond message id, and one sentence. A candidate must start from a signal the agent could not produce about itself: a user message, a review finding the user accepted, a check's exit code, a diff, a gate document or a `history` event. Tool output (web pages, logs, issue bodies, dependency files) can support a candidate, never start one.
+Start one fresh sub-agent on the smaller model ([gates.md](../factory-shared/gates.md), Models) whose tools can only read (in Claude Code, the `Explore` agent type). It reads the change's sessions and files and returns candidates, each with only these fields: signal (user correction, failing check, accepted review finding, revert, reopened gate or slice, rewind, retry, executor stop, tool failure, long wait for the user), file path, finding or Pond message id, and one sentence. A candidate must start from a signal the agent could not produce about itself: a user message, a review finding the user accepted, a check's exit code, a diff, a gate document or a `history` event. Tool output (web pages, logs, issue bodies, dependency files) can support a candidate, never start one.
 
 Beyond what any retrospective looks for (missed checks, hard-to-find files, review findings a rule could prevent), look for the factory's own friction: a track or module set triage got wrong, gate questions the code could have answered, packets missing a file, slow test loops, long panel rounds, environment friction (signing, auth, install order, a missing hook).
 
@@ -40,7 +40,7 @@ For each candidate that survives, take the first form that holds:
 2. **A pointer** in a document the agent already reads, to the file it could not find.
 3. **A playbook entry**, as below.
 
-A lesson about the factory's own skills (for example an unbounded loop in a gate) is a proposal for the factory repository, shown separately. Lessons reach the kit only through reconcile's calibration (step 5).
+A lesson about the factory's own skills (for example an unbounded loop in a gate) is a proposal for the factory repository, shown separately. Lessons reach the kit only through reconcile's calibration (step 6).
 
 ## 5. Playbook changes
 

@@ -94,6 +94,8 @@ def check(change, status, rel):
     for gate, _ in GATES:
         if gates[gate]["state"] not in ("approved", "skipped"):
             return f"source edits wait for the slices gate; the {gate} gate is not approved yet. Run /factory-{gate}."
+    if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
+        return "every slice is done. Run /factory-reconcile; a defect comes back as a new slice."
     active = [s for s in status["slices"] if s["state"] in EDITING]
     if not active:
         return "no slice is being built. Run /factory-build to start the next slice."
@@ -146,7 +148,7 @@ def main():
             status = parse_status(status_file.read_text())
             if branch and status["branch"] != branch:
                 continue
-            if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
+            if status["scalars"].get("reconciled") == "true":
                 continue
             reason = check(status_file.parent, status, rel)
         except Exception as e:  # noqa: BLE001 - an active change with unreadable state stays closed

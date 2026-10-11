@@ -15,7 +15,7 @@ The factory should get better in each repository it runs in, change after change
 
 ### RT-1. Retro runs at the end of every change, inside reconcile
 
-`/factory-reconcile` step 6 follows `factory-retro`, and its drafts join reconcile's single confirmation step, so a change ends with one approval round. It also runs alone, as `/factory-retro <slug>`. The user chose the trigger.
+`/factory-reconcile` step 7 follows `factory-retro`, and its drafts join reconcile's single confirmation step, so a change ends with one approval round. It also runs alone, as `/factory-retro <slug>`. The user chose the trigger.
 
 ### RT-2. Matt Pocock's `retro` is the framing, not the engine
 

@@ -171,21 +171,25 @@ def verify(repo, ref, change, text, approvals, may_skip):
             approved_at[gate] = max(r["at"] for r in backing)
         blocked = blocked or state != "approved"
     slices_at = approved_at.get("slices")  # from the reviews, never from status.yaml
+    # A done slice keeps a sign-off given under any slices approval, so a later send-back to the slices gate
+    # (reconcile's acceptance step) does not undo it; a new sign-off needs the current approval.
+    first_slices_at = min((r["at"] for r in approvals if command(r["body"]) == ("approve", "slices")), default=None)
     for s in status["slices"]:
         nn = s["id"].zfill(2)
         signed = [r for r in approvals if (c := command(r["body"])) and c[0] == "sign-off"
                   and c[1].lstrip("0") == s["id"].lstrip("0")]
         # A sign-off covers the slice's code exactly: head_commit is a full sha, only .factory/ changed
-        # between it and the reviewed commit, and the review came after the slices gate's approval.
+        # between it and the reviewed commit, and the review came after a slices gate approval.
         signed = [r for r in signed if s["head_commit"] and SHA.match(s["head_commit"])
-                  and slices_at and r["at"] > slices_at
+                  and first_slices_at and r["at"] > first_slices_at
                   and is_ancestor(repo, s["head_commit"], r["commit"]) and is_ancestor(repo, r["commit"], ref)
                   and only_factory(repo, s["head_commit"], r["commit"])
                   and blob_sha256(repo, r["commit"], f"{change}/slices/{nn}/review.md")]
         if s["state"] == "done" and not signed:
             text = set_slice_state(text, s["id"], "green")
             notes.append(f"slice {nn} reset to green: no matching sign-off")
-        elif s["state"] == "green" and not blocked and [r for r in signed if r["commit"] == head]:
+        elif s["state"] == "green" and not blocked and [r for r in signed if r["commit"] == head
+                                                         and r["at"] > slices_at]:
             text = set_slice_state(text, s["id"], "done")
             notes.append(f"slice {nn} signed off by {max(signed, key=lambda r: r['at'])['login']}")
     if notes:

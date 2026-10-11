@@ -27,7 +27,7 @@ Drop every item that touches:
 - a signature in any `.factory/changes/*/03-interface.md`
 - code that a row of `.factory/system/constraints.md` names under Enforced by
 - a step-definition file (the adapter's BDD step search finds them): whether a scenario still uses a step cannot be decided by text search
-- a public or exported symbol of a library module: other code may import it. In a module with a main entry point, a binary or a `dev_command`, unused exports are candidates
+- a public or exported symbol of a library module: other code may import it. In a module with a main entry point, a binary or a `dev_command` other than `none`, unused exports are candidates
 - code behind a money signal, when `money` is `true` in `.factory/system/lenses.yaml`, unless the item only deletes dead code
 
 Done when every remaining item has been checked against all five, and each dropped item is listed with the reason.

@@ -191,4 +191,20 @@ with tempfile.TemporaryDirectory() as tmp:
     assert notes == ["slice 01 reset to green: no matching sign-off"], notes
     assert parse_status(text)["slices"][0]["state"] == "green"
 
+    # A send-back to the slices gate keeps a signed-off slice done, before and after the new approval,
+    # so the next skill builds the fix slice instead of re-reviewing slice 01.
+    done_status = head_status.replace("state: green", "state: done")
+    signed_off = {**sign, "commit": reviewed}
+    (repo / change / "04-slices.md").write_text("# slices v2: a fix slice\n")
+    git("commit", "-qam", "send back")
+    text, notes = check(done_status, [*gates_ok, signed_off])
+    assert notes == ["slices reset to pending: no matching approval"], notes
+    assert parse_status(text)["slices"][0]["state"] == "done"
+    again = {**review, "body": "approve slices", "commit": git("rev-parse", "HEAD"), "at": "2026-10-10T12:00:00Z"}
+    text, notes = check(done_status, [*gates_ok, signed_off, again])
+    assert parse_status(text)["gates"]["slices"]["state"] == "approved", notes
+    assert parse_status(text)["slices"][0]["state"] == "done", notes
+    fix = text.replace(f"head_commit: {v2} }}", f"head_commit: {v2} }}\n  - {{ id: 2, name: fix, state: pending, head_commit: null }}")
+    assert next_skill(parse_status(fix)) == "factory-build"
+
 print("factory_run: all checks passed")
