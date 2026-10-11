@@ -26,6 +26,7 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 
 1. Slug empty: a gate skill uses the only change whose own gate is `pending`; build and review use the rule they state. Several or none: ask.
 2. Read `status.yaml`. Check out its `branch`. Append a `step_start` event to `history` (History, below).
+   **Factory version.** A change runs on the factory commit it started on. When `factory_commit` is missing or differs from `git -C ~/.software-factory rev-parse HEAD`, the factory changed under this change: show `git -C ~/.software-factory log --oneline <factory_commit>..HEAD -- :/skills :/kit` (when that commit is not on this machine, say so and skip the log), add every field of the triage template's `status.yaml` that this file lacks, with the value triage would set now (asking the user where triage would ask), then set `factory_commit` to the new commit and append a `factory_updated` event. A kit that is not a git repository skips this check and says so. A headless runner whose kit is on another commit runs this check on its first pass; a question it needs waits on the pull request like any other.
 3. **Check the chain.** Walk the gates in order. The first `approved` gate whose `hash(doc)` differs from its `doc_sha256` goes back to `pending`, and so does every later gate that is not `skipped`. Append a `gate_reopened` event with cause `chain`. Tell the user which document changed.
 4. A gate skill whose own gate is `approved` or `skipped` says so, names the next skill, and stops. To revise an approved gate, the user edits its document: the chain check reopens it.
 5. **Design file.** A change with `ui: true` in `status.yaml` needs the repository's design file: the root `DESIGN.md`, or `.factory/system/design.md` when the root name holds something else; either way it carries the stamp `factory:design-schema` that `/factory-ui-ux` writes. Without it, every skill stops and points to `/factory-ui-ux design-md`; the factory hook blocks source edits too.
@@ -72,6 +73,7 @@ history:
 - `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`.
 - `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice; detail: target gate and reason).
 - From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
+- `factory_updated` (detail: "<old>..<new>"), from the Factory version check at Load.
 - `detail` is one line in double quotes.
 
 ## Headless mode

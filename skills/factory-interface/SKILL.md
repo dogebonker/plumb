@@ -87,7 +87,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
    | the profile's `challenge` lenses | always | `<name>.mini.md` |
    | `fin-money-core` | `money: true` in `lenses.yaml` | `SKILL.md` |
 
-2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once. Each receives these instructions and nothing else:
+2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once (round 3: the APoSD lens only, step 5). Each receives these instructions and nothing else:
 
    > Challenge the interface in `<change>/03-interface.md` through the rules in `<lens file>`. Read only the files named here.
    > - Constraint IDs: `<change>/01-product.md` (when it exists) and `.factory/system/constraints.md`.
@@ -95,6 +95,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
    > - Every card quotes a signature from the interface, argues for the current design first, then gives the objection, an alternative signature and what the alternative costs.
    > - Severity `block` or `fix` needs an anchor: a constraint ID or a number on a module's Cost line. Every other card is a `note`.
    > - Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
+   > - From round 2: challenge only these changed signatures: `<list>`.
 
 3. Collect the cards into `<change>/challenges.md` under `## Round N`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. A card whose lens and rule are listed under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) becomes a `note`. Two cards that pull one signature in opposite directions are marked `conflict`; recommend the APoSD side, since APoSD arbitrates at interface level.
 
@@ -102,7 +103,7 @@ Append a `panel_round` event with the round number and card count (gates.md, His
 
 ## 5. The human decides
 
-For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through steps 3 and 4 again. Then ask the open questions.
+For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again, and through the panel within a limit of three rounds: round 2 is the full panel on the changed signatures only; round 3 is the APoSD reviewer alone, on what changed since round 2; there is no round 4 unless the user asks for one. The user can end the rounds at any point by approving. Then ask the open questions.
 
 Done when every card has a Response (`grep -n 'accept / modify / overrule:' challenges.md` finds nothing), the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 

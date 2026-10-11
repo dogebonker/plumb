@@ -28,6 +28,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 22 | factory-ui-ux: an enforced DESIGN.md, mechanical de-slop, anchored critique | Accepted |
 | 23 | factory-ci: its own measurement, a catalog with guards, savings that must beat the noise | Accepted |
 | 24 | factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository | Accepted |
+| 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
 
 ---
 
@@ -220,4 +221,12 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** Memory that admits every experience does worse than a fixed memory, and agent-written context files rarely help; outside evidence, itemized entries, pruning and caps are what worked. Before this, `status.yaml` overwrote the history retro needs. The full record: [research/retro-selection.md](research/retro-selection.md).
 
 **Cost.** A few lines per step to append events. The thresholds are judgment until retro's own counters confirm them. Retro needs Pond for session numbers.
+
+## 25. The first retro's two fixes: at most three interface panel rounds, and a factory version per change
+
+**Decision.** The interface challenge panel runs at most three rounds: the full panel, then the full panel on the changed signatures only, then the APoSD reviewer alone; a fourth only when the user asks. Each change records the `factory_commit` it started on; when the factory has moved, the next step lists the factory's changes and brings `status.yaml` up to the current template, with the user's answers, before going on.
+
+**Why.** The first change measured by hand spent 49% of its wall clock in six panel rounds, and the user had to stop the seventh. The skills changed during that change and a new `status.yaml` field never reached it, so UI review did not run on a UI slice. Details: [research/retro-selection.md](research/retro-selection.md), "What the first retro already shows".
+
+**Cost.** Objections raised after round 3 reach the user only if they ask for another round. A factory update mid-change costs one confirmation.
 

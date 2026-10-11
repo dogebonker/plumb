@@ -94,6 +94,7 @@ track_proposed: standard    # the track triage recommended, kept when the user c
 factory_dir: committed      # committed | ignored
 branch: <branch from 5.2>
 change_base_commit: <sha>
+factory_commit: <sha>       # git -C ~/.software-factory rev-parse HEAD: the factory version this change runs on (gates.md, Load a change)
 test_command: "<full suite>"
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"

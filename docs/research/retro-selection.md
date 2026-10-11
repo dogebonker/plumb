@@ -68,11 +68,11 @@ A lesson reaches the kit (`principles.md`, a language pack's linter rule) only w
 
 ## What the first retro already shows
 
-Lane C's numbers for `tg-mini-app` are the first retro, run by hand. They are listed here as proposals for the factory itself, not applied:
+Lane C's numbers for `tg-mini-app` are the first retro, run by hand. The user accepted both proposals for the factory itself on 2026-10-11, and both are applied:
 
-- The interface gate took 49% of wall clock and 42% of output tokens, over 6 challenge-panel rounds with no bound. The user stopped round 7 by hand (C F4, F7). Proposal: cap panel rounds, after which changed signatures get a single reviewer.
+- The interface gate took 49% of wall clock and 42% of output tokens, over 6 challenge-panel rounds with no bound. The user stopped round 7 by hand (C F4, F7). Applied: at most three panel rounds. Round 2 is the full panel on the changed signatures only, round 3 the APoSD reviewer alone, and a fourth only when the user asks (`factory-interface` step 5).
 - The factory hook was not installed for that change (C F13). Retro now reports it (M7).
-- The skills changed mid-change, and `ui` was added to the triage template after this change's `status.yaml` was written, so it never got the field, so UI review did not run on a UI slice (C F14). `step_start` now records the factory commit; the gap itself stays a proposal: pin the skills for a change's lifetime.
+- The skills changed mid-change, and `ui` was added to the triage template after this change's `status.yaml` was written, so it never got the field, so UI review did not run on a UI slice (C F14). Applied: each change records the `factory_commit` it runs on. When the factory has moved, the next step lists what changed and adds any field the current triage template has and the change lacks, with the user's answers, before it goes on (`gates.md`, Load a change). The skills cannot be pinned literally, since they are symlinks into this repository, so the check makes every upgrade explicit instead.
 
 ## What this does not cover
 

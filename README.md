@@ -118,6 +118,7 @@ Then fresh-context reviewers challenge the draft, one book or pack each. To keep
 - Every challenge must quote the exact signature, argue **for** your current design first, then state the objection, propose an alternative signature and say what that alternative costs.
 - A challenge can only block if it points at a constraint ID or a cost-card number. Anything else is taste and stays a note.
 - At most three challenges per lens. Zero is allowed, but the reviewer must name the strongest objection it considered and dropped.
+- At most three rounds: a changed signature goes back to the panel once, then to the APoSD reviewer alone; after that, more rounds only if you ask.
 - Reviewers never see the drafting conversation, so they judge the interface the way a future reader would.
 - When two lenses disagree, both sides come to you, and your call becomes an ADR.
 
