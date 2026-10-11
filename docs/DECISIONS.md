@@ -15,7 +15,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 9 | APoSD as the spine of Interface Design | Accepted |
 | 10 | A fair challenge panel with calibration | Accepted |
 | 11 | No design-it-twice step | Accepted |
-| 12 | Review built on `/polish` | Accepted |
+| 12 | Review built on `/polish` | Accepted, amended by 27 |
 | 13 | A converging multi-round reviewer | Rejected |
 | 14 | Mechanical checks replace two review agents | Accepted |
 | 15 | Money pack only where money moves | Accepted |
@@ -30,6 +30,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 24 | factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository | Accepted |
 | 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
 | 26 | From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work | Accepted |
+| 27 | The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits | Accepted |
 
 ---
 
@@ -244,3 +245,18 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** Every check the factory ran was a test the executor wrote or a reviewer reading code; nothing confirmed the agreed examples in the running system, which is the failure the talk's user-testing validator caught. A red test can fail only because it calls a stub and then pass green with no assertion. One baseline run cannot tell a flaky test from a passing one, and a flaky old test fails red or green and costs a retry. Smaller models fit only where a later step checks the output against files; the scarce resource here is review time, not tokens.
 
 **Cost.** One agent per change, and a run command to record per runnable module. The acceptance firewall is an instruction, not a sandbox. A second suite run per triage, which catches only tests that flake often. Research answers from a smaller model may need more follow-up questions. The runner proves who signed off which commit, not that signed-off code survives later commits: an agent can still undo it in a later commit, and the slices a re-approval keeps come from the `status.yaml` the agent wrote. The pull-request review before merge is the final control.
+
+## 27. The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits
+
+**Decision.** Six changes, measured on the first full change (`tg-mini-app`, standard track, 10 slices, about 9,500 lines with tests):
+
+- **Milestones.** The slices gate groups slices into milestones: slice 01 alone, then two to four slices that end where the user can try something. Each slice keeps its red and green proof and its mechanical checks (`checks.md`); `/polish`, the lens reviewers and the human sign-off run once per milestone. Headless mode keeps one slice per milestone, so the runner is unchanged. The hook opens a green slice's files only when no slice is being built, and a rewind resets every later slice whose code it removes.
+- **Autopilot.** In interactive mode, build runs a milestone's slices back to back, goes straight on to its review, then to the next milestone and finally to reconcile, all in one session. It stops only to ask the user.
+- **Files a frozen signature breaks.** The slices gate lists implementers, fakes and callers of the signatures a slice changes. When the executor still needs one, a file the adapter's typecheck shows broken by that signature is allowed and logged without asking.
+- **Fixes applied.** Interactive reviews apply every validated finding that is not a note and stays inside the agreed files and contracts, and the sign-off question lists them so the user can undo any. This amends decision 12's approval by number, which headless mode keeps.
+- **Commits.** Interactive build and review no longer commit `.factory/` per step; the planning state goes into each milestone's review commit. Triage checks that commit signing works, and a commit that fails to sign waits for the user, never goes unsigned.
+- **Interface rounds after a send-back.** One round, the APoSD reviewer alone, on the changed signatures.
+
+**Why.** Over about 13 active hours, the executor wrote code for 36 minutes. Build and review took about 7 hours, at 20 to 50 minutes per slice, mostly packets, session hand-offs, `/polish` and sign-off. Of the 49 questions to the user, 28 took the recommended option, all 8 file-allow questions were answered Allow (7 of them the same test fake breaking), and 3 of 9 sign-offs came within 15 seconds: the per-slice sign-off was not a real read. The change made 72 commits, 43 of them factory bookkeeping, and commit signing failed about five times, costing about an hour. Interface rounds 7 to 11 ran after a send-back, outside the cap.
+
+**Cost.** A milestone's diff is larger to read than a slice's, and a review finding can now land after later slices were built on the code it fixes. Applied fixes reach the user after the fact, though each can be undone. A long autopilot session can run out of context; `status.yaml` resumes it. The expected saving, about 13 hours down to 5 or 6, is an estimate until the next change's retro measures it.

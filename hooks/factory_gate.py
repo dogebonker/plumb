@@ -96,7 +96,10 @@ def check(change, status, rel):
             return f"source edits wait for the slices gate; the {gate} gate is not approved yet. Run /factory-{gate}."
     if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
         return "every slice is done. Run /factory-reconcile; a defect comes back as a new slice."
-    active = [s for s in status["slices"] if s["state"] in EDITING]
+    # While a slice is being built, only its packet counts; green slices waiting for their milestone's
+    # review are editable only at review time, when nothing is being built.
+    active = ([s for s in status["slices"] if s["state"] in EDITING - {"green"}]
+              or [s for s in status["slices"] if s["state"] == "green"])
     if not active:
         return "no slice is being built. Run /factory-build to start the next slice."
     for s in active:

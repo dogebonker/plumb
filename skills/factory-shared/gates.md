@@ -22,6 +22,19 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 - `FR-NN`, `NFR-NN`, `C-NN` belong to one change and are defined in its gate documents.
 - `SYS-FR-NN`, `SYS-NFR-NN`, `SYS-C-NN` are standing rows in `.factory/system/constraints.md`. A change lists the ones it touches under Standing constraints in its first gate document, then treats them like its own IDs: a budget or ruled-out options in architecture, an enforcement in interface Coverage, a covering slice.
 
+## Milestones and autopilot
+
+A milestone is a group of slices reviewed and signed off together: the `Milestone` line of each slice in `04-slices.md`, copied as `milestone` into its `status.yaml` entry. A slice without one is its own milestone, and so is every slice in headless mode. A milestone's work is its slices that are not `done`; `M` is its number, or the slice id when the slice has none.
+
+In interactive mode the factory runs on autopilot from build through reconcile: `/factory-build` builds a milestone's slices one after another, each through a fresh executor and its own mechanical checks, then goes straight on to `/factory-review` for the milestone, after the sign-off back to `/factory-build` for the next milestone, and after the last one on to `/factory-reconcile`, all in one session. It stops wherever a skill asks the user something, for example a send-back, a rewind, a file it may not allow on its own, a retry that failed twice, a signing failure, each milestone's sign-off, and reconcile's questions. Start a fresh session only when this one's context runs long; `status.yaml` resumes from any step.
+
+## Commits
+
+- Code commits per slice are the executor's red and green commits, plus one review fix commit per milestone.
+- Interactive committed mode: build and review do not commit `.factory/` as separate steps. The planning state goes into the milestone review's first commit, and reconcile commits the rest. Gate approvals, send-backs and reconcile still commit.
+- Headless mode commits and pushes after every step, since each run starts from a fresh clone.
+- A commit that fails to sign: ask the user to unlock their signing agent, then retry. Never commit unsigned.
+
 ## Load a change
 
 1. Slug empty: a gate skill uses the only change whose own gate is `pending`; build and review use the rule they state. Several or none: ask.
@@ -76,9 +89,9 @@ history:
   - { at: 2026-10-11T09:12:03Z, step: factory-build, event: step_start, ref: "01", detail: "session <id>, factory <sha>" }
 ```
 
-- `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`.
+- `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`. A skill followed in the same session (autopilot) appends its own `step_start`, with the session id of the skill that started the session.
 - `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice, or `-`; detail: target gate and reason).
-- From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
+- From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `check_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook`, `signing` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
 - `factory_updated` (detail: "<old>..<new>"), from the Factory version check at Load.
 - `detail` is one line in double quotes.
 

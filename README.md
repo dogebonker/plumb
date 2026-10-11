@@ -1,6 +1,6 @@
 # Software Factory
 
-A reusable set of agent skills, a shared git-backed kit, and [Pond](https://github.com/tenequm/pond) as the memory layer, that together turn feature work in any repository into a gated loop: you design the interface, agents build the implementation, and you still read every diff.
+A reusable set of agent skills, a shared git-backed kit, and [Pond](https://github.com/tenequm/pond) as the memory layer, that together turn feature work in any repository into a gated loop: you design the interface, agents build the implementation, and you still read every diff, a milestone at a time.
 
 ![The factory loop](assets/loop.svg)
 
@@ -15,8 +15,8 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
    ```
    Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill.
 2. In the repository you want to change, start with `/factory-triage <the task in plain words>`.
-3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` and `/factory-review` per slice, then `/factory-reconcile` before you merge.
-4. You approve every gate and sign off every slice. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
+3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`, stopping only for your answers and sign-offs.
+4. You approve every gate and sign off every milestone. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
 ---
 
@@ -54,7 +54,7 @@ flowchart LR
 
 **You own the interface, agents own the implementation.** Think of a wall socket: you decide its shape, its voltage and what happens on overload; the electrician wires the wall however they like but cannot change the socket. Interface design is the gate you spend the most time on. Everything after it is delegated.
 
-**You still read every diff.** The point of the early gates is that review turns into "yes, this is what we agreed", not a design argument on a finished pull request.
+**You still read every diff, a milestone at a time.** The point of the early gates is that review turns into "yes, this is what we agreed", not a design argument on a finished pull request. Slices are grouped into milestones that end where you can try something; you read and sign off each milestone, not each slice.
 
 **Decisions live in files, not chat.** Every gate and every slice compacts into documents. A fresh session, or a server, picks up from the files alone.
 
@@ -77,8 +77,8 @@ flowchart LR
 | Interface Design | You draft signatures and interface comments; lenses challenge them; you answer; stubs compile and freeze | `03-interface.md`, stubs |
 | Slices | Vertical slices, tracer bullet first; each slice names the requirements it covers and how it is verified | `04-slices.md` |
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
-| Build | Fresh executor; new tests must fail on the base commit before code is written | code + tests |
-| Review | Scripts first, then parallel review agents, then your approval | `slices/NN/review.md` |
+| Build | Fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |
+| Review | Once per milestone: scripts, then parallel review agents whose validated fixes are applied, then your sign-off | `slices/NN/review.md` |
 | Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.factory/system/` |
 
 ### Tracks
@@ -130,14 +130,14 @@ Your answers are logged. A rule you overrule three times goes quiet for you; a r
 
 ![Review pipeline](assets/review.svg)
 
-Review is built on a `/polish` skill: parallel read-only agents for cleanliness, design and reuse, efficiency, and side-effect gating, findings validated against the actual code, a report, and nothing fixed until you approve by number. On top of it:
+Review is built on a `/polish` skill: parallel read-only agents for cleanliness, design and reuse, efficiency, and side-effect gating, findings validated against the actual code, and a report. It runs once per milestone. Interactive runs apply every validated fix inside the agreed files and contracts, and the sign-off question lists them so you can undo any; headless runs still wait for the numbers to fix. On top of it:
 
 - **Phase 1 grows.** The import graph (Clean Architecture's dependency rule), interface conformance against the frozen stubs, a dead-code tool and the language pack's linter rules all run as scripts.
 - **Books become rubric, not extra agents.** Refactoring.Guru and Ponytail's simplification ladder ride inside the design and reuse agent; the language pack rides inside design and efficiency.
 - **Two agents are conditional.** An APoSD reviewer runs only when a slice adds public surface beyond the frozen interface; a Money reviewer runs only on critical slices in repositories that move money.
 - **A frozen signature change is not a fix.** It sends the slice back to Interface Design.
 
-A typical slice costs four review agents. The worst case, a money slice that touches an interface, costs six.
+A typical milestone costs four review agents. The worst case, a money milestone that touches an interface, costs six.
 
 ---
 

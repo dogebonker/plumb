@@ -42,6 +42,7 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
 
 ## Slices
 ### 01 <name>
+Milestone: 1
 Covers: FR-01
 Modules: <module paths this slice touches>
 Tests first: <test file or feature file> :: <test name or scenario> - <what it asserts>
@@ -55,13 +56,15 @@ Verify: <commands>
 Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
+- Slice 01 is milestone 1 on its own. Later slices form milestones of two to four slices, each ending where the user can try something new; review and sign-off happen once per milestone (gates.md, Milestones and autopilot). A slice added after its milestone was signed off gets a new milestone number. Headless mode: every slice is its own milestone, so its Milestone line is its own number.
+- Allowed files include every file that implements, fakes or constructs a type whose signature the slice adds or changes: test fakes, the composition root, other callers.
 - A slice touching more than two modules is a sign of a shallow interface: raise it as an open question.
 - Slices are vertical. A slice that only adds a layer (all models, then all handlers) is replaced by one that cuts through.
 - Every ID in Coverage of `03-interface.md` (track small: every FR and SYS ID above) is covered by a slice. When Coverage names a test, that slice writes it.
 
 ## 4. Walk the human through it
 
-Show the slice list with what each one proves. Ask whether the tracer bullet is thin enough and whether any slice is a layer in disguise. Then ask the open questions.
+Show the slice list with what each one proves. Ask whether the tracer bullet is thin enough, whether any slice is a layer in disguise, and whether each milestone ends where the user can try something. Then ask the open questions.
 
 Done when Open questions is empty.
 
@@ -69,9 +72,10 @@ Done when Open questions is empty.
 
 Headless mode: make the updates below to `status.yaml` when you push the document for review, since the runner records only the gate, and name, in the comment that asks for approval, the slices that stay `done`: approving keeps their sign-offs, and the runner keeps no others. Otherwise approve the `slices` gate as gates.md describes; after its steps 1 and 2 and before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
 
+- every slice's `milestone` comes from the document
 - a slice already `done` stays as it is
 - the slice named in `sent_back` gets `state: rewind`; factory-build undoes its code before rebuilding it
 - any other slice that has a `base_commit` keeps its state unless this document changed what it covers; then it also gets `state: rewind`
-- a new slice is appended as `{ id, name, state: pending, base_commit: null, test_commit: null, head_commit: null }`
+- a new slice is appended as `{ id, name, milestone, state: pending, base_commit: null, test_commit: null, head_commit: null }`
 
-Next skill: `/factory-build`, in a fresh session.
+Next skill: `/factory-build`, in a fresh session; from there the factory runs on autopilot (gates.md, Milestones and autopilot).

@@ -32,11 +32,11 @@
   <rect class="bg" x="0" y="0" width="760" height="556" rx="14"/>
 
   <text class="ink" x="24" y="38" font-size="17" font-weight="700">You decide at the gates; agents build between them</text>
-  <text class="quiet" x="24" y="60" font-size="12.5">Six stages per feature, four steps per slice, reconcile after the last slice merges</text>
+  <text class="quiet" x="24" y="60" font-size="12.5">Six stages per feature, slices built and reviewed per milestone, reconcile before merge</text>
 
   <!-- per-slice group -->
   <rect class="group" x="24" y="292" width="712" height="148" rx="10"/>
-  <text class="quiet" x="40" y="314" font-size="12" font-weight="600">Per slice</text>
+  <text class="quiet" x="40" y="314" font-size="12" font-weight="600">Per milestone, on autopilot</text>
 
   <!-- connectors -->
   <path class="line" d="M228 120H280" marker-end="url(#arrow)"/>
@@ -50,8 +50,8 @@
   <path class="line" d="M544 364H568" marker-end="url(#arrow)"/>
   <path class="line" d="M644 392V412H116V392" marker-end="url(#arrow)"/>
   <path class="line" d="M380 440V472" marker-end="url(#arrow)"/>
-  <text class="quiet" x="380" y="430" font-size="11.5" text-anchor="middle">next slice</text>
-  <text class="quiet" x="392" y="461" font-size="11.5">after the last slice</text>
+  <text class="quiet" x="380" y="430" font-size="11.5" text-anchor="middle">next milestone</text>
+  <text class="quiet" x="392" y="461" font-size="11.5">after the last milestone</text>
 
   <!-- boxes -->
   <rect class="box" x="28" y="92" width="200" height="56" rx="9"/>

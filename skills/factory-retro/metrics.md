@@ -4,11 +4,11 @@ What `/factory-retro` measures for a change, and where each number comes from. N
 
 | ID | Metric | Source |
 | --- | --- | --- |
-| M1 | Questions to the user, per step: AskUserQuestion items plus free-text user turns. Headless: approver comments after each `waiting_since` | Pond, split at the `/factory-*` command rows. A user turn counts only when its text does not start with `<` and is not a skill body or an agent hand-back |
-| M2 | Wall clock and minutes waiting for the user, per step | Pond: command timestamps; AskUserQuestion call to its result |
+| M1 | Questions to the user, per step: AskUserQuestion items plus free-text user turns. Headless: approver comments after each `waiting_since` | Pond, split at the `step_start` times in `history` (one session can run several steps on autopilot), or at the `/factory-*` command rows when `history` has none. A user turn counts only when its text does not start with `<` and is not a skill body or an agent hand-back |
+| M2 | Wall clock and minutes waiting for the user, per step | Pond: `step_start` times, or command timestamps; AskUserQuestion call to its result |
 | M3 | Tokens per step: main session, and sub-agents from the `<usage>` block of each Agent result or task notification (Pond's sub-agent output counts are not usable) | Pond usage rows; Agent results |
 | M4 | Interface panel rounds, cards per round, share overruled, cards left unanswered | `panel_round` events, `challenges.md` |
-| M5 | Rework: gate send-backs and reopens by gate and cause; rewinds, red retries, green retries and executor stops by reason, per slice (a rewind caused by a red retry counts once, as the retry) | `history` |
+| M5 | Rework: gate send-backs and reopens by gate and cause; rewinds, red retries, green retries, check retries and executor stops by reason, per slice (a rewind caused by a red retry counts once, as the retry) | `history` |
 | M6 | Review findings per slice by tag and outcome; tags already seen in this repository's earlier changes | `slices/*/review.md` |
 | M7 | Whether the factory hook was installed | `~/.claude/settings.json`, and the repository's `.claude/settings.json` and `.claude/settings.local.json` |
 | M8 | Track proposed against track chosen | `track_proposed`, `track` |

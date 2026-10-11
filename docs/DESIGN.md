@@ -5,7 +5,7 @@ The complete specification of the factory. The README explains the why; this doc
 ## 1. Principles
 
 - **Own the interface, delegate the implementation.** Humans design module interfaces; agents fill them in behind a frozen contract.
-- **Still read every diff.** Review should read as "as agreed", never as a design debate.
+- **Still read every diff, a milestone at a time.** Review should read as "as agreed", never as a design debate.
 - **Decisions live in files.** Every gate and slice compacts into documents a fresh session or server can resume from.
 - **Process scales to risk.** Trivial changes skip the gates; money and auth get the full loop.
 - **Mechanical before model.** Anything a script can check never costs agent tokens.
@@ -102,11 +102,11 @@ Severity is earned: only anchored challenges can block or require a fix. Three p
 
 **Packet** (`slices/NN/packet.md`): goal; requirement IDs with fit criteria; frozen signatures, interface comments and depth statements; allowed files; tests to write, which must fail on the base commit; verify commands; a don't list; a budget. Rules in their smallest form only: the code-quality lens, the legacy-code lens on brownfield, the slice's money skill when relevant, Ponytail's ladder, and the language pack's rule index. In BDD-native modules: the slice's scenarios and an inventory of existing step definitions.
 
-**Build loop.** Red check (new tests fail on the base commit), implement until green inside the module boundary, review, human reads the diff and `review.md`, check off, compact, start the next slice fresh.
+**Build loop.** Per slice: a fresh executor, red check (new tests fail on the base commit), implement until green inside the module boundary, mechanical checks. Per milestone: review, validated fixes applied, human reads the diff and `review.md`, signs off. The loop runs in one session on autopilot and stops only for the human.
 
 ## 8. Review
 
-Built on `/polish`: parallel read-only agents (cleanliness, design and reuse, efficiency, side-effect gating), every finding validated against the code, a report grouped by category, fixes only after approval by number, and a review mode for other people's pull requests that treats the diff as untrusted data.
+Built on `/polish`: parallel read-only agents (cleanliness, design and reuse, efficiency, side-effect gating), every finding validated against the code, a report grouped by category, validated fixes applied once per milestone (headless: only after approval by number), and a review mode for other people's pull requests that treats the diff as untrusted data.
 
 | Check | How it runs | Cost |
 | --- | --- | --- |
@@ -126,7 +126,7 @@ Built on `/polish`: parallel read-only agents (cleanliness, design and reuse, ef
 | Standard | Phase 1 + four agents + APoSD if the slice adds public surface beyond the frozen interface |
 | Critical | Standard + Money |
 
-Book-lens findings use the challenge card; without an anchor they cap at "skip". Findings are written to `review.md`; approve and skip answers feed calibration. Regression tests must fail when their fix is reverted. UI polish runs separately, only on slices that touch UI.
+Book-lens findings use the challenge card; without an anchor they cap at "skip". Findings are written to `review.md`; the user's fix, skip and undo answers feed calibration, and fixes applied without asking do not. Regression tests must fail when their fix is reverted. UI polish runs separately, only on slices that touch UI.
 
 ## 9. Packs
 

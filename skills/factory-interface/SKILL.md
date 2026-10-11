@@ -87,7 +87,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
    | the profile's `challenge` lenses | always | `<name>.mini.md` |
    | `fin-money-core` | `money: true` in `lenses.yaml` | `SKILL.md` |
 
-2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once (round 3: the APoSD lens only, step 5). Each receives these instructions and nothing else:
+2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once (round 3, and the one round after a send-back: the APoSD lens only, on the changed signatures, step 5). Each receives these instructions and nothing else:
 
    > Challenge the interface in `<change>/03-interface.md` through the rules in `<lens file>`. Read only the files named here.
    > - Constraint IDs: `<change>/01-product.md` (when it exists) and `.factory/system/constraints.md`.
@@ -103,7 +103,7 @@ Append a `panel_round` event with the round number and card count (gates.md, His
 
 ## 5. The human decides
 
-For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again, and through the panel within a limit of three rounds: round 2 is the full panel on the changed signatures only; round 3 is the APoSD reviewer alone, on what changed since round 2; there is no round 4 unless the user asks for one. The user can end the rounds at any point by approving. Then ask the open questions.
+For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again, and through the panel within a limit of three rounds: round 2 is the full panel on the changed signatures only; round 3 is the APoSD reviewer alone, on what changed since round 2; there is no round 4 unless the user asks for one. A send-back to this gate reopens the panel for one round outside that limit: the APoSD reviewer alone, on the signatures that changed; more only if the user asks. The user can end the rounds at any point by approving. Then ask the open questions.
 
 Done when every card has a Response (`grep -n 'accept / modify / overrule:' challenges.md` finds nothing), the user has decided every module, every FR example has its test or scenario in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 

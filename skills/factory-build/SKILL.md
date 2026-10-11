@@ -1,6 +1,6 @@
 ---
 name: factory-build
-description: Build the next slice of a factory change - write its packet, run a fresh executor, prove red then green.
+description: Build the slices of a factory change's next milestone - packet, fresh executor, red then green, mechanical checks per slice - then go on to its review.
 disable-model-invocation: true
 argument-hint: "[slug]"
 ---
@@ -12,17 +12,16 @@ Session: ${CLAUDE_SESSION_ID}
 
 You orchestrate. A fresh executor writes the code from the packet alone. You prove the result mechanically.
 
-Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets `done`). `rewind` means the slice's code must be undone before it is rebuilt.
+Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets `done`). `rewind` means the slice's code must be undone before it is rebuilt. Build runs a milestone's slices back to back and then the milestone's review, on autopilot ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot).
 
 ## 1. Check the gate
 
 - Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Checking out the branch also leaves a detached HEAD from an interrupted red check.
-- Pick the first slice not `done` and resume by its state:
+- The milestone in progress is the one holding the first slice not `done`. When every one of its slices that is not `done` is `green`, go to step 7. Otherwise take its first slice that is neither `done` nor `green` and resume by its state:
   - `pending`: step 2.
   - `rewind`: rewind (below, cause `sent_back`), then step 2.
   - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. Otherwise rewind (cause `interrupted`), then step 3.
   - `red`: step 5.
-  - `green`: tell the user to run `/factory-review <slug>`. Stop.
 - The working tree must be clean apart from `.factory/`.
 
 **Rewind** undoes a slice's code without touching `.factory/` or rewriting history, and appends a `rewind` event with its cause (gates.md, History):
@@ -30,7 +29,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.factory'`, and ask the user to confirm.
 2. `git restore --source=<base_commit> --staged --worktree -- . ':!.factory'` then `git clean -fd -- . ':!.factory'`.
 3. If anything is staged, commit it as `revert(<slug>): slice NN`.
-4. Set the slice to `{ state: pending, base_commit: null, test_commit: null, head_commit: null }`.
+4. Set the slice to `{ state: pending, base_commit: null, test_commit: null, head_commit: null }`, and every later slice that is not `done` too: the restore removed their code as well.
 
 ## 2. Write the packet
 
@@ -54,15 +53,16 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 > 1. **Red.** Write the tests under "Tests first", each asserting the outcome its line names, not only that the call returns; in a BDD module, the feature file and every step definition its scenarios need. Add each new frozen signature as a stub in the packet's stub form, so the code compiles. A changed signature keeps its old behavior behind the new signature, and existing tests are updated to the new signature and still pass. Run the tests: every new test fails, every other test passes except those in `<baseline_failures>`. List any new test that passes against the stub (a negative case, for example) in your report rather than changing it. Commit as `test(<slug>): slice NN red`.
 > 2. **Green.** Implement until every Verify command passes. The tests from the red commit stay exactly as written, and every frozen signature stays exactly as written. Commit as `feat(<slug>): slice NN`.
 >
-> Stop and report, with the reason, when: a frozen signature cannot work as written, a file outside Allowed files must change, a red-commit test is wrong, or a pre-commit hook rejects the red commit.
+> Stop and report, with the reason, when: a frozen signature cannot work as written, a file outside Allowed files must change, a red-commit test is wrong, a pre-commit hook rejects the red commit, or a commit fails to sign. Never commit unsigned.
 >
 > Report: both commit shas, the tail of the failing run from step 1, the tail of the passing run from step 2, and anything you stopped on.
 
 When the executor stops, append an `executor_stop` event with the reason:
 
 - **Frozen signature or wrong test:** send the slice back.
-- **File outside the list:** ask the user. Allowed: log `{ slice, file, reason }` in `deviations`, append the file to the packet's Allowed files, and continue the executor. Refused: send the slice back.
+- **File outside the list:** run the adapter's Typecheck on the working tree. When it reports an error in that file caused by a signature this slice adds or changes in the packet's Frozen contract (a fake, a caller, the composition root), allow the file without asking: log `{ slice, file, reason: "typecheck: <the error, one line>" }` in `deviations`, append it to the packet's Allowed files, and continue the executor. Otherwise ask the user. Allowed: log `{ slice, file, reason }` in `deviations`, append the file to the packet's Allowed files, and continue the executor. Refused: send the slice back.
 - **Pre-commit hook:** ask the user whether red commits may use `--no-verify`, and continue the executor with the answer.
+- **Signing** (detail `signing`): ask the user to unlock their signing agent, then continue the executor.
 - **A new test passes against the stub:** ask the user to keep it (record its name in the slice's `red_exempt`) or have the executor rewrite it.
 
 **Send back** follows gates.md, which picks the target gate from the reason.
@@ -82,8 +82,30 @@ Red means: it builds; every new test fails, on an assertion or an error raised t
 
 ## 5. Prove green
 
-At the branch head, run every Verify command and `test_command`. Green means all pass, apart from tests in `baseline_failures`. On failure, append a `green_retry` event and continue the executor with the output, or dispatch a fresh one if it is gone. Record `head_commit` and set the slice to `green`.
+At the branch head, run every Verify command and `test_command`. Green means all pass, apart from tests in `baseline_failures`. On a first failure, append a `green_retry` event and continue the executor with the output, or dispatch a fresh one if it is gone; on a second, show the user the output and ask how to proceed. Record `head_commit`; the slice stays `red` until step 6 passes.
 
-## 6. Hand off
+## 6. Check the slice
 
-Set `notes_for_fresh_session` to "Slice NN green. Next: /factory-review <slug>." Committed mode: `git add .factory/changes/<slug>` and commit `chore(factory): slice NN built`. Tell the user to run `/factory-review <slug>`.
+Run Phase 1 of [../factory-review/SKILL.md](../factory-review/SKILL.md) (checks 1 to 5) on this slice alone: its `base_commit`, `test_commit` and packet. Write `slices/NN/checks.md`:
+
+```markdown
+# Checks: slice NN, <name>
+
+Range: <base_commit>..<head_commit>
+- Allowed files: pass | <extra files and their deviation entries>
+- Frozen contract: pass
+- Red tests unchanged: pass | <deviation entries>
+- Red: <test_commit> failed on the new tests. Green: <head_commit> passes test_command.
+- Lint: pass | <findings> | skipped
+```
+
+- A frozen-contract difference sends the slice back (gates.md).
+- Allowed files, Red tests unchanged, Green and Lint must pass. On a first failure, append a `check_retry` event and continue the executor with it, or dispatch a fresh one if it is gone, then go back to step 5. On a second, ask the user.
+
+When the checks pass, set the slice to `green`.
+
+## 7. Next
+
+- Headless mode: `git add .factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
+- Another slice of this milestone is not `green`: step 1, in this session.
+- Every slice of the milestone is `green`: set `notes_for_fresh_session` to "Milestone M green. Next: /factory-review <slug>." and follow [../factory-review/SKILL.md](../factory-review/SKILL.md) in this session.

@@ -61,6 +61,16 @@ with tempfile.TemporaryDirectory() as tmp:
         assert run(root, allowed).returncode == 0, allowed
     assert run(root, "src/b.ts").returncode == 2
 
+    # A milestone: while slice 2 builds, green slice 1's files are closed; at review time, with nothing
+    # building, the green slices' files are open.
+    (change / "slices" / "02").mkdir(exist_ok=True)
+    (change / "slices" / "02" / "packet.md").write_text("# Packet\n\n## Allowed files\n- src/b.ts\n")
+    milestone = "slices:\n  - { id: 1, name: tracer, milestone: 1, state: green }\n  - { id: 2, name: next, milestone: 1, state: building }"
+    st.write_text(status(approved, slices=milestone))
+    assert run(root, "src/b.ts").returncode == 0 and run(root, "src/a.ts").returncode == 2
+    st.write_text(status(approved, slices=milestone.replace("state: building", "state: green")))
+    assert run(root, "src/a.ts").returncode == 0 and run(root, "src/b.ts").returncode == 0
+
     # The append-only history after slices changes nothing the hook reads.
     st.write_text(status(approved, slices=building) + 'history:\n  - { at: now, step: factory-build, event: step_start, ref: "1", detail: "state: done" }\n')
     assert run(root, "src/a.ts").returncode == 0 and run(root, "src/b.ts").returncode == 2

@@ -63,7 +63,7 @@ Done when the user has answered all of them.
 
 ## 5. Create the change
 
-1. The working tree must be clean apart from `.factory/`. If it is not, list the changes and ask the user to commit or stash them.
+1. The working tree must be clean apart from `.factory/`. If it is not, list the changes and ask the user to commit or stash them. When `git config commit.gpgsign` is `true`, check that signing works: `git commit-tree -S -m probe $(git hash-object -t tree /dev/null)`. On failure, ask the user to unlock their signing agent before going on: the executor and the gates commit throughout the change.
 2. Record `change_base_commit` = `git rev-parse HEAD`. On the default branch, create `factory/<slug>`. On any other branch, ask whether to work there or create `factory/<slug>`; a headless change always uses `factory/<slug>`, where the runner finds it.
 3. Ignored mode: append `.factory/` to `.git/info/exclude`, so the repository's own files stay untouched.
 4. Write `.factory/system/lenses.yaml` with the confirmed values:
