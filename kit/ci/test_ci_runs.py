@@ -18,15 +18,16 @@ def job(name, created, started, completed, attempt=1, conclusion="success", labe
             "steps": [{"name": "Test", "started_at": t(started), "completed_at": t(completed), "conclusion": "success"}]}
 
 
-def run(rid, jobs, attempt=1, conclusion="success", event="pull_request", branch="feature", sha="abc", created=0):
-    return {"id": rid, "name": "CI", "event": event, "head_branch": branch, "head_sha": sha, "run_attempt": attempt,
+def run(rid, jobs, attempt=1, conclusion="success", event="pull_request", branch="feature", sha="abc", created=0,
+        name="CI", wid=1):
+    return {"id": rid, "name": name, "workflow_id": wid, "event": event, "head_branch": branch, "head_sha": sha, "run_attempt": attempt,
             "status": "completed", "conclusion": conclusion, "created_at": t(created), "jobs": jobs}
 
 
 def summary(runs, required=("build", "test", "external/app"), cache_list=None):
     data = {"repo": {"full_name": "o/r", "private": True, "default_branch": "main"}, "fetched_at": "2026-10-03T00:00:00Z",
             "gh_invocations": 1, "required": list(required), "up_to_date_required_by_ruleset": None,
-            "last_green": {"CI": t(0)}, "notes": [], "runs": runs, "caches": cache_list}
+            "last_green": {"CI": t(0)}, "workflows": {"1": "CI", "7": "Dependabot Updates"}, "notes": [], "runs": runs, "caches": cache_list}
     with tempfile.TemporaryDirectory() as tmp:
         (Path(tmp) / "data.json").write_text(json.dumps(data))
         with redirect_stdout(StringIO()):
@@ -68,7 +69,8 @@ rerun = run(1, [job("build", 0, 3, 60), job("test", 61, 64, 94, conclusion="fail
 clean = [run(i, [job("build", 0, 3, 60), job("test", 61, 64, 180)], sha=f"s{i}") for i in range(2, 6)]
 later_red = run(6, [job("build", 0, 3, 60), job("test", 61, 64, 300, conclusion="failure")],
                 conclusion="failure", sha="s2", created=1)
-s = summary([rerun, *clean, later_red], cache_list=[
+bump = run(7, [], event="dynamic", name="npm in /web - Update #123", wid=7)
+s = summary([rerun, *clean, later_red, bump], cache_list=[
     {"ref": "refs/pull/1/merge", "size_in_bytes": 2e9, "created_at": t(0), "last_accessed_at": t(0)},
     {"ref": "refs/heads/main", "size_in_bytes": 1e9, "created_at": t(5), "last_accessed_at": t(65)},
     {"ref": "refs/heads/main", "size_in_bytes": 4e9, "created_at": "2026-10-02T12:00:00Z",
@@ -82,10 +84,13 @@ assert s["queue_seconds_by_label"]["ubuntu-latest"]["n"] == 13  # 3 real jobs in
 stratum = s["strata"][0]
 assert stratum["wall"]["n"] == 4 and stratum["wall"]["median"] == 3.0  # re-run and red runs stay out
 assert stratum["critical_path"] == {"jobs": ["build", "test"], "share": 1.0, "ends_at": "a required check"}
+assert stratum["queue_share_of_wall"] == 0.03  # 3 s + 3 s of queue on the path over 180 s
+assert stratum["jobs"]["test"]["queue_seconds"]["median"] == 3.0
 assert stratum["jobs"]["test"]["duration"]["median"] == 1.93 and stratum["sample"].startswith("insufficient")
 pr = s["per_pr_commit"]
 assert pr["not_measured"] == ["external/app"]
 assert pr["wait_to_green"]["n"] == 4  # s2 went red later, so only abc, s3, s4, s5 count
 assert s["caches"] == {"count": 3, "gb": 7.0, "on_pull_refs": 1, "never_restored": 1, "never_restored_gb": 2.0}
 assert s["health"]["CI"]["last_green_on_default_branch"] == t(0)
+assert s["health"]["Dependabot Updates"]["outcomes"] == {"success": 1}  # one entry, not one per update title
 print("ci_runs: all checks passed")

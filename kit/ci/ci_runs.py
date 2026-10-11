@@ -22,7 +22,7 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
 GH_ENV = {**os.environ, "GH_TELEMETRY": "false", "GH_NO_UPDATE_NOTIFIER": "1", "GH_PROMPT_DISABLED": "1"}
-RUN = "{id, name, event, head_branch, head_sha, run_attempt, status, conclusion, created_at}"
+RUN = "{id, name, workflow_id, event, head_branch, head_sha, run_attempt, status, conclusion, created_at}"
 JOB = ("{name, run_attempt, created_at, started_at, completed_at, conclusion, labels, runner_name,"
        " steps: [.steps[]? | {name, started_at, completed_at, conclusion}]}")
 # USD per minute for GitHub's standard labels, https://docs.github.com/en/billing/reference/actions-runner-pricing,
@@ -91,7 +91,8 @@ def fetch(repo, out, days):
     except GhError as e:
         notes.append(f"rulesets unreadable: {e}")
 
-    workflows = call(f"repos/{repo}/actions/workflows?per_page=100", '.workflows[] | select(.state == "active") | {id, name}')
+    every = call(f"repos/{repo}/actions/workflows?per_page=100", ".workflows[] | {id, name, state}")
+    workflows = [w for w in every if w["state"] == "active"]
 
     def last_green(w):
         try:
@@ -137,7 +138,7 @@ def fetch(repo, out, days):
         notes.append(f"caches unreadable: {e}")
     data = {"repo": meta, "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "gh_invocations": calls, "required": sorted(required), "up_to_date_required_by_ruleset": strict,
-            "last_green": greens, "notes": notes, "runs": runs, "caches": caches}
+            "last_green": greens, "workflows": {str(w["id"]): w["name"] for w in every}, "notes": notes, "runs": runs, "caches": caches}
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, "data.json"), "w") as f:
         json.dump(data, f)
@@ -189,7 +190,7 @@ def price(job):
     return next((usd for pat, usd in PRICES for x in labels if re.fullmatch(pat, x)), None)
 
 
-def critical_path(jobs, required=()):
+def critical_jobs(jobs, required=()):
     """From the last required job to finish (or the last job), back through the job that unblocked each one."""
     jobs = sorted(jobs, key=lambda j: j["completed_at"])
     gates = [j for j in jobs if j["name"] in required]
@@ -199,15 +200,22 @@ def critical_path(jobs, required=()):
         before = [j for j in jobs if j["completed_at"] < cur["completed_at"]
                   and secs(j["completed_at"], cur["created_at"]) >= -2]
         if not before:
-            return [j["name"] for j in reversed(path)]
+            return path[::-1]
         cur = before[-1]
         path.append(cur)
+
+
+def critical_path(jobs, required=()):
+    return [j["name"] for j in critical_jobs(jobs, required)]
 
 
 def analyze(out, since=None):
     with open(os.path.join(out, "data.json")) as f:
         data = json.load(f)
     runs = [r for r in data["runs"] if not since or r["created_at"] >= since]
+    names = data.get("workflows", {})  # one name per workflow: Dependabot titles every run after its update
+    for r in runs:
+        r["name"] = names.get(str(r.get("workflow_id")), r["name"])
     required = set(data["required"])
     minutes, dollars, unpriced = Counter(), Counter(), set()
     queue, strata = defaultdict(list), defaultdict(list)
@@ -271,25 +279,29 @@ def health(runs, branch, last_green):
 def stratum(key, items, required):
     name, event, jobs, labels = key
     walls = [secs(min(j["created_at"] for j in fs), max(j["completed_at"] for j in fs)) for fs in items]
-    paths = Counter(tuple(critical_path(fs, required)) for fs in items)
+    chains = [critical_jobs(fs, required) for fs in items]
+    paths = Counter(tuple(j["name"] for j in c) for c in chains)
     top = paths.most_common(1)[0][0]
+    waited = [sum(secs(j["created_at"], j["started_at"]) for j in c) / w if w else 0.0 for c, w in zip(chains, walls, strict=True)]
     per_job = {}
     for jn in jobs:
-        durs, steps = [], defaultdict(list)
+        durs, waits, steps = [], [], defaultdict(list)
         for fs in items:
             for j in fs:
                 if j["name"] == jn:
                     durs.append(secs(j["started_at"], j["completed_at"]))
+                    waits.append(secs(j["created_at"], j["started_at"]))
                     for s in j["steps"]:
                         if s["started_at"] and s["completed_at"] and s["conclusion"] != "skipped":
                             steps[s["name"]].append(secs(s["started_at"], s["completed_at"]))
         slow = sorted(steps.items(), key=lambda kv: -statistics.median(kv[1]))[:3]
-        per_job[jn] = {"duration": dist(durs), "noise_floor": noise_floor(durs),
+        per_job[jn] = {"duration": dist(durs), "noise_floor": noise_floor(durs), "queue_seconds": dist(waits, 1),
                        "slowest_steps": {s: dist(v) for s, v in slow}}
     return {"workflow": name, "event": event, "labels": list(labels),
             "first": min(min(j["created_at"] for j in fs) for fs in items),
             "last": max(min(j["created_at"] for j in fs) for fs in items),
             "wall": dist(walls), "noise_floor": noise_floor(walls),
+            "queue_share_of_wall": round(statistics.median(waited), 2),  # queue on the critical path over wall clock
             "runner_minutes_per_run": dist([sum(secs(j["started_at"], j["completed_at"]) for j in fs) for fs in items]),
             "sample": "ok" if len(items) >= 20 else "insufficient: report, do not rank",
             "critical_path": {"jobs": list(top), "share": round(paths[top] / len(items), 2),
