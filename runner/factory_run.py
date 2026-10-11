@@ -144,7 +144,7 @@ def verify(repo, ref, change, text, approvals, may_skip):
     """
     head = run(repo, "git", "rev-parse", ref).strip()
     status = parse_status(text)
-    notes, blocked, approved_at = [], False, {}
+    notes, blocked, approved_at, approval_commit = [], False, {}, {}
     for gate, doc in GATES:
         state = status["gates"].get(gate, {}).get("state")
         if state == "skipped" and gate in may_skip:
@@ -169,11 +169,23 @@ def verify(repo, ref, change, text, approvals, may_skip):
             state = "approved"
         if state == "approved":
             approved_at[gate] = max(r["at"] for r in backing)
+            approval_commit[gate] = max(backing, key=lambda r: r["at"])["commit"]
         blocked = blocked or state != "approved"
     slices_at = approved_at.get("slices")  # from the reviews, never from status.yaml
-    # A done slice keeps a sign-off given under any slices approval, so a later send-back to the slices gate
-    # (reconcile's acceptance step) does not undo it; a new sign-off needs the current approval.
+    # A send-back to the slices gate (reconcile's acceptance step) must not undo earlier sign-offs. A sign-off
+    # from before the current slices approval still counts for a done slice, but only when the approved commit's
+    # status.yaml already showed that slice done at the same head_commit: the approver saw it kept, so an agent
+    # cannot revive a rewound slice by editing status.yaml. While the slices gate is not approved, nothing can
+    # run past it, so earlier sign-offs keep their slices done until the next approval decides.
     first_slices_at = min((r["at"] for r in approvals if command(r["body"]) == ("approve", "slices")), default=None)
+    kept = set()
+    if "slices" in approval_commit:
+        try:
+            at_approval = parse_status(run(repo, "git", "show", f"{approval_commit['slices']}:{change}/status.yaml"))
+            kept = {(x["id"].lstrip("0"), x["head_commit"]) for x in at_approval["slices"] if x["state"] == "done"}
+        except RuntimeError:
+            print(f"{change}: no status.yaml at the approved slices commit; earlier sign-offs are not kept",
+                  file=sys.stderr)
     for s in status["slices"]:
         nn = s["id"].zfill(2)
         signed = [r for r in approvals if (c := command(r["body"])) and c[0] == "sign-off"
@@ -185,6 +197,8 @@ def verify(repo, ref, change, text, approvals, may_skip):
                   and is_ancestor(repo, s["head_commit"], r["commit"]) and is_ancestor(repo, r["commit"], ref)
                   and only_factory(repo, s["head_commit"], r["commit"])
                   and blob_sha256(repo, r["commit"], f"{change}/slices/{nn}/review.md")]
+        if slices_at and (s["id"].lstrip("0"), s["head_commit"]) not in kept:
+            signed = [r for r in signed if r["at"] > slices_at]
         if s["state"] == "done" and not signed:
             text = set_slice_state(text, s["id"], "green")
             notes.append(f"slice {nn} reset to green: no matching sign-off")

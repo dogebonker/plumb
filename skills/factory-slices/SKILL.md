@@ -67,7 +67,7 @@ Done when Open questions is empty.
 
 ## 5. Approve
 
-Headless mode: make the updates below to `status.yaml` when you push the document for review, since the runner records only the gate. Otherwise approve the `slices` gate as gates.md describes; after its steps 1 and 2 and before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
+Headless mode: make the updates below to `status.yaml` when you push the document for review, since the runner records only the gate, and name, in the comment that asks for approval, the slices that stay `done`: approving keeps their sign-offs, and the runner keeps no others. Otherwise approve the `slices` gate as gates.md describes; after its steps 1 and 2 and before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
 
 - a slice already `done` stays as it is
 - the slice named in `sent_back` gets `state: rewind`; factory-build undoes its code before rebuilding it

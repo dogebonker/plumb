@@ -195,16 +195,26 @@ with tempfile.TemporaryDirectory() as tmp:
     # so the next skill builds the fix slice instead of re-reviewing slice 01.
     done_status = head_status.replace("state: green", "state: done")
     signed_off = {**sign, "commit": reviewed}
+    fix = done_status.replace(f"head_commit: {v2} }}", f"head_commit: {v2} }}\n  - {{ id: 2, name: fix, state: pending, head_commit: null }}")
     (repo / change / "04-slices.md").write_text("# slices v2: a fix slice\n")
+    (repo / status_path).write_text(fix)
     git("commit", "-qam", "send back")
     text, notes = check(done_status, [*gates_ok, signed_off])
     assert notes == ["slices reset to pending: no matching approval"], notes
     assert parse_status(text)["slices"][0]["state"] == "done"
     again = {**review, "body": "approve slices", "commit": git("rev-parse", "HEAD"), "at": "2026-10-10T12:00:00Z"}
-    text, notes = check(done_status, [*gates_ok, signed_off, again])
+    text, notes = check(fix, [*gates_ok, signed_off, again])
     assert parse_status(text)["gates"]["slices"]["state"] == "approved", notes
     assert parse_status(text)["slices"][0]["state"] == "done", notes
-    fix = text.replace(f"head_commit: {v2} }}", f"head_commit: {v2} }}\n  - {{ id: 2, name: fix, state: pending, head_commit: null }}")
-    assert next_skill(parse_status(fix)) == "factory-build"
+    assert next_skill(parse_status(text)) == "factory-build"
+
+    # An agent cannot revive a slice by writing done into status.yaml: an earlier sign-off counts only when
+    # the approved commit already showed the slice done at the same head_commit.
+    (repo / status_path).write_text(fix.replace("state: done", "state: rewind", 1))
+    git("commit", "-qam", "slice 01 rewound")
+    rewound = {**again, "commit": git("rev-parse", "HEAD"), "at": "2026-10-10T13:00:00Z"}
+    text, notes = check(fix, [*gates_ok, signed_off, rewound])
+    assert "slice 01 reset to green: no matching sign-off" in notes, notes
+    assert parse_status(text)["slices"][0]["state"] == "green"
 
 print("factory_run: all checks passed")
