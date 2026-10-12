@@ -45,8 +45,8 @@ Done when you can state today's behavior and the requested change in the user's 
 ## Rules and examples
 ### <business rule>
 - FR-01: WHEN <trigger>, the system SHALL <response>
+  Example: <concrete input> -> <concrete outcome>
   (EARS: `The system SHALL`, `WHEN`, `WHILE <state>`, `WHERE <feature>`, `IF <unwanted> THEN`)
-- Example: <concrete input> -> <concrete outcome>
 
 ## Promises
 - NFR-01: <what the user can count on, in their words; numbers come in architecture>

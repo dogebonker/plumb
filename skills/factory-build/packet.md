@@ -1,5 +1,7 @@
 # Packet: slice <NN>, <name>
 
+Written from: 04-slices.md <doc_sha256>, 03-interface.md <doc_sha256, or skipped>
+
 ## Goal
 <one sentence>
 

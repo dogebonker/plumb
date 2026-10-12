@@ -31,7 +31,7 @@ Pond and the `modern-python` language pack are not available in trials: research
 
 ## Findings for the factory
 
-Numbered as reported; B1 to B4 and B9 are fixed in the skills. By impact: B1, B4, B2, B3, B9, B6, B5, B7, B8.
+Numbered as reported; all nine are fixed in the skills. By impact: B1, B4, B2, B3, B9, B6, B5, B7, B8.
 
 | ID | Finding | Status |
 | --- | --- | --- |
@@ -39,8 +39,8 @@ Numbered as reported; B1 to B4 and B9 are fixed in the skills. By impact: B1, B4
 | B2 | A review fix could not add a regression test: Tests first files are held for the user and a new file is outside Allowed files. | Fixed: factory-review step 6 lets a fix add a test file, logged as a deviation. |
 | B3 | No mode ran exactly one step: interactive build and review start the autopilot, and headless needs a pull request and a remote. | Fixed: `--one-step` (gates.md, Milestones and autopilot). |
 | B4 | `research.md` had no template, so a grader could only guess where questions and answers are. | Fixed: factory-architecture step 2.4 gives its form, one numbered question with its answer indented under it. FW-01's grader also reads two numbered lists. |
-| B5 | A start state depends on the kit version through `factory_commit`; a different kit makes Load ask questions. | Open |
-| B6 | A pending slice's packet is always rewritten by build step 2, so "pending with a packet" is not a separate state. | Open |
-| B7 | Send back does not say whether `approved_by`, `approved_at` and `doc_sha256` are cleared when a gate goes back to `pending`. | Open |
-| B8 | The Example line has two formats: its own bullet in `01-product.md`, indented under the FR in small-track `04-slices.md`. | Open |
+| B5 | A start state depends on the kit version through `factory_commit`; a different kit makes Load ask questions. | Fixed: the version check asks nothing when no field is missing, and a start state pins its kit to `factory_commit` (gates.md, Load a change). |
+| B6 | A pending slice's packet is always rewritten by build step 2, so "pending with a packet" is not a separate state. | Fixed: a packet records the gate hashes it was written from, and build reuses a pending slice's packet when they still match. |
+| B7 | Send back does not say whether `approved_by`, `approved_at` and `doc_sha256` are cleared when a gate goes back to `pending`. | Fixed: a gate sent back or reopened becomes `{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }`. |
+| B8 | The Example line has two formats: its own bullet in `01-product.md`, indented under the FR in small-track `04-slices.md`. | Fixed: the Example line sits indented under its FR in every template; older bullets are still read (gates.md, IDs). |
 | B9 | `review.md`'s Polish line has a `<severity>`, but polish's severities are not defined, so `block` and `fix` cannot be counted reliably. | Fixed: factory-review's Polish line maps polish's recommendation (fix is `fix`, skip is `note`; `block` only from lens cards). |

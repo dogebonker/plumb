@@ -22,7 +22,7 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
 
 - Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Checking out the branch also leaves a detached HEAD from an interrupted red check.
 - The milestone in progress is the one holding the first slice not `done`. When every one of its slices that is not `done` is `green`, go to step 7. Otherwise take its first slice that is neither `done` nor `green` and resume by its state:
-  - `pending`: step 2.
+  - `pending`: step 2, unless the slice's `packet.md` exists and its Written from line matches the current `doc_sha256` of the slices and interface gates; then step 3 with that packet.
   - `rewind`: rewind (below, cause `sent_back`), then step 2.
   - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. If the slice's last `history` event is an `executor_stop` you were given the answer to, apply it (step 3) and dispatch a fresh executor that keeps the work already in the tree and any red commit. Otherwise rewind (cause `interrupted`), then step 3.
   - `red`: step 5.
@@ -37,7 +37,7 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
 
 ## 2. Write the packet
 
-Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice. Copy, never paraphrase:
+Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice, with the Written from line set to the current `doc_sha256` of the slices and interface gates. Copy, never paraphrase:
 
 - the slice's heading from `04-slices.md` as Goal
 - the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
