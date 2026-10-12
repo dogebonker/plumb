@@ -2,7 +2,7 @@
 name: factory-review
 description: Review a green factory milestone - mechanical checks, /polish with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off into review.md.
 disable-model-invocation: true
-argument-hint: "[slug]"
+argument-hint: "[slug] [--one-step]"
 ---
 
 # Factory review
@@ -14,7 +14,7 @@ Scripts first, then `/polish`, then the human. Requires the `polish` skill. A re
 
 ## 0. Orchestrator or step agent
 
-Interactive mode, and you were not started as a factory step agent: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
+Interactive mode, not started as a factory step agent, and without `--one-step` in the arguments: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
 
 ## 1. Load the milestone
 
@@ -72,7 +72,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 
    Headless mode: polish's report is the question. Write its findings and the lens cards to `slices/<last>/proposed.md`, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `proposed.md`, continues at step 6, and deletes `proposed.md` once `review.md` is written.
 5. Wait until every lens reviewer has written its `<tmp>/<lens>.md`, then collect the cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Interactive mode: apply every remaining `block` and `fix` card after polish's own fixes, without asking, and skip notes. A card is held for the user at sign-off instead when its Alternative changes a frozen signature (a possible send-back), touches a file outside the Allowed files, or touches a file under any packet's Tests first. Apply each card only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
-6. A fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
+6. A fix may add its regression test in a new test file beside the slice's tests: before writing it, log `{ slice, file, reason: "regression test for finding N" }` in `deviations` and append the file to that slice's packet's Allowed files. Any other fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage by path only the changed files that are in the milestone's packets' Allowed files or in `deviations`; restore, or delete when untracked, any other changed file and record its finding as a follow-up. Commit them as `fix(<slug>): milestone M review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
 8. Each test that commit adds or changes proves itself: `git restore -s <fix commit>~1 -SW -- <the commit's non-test files>`, run the test (it must fail), then `git restore -s HEAD -SW -- <the same files>`. After an interruption, that last command restores the fix. A commit with no non-test files has nothing to prove. A test that still passes is reported, not kept as proof.
 9. Rerun Phase 1 over the milestone. All checks pass: record the fix commit as the `head_commit` of slice `<last>`. A check the fix commit broke: `git revert` it, tell the user which fix caused it, and keep `head_commit` as it was.
@@ -91,7 +91,7 @@ Range: <base>..<head>
 - Red: each slice's test_commit failed on its new tests. Green: <head> passes test_command.
 
 ## Polish
-<one line per finding, numbered as polish numbered it: `N. [<tag>] <severity> <path>: <finding> -> <outcome>`, the outcome one of: `fix` or `skip` (the user's answer), `auto-fixed` (applied without asking), `auto-skipped` (left out of the review's own answer), `undone` (auto-fixed, then undone by the user), `follow-up` or `dropped`. The tag is the rubric rule, written as interface cards write Lens / rule, or, without one, `polish/<category>` (correctness, cleanliness, design, efficiency, gating). Findings dropped after validation get their own lines.>
+<one line per finding, numbered as polish numbered it: `N. [<tag>] <severity> <path>: <finding> -> <outcome>`, where the severity follows polish's recommendation: a finding it recommends fixing is `fix`, one it recommends skipping is `note`, and `block` comes only from lens cards, the outcome one of: `fix` or `skip` (the user's answer), `auto-fixed` (applied without asking), `auto-skipped` (left out of the review's own answer), `undone` (auto-fixed, then undone by the user), `follow-up` or `dropped`. The tag is the rubric rule, written as interface cards write Lens / rule, or, without one, `polish/<category>` (correctness, cleanliness, design, efficiency, gating). Findings dropped after validation get their own lines.>
 
 ## Lens reviewers
 <each card, with its outcome: `fix` or `skip` (the user's answer, a held card included), `auto-fixed`, `auto-skipped` (a note), `undone`, or `stale`; "not run" with the reason when a reviewer did not apply>
@@ -114,4 +114,4 @@ Headless mode: commit and push `review.md`, then wait for the user (gates.md) wi
 Interactive mode only: a headless run stops at step 5's wait, and the runner records the sign-off.
 
 1. Delete `<tmp>`. Nothing is committed here (gates.md, Commits).
-2. Set `notes_for_fresh_session` to "Milestone M done. Next: /factory-build <slug>." or, when all slices are done, "All slices done. Next: /factory-reconcile <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot).
+2. Set `notes_for_fresh_session` to "Milestone M done. Next: /factory-build <slug>." or, when all slices are done, "All slices done. Next: /factory-reconcile <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot); with `--one-step`, tell the user the next skill and stop.

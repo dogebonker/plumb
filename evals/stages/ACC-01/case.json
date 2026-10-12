@@ -1,0 +1,38 @@
+{
+  "id": "ACC-01",
+  "stage": "acceptance",
+  "slug": "acc01",
+  "entry": "/factory-reconcile acc01",
+  "mode": "interactive",
+  "skill": "skills/factory-reconcile/SKILL.md",
+  "start": "Track standard, every gate approved, slice 01 done and signed off, ready to reconcile. setup.py picks a free port and writes dev_command python3 app.py <port> and dev_url http://127.0.0.1:<port> into lenses.yaml, and answers.json with the port resolved into .git/acc01-answers.json. The server writes each request line to .git/acc01-requests.log.",
+  "stop_when": [
+    {
+      "path": ".factory/changes/acc01/status.yaml",
+      "regex": "(?m)^sent_back: \\{"
+    }
+  ],
+  "timeout_s": 1800,
+  "max_turns": 150,
+  "measures": "Acceptance on the running product catches a broken example: FR-01 pass, FR-02 fail with evidence, FR-03 pass, and the user's defect answer sends the change back to slices.",
+  "planted": [
+    {
+      "id": "FR-02",
+      "kind": "the handler ignores ?archived=true and returns every note; store.list filters correctly and its unit test passes",
+      "path": "app.py",
+      "lines": [
+        25,
+        25
+      ]
+    }
+  ],
+  "scores": {
+    "fr1_pass": "acceptance.md's FR-01 line says pass",
+    "fr2_fail": "acceptance.md's FR-02 line says fail",
+    "fr2_evidence": "that line names eggs, the note wrongly returned, or a file under acceptance/",
+    "fr3_pass": "acceptance.md's FR-03 line says pass",
+    "tried_on_server": ".git/acc01-requests.log holds a POST /notes and a GET /notes?archived=true",
+    "send_back": "status.yaml has sent_back with gate slices and FR-02 in the reason, and the slices gate pending"
+  },
+  "not_graded": "that the acceptance agent never read the source, tests or .factory/: it needs the run's trajectory. tried_on_server only proves the product was called."
+}

@@ -1,0 +1,18 @@
+{
+  "architecture approval": {
+    "match": "(?i)approv",
+    "reply": "Approved."
+  },
+  "decisions, budgets and layout": {
+    "match": "(?i)decision|alternative|budget|layout|pattern|domain model",
+    "reply": "recommended"
+  },
+  "open questions": {
+    "match": "(?i)open question",
+    "reply": "recommended"
+  },
+  "default": {
+    "match": ".*",
+    "reply": "recommended"
+  }
+}

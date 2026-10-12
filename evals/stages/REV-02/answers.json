@@ -1,0 +1,14 @@
+{
+  "milestone sign-off": {
+    "match": "(?i)sign[- ]?off",
+    "reply": "Undo nothing. Held items: take your recommendation. Signed off."
+  },
+  "which findings to fix": {
+    "match": "(?i)which (findings|items).*fix|fix <numbers>|\\bfix \\d",
+    "reply": "recommended"
+  },
+  "default": {
+    "match": ".*",
+    "reply": "recommended"
+  }
+}

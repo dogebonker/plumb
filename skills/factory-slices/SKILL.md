@@ -25,7 +25,7 @@ Done when every slice can name existing or new files by path.
 
 ## 3. Draft `04-slices.md`
 
-Track `small` has no earlier documents: write Goal, Requirements and Standing constraints here too. Other tracks start at Slices.
+Track `small` has no earlier documents: write Goal, Requirements, Standing constraints and Interface here too. Other tracks start at Slices.
 
 ```markdown
 # Slices: <slug>
@@ -39,6 +39,9 @@ Track `small` has no earlier documents: write Goal, Requirements and Standing co
 
 ## Standing constraints
 - SYS-NFR-01: <how this change touches it>   (or: none)
+
+## Interface
+<track small only: each signature the change adds or changes, in the repository's language, with its interface comment (what it promises, never how); "none" when the change adds or changes no signature. These are frozen like the interface gate's.>
 
 ## Slices
 ### 01 <name>

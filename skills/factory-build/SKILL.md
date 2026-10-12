@@ -2,7 +2,7 @@
 name: factory-build
 description: Build the slices of a factory change's next milestone - packet, fresh executor, red then green, mechanical checks per slice - then go on to its review.
 disable-model-invocation: true
-argument-hint: "[slug]"
+argument-hint: "[slug] [--one-step]"
 ---
 
 # Factory build
@@ -16,7 +16,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 
 ## 0. Orchestrator or step agent
 
-Interactive mode, and you were not started as a factory step agent: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
+Interactive mode, not started as a factory step agent, and without `--one-step` in the arguments: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
 
 ## 1. Check the gate
 
@@ -42,7 +42,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the slice's heading from `04-slices.md` as Goal
 - the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
-- the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`, and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
+- the frozen signatures, interface comments and depth statements it touches, from `03-interface.md` (track small: the Interface section of `04-slices.md`), and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
 - its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
 - under Layout, the lines that admit each Allowed file (gates.md, Layout), with what lives there and what may not; a file admitted only because its folder already existed is listed as `existing`
 - under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); then the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
@@ -112,4 +112,4 @@ When the checks pass, set the slice to `green`.
 ## 7. Next
 
 - Headless mode: `git add .factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
-- Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot).
+- Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot); with `--one-step`, tell the user the next skill and stop.

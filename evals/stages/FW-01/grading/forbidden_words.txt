@@ -1,0 +1,5 @@
+\btombston\w*
+\bgrace\w*
+\bresurrect\w*
+\breap\w*
+\b14\b

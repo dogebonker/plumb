@@ -1,0 +1,30 @@
+{
+  "rewind confirmation": {
+    "match": "(?i)rewind|confirm.*(restore|clean)",
+    "reply": "yes"
+  },
+  "file outside Allowed files": {
+    "match": "(?i)outside (the )?allowed files",
+    "reply": "recommended"
+  },
+  "pre-commit hook": {
+    "match": "(?i)--no-verify|pre-commit",
+    "reply": "yes"
+  },
+  "signing": {
+    "match": "(?i)signing agent|unlock",
+    "reply": "recommended"
+  },
+  "new test passes against the stub": {
+    "match": "(?i)passes against the stub|red_exempt",
+    "reply": "recommended"
+  },
+  "second red or green failure": {
+    "match": "(?i)how to proceed",
+    "reply": "recommended"
+  },
+  "default": {
+    "match": ".*",
+    "reply": "recommended"
+  }
+}

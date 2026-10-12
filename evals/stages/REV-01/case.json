@@ -1,0 +1,63 @@
+{
+  "id": "REV-01",
+  "stage": "review",
+  "slug": "rev01",
+  "entry": "/factory-review rev01 --one-step",
+  "mode": "interactive",
+  "skill": "skills/factory-review/SKILL.md",
+  "start": "Track small, slices gate approved; 04-slices.md has the small-track Interface section with the three frozen signatures, copied into the packet's Frozen contract. milestone 1 is slice 01, green, with base, test and head commits. As interactive build leaves it, .factory/ (status.yaml, packet.md, checks.md) is not committed yet.",
+  "stop_when": [
+    {
+      "path": ".factory/changes/rev01/slices/01/review.md",
+      "regex": "(?m)^## Sign-off[ \\t]*\\n+[ \\t]*[^<\\s#]"
+    }
+  ],
+  "timeout_s": 3600,
+  "max_turns": 250,
+  "requires": [
+    "the polish skill"
+  ],
+  "measures": "Review recall and precision on planted bugs: the review's fix commit fixes B1 and B2 and leaves the decoy D1 alone, and review.md follows the template.",
+  "planted": [
+    {
+      "id": "B1",
+      "kind": "off-by-one: floor division drops a partly filled last page",
+      "path": "listing.py",
+      "lines": [
+        6,
+        6
+      ],
+      "hidden_test": "test_b1_partly_filled_last_page_counts"
+    },
+    {
+      "id": "B2",
+      "kind": "missing guard: division by zero for no notes",
+      "path": "listing.py",
+      "lines": [
+        17,
+        20
+      ],
+      "hidden_test": "test_b2_no_notes_share_is_zero"
+    }
+  ],
+  "decoys": [
+    {
+      "id": "D1",
+      "kind": "reverse range stopping at -1 looks off by one but reaches index 0",
+      "path": "listing.py",
+      "lines": [
+        11,
+        11
+      ],
+      "hidden_test": "test_d1_latest_scans_every_note_newest_first"
+    }
+  ],
+  "scores": {
+    "recall": "share of B1 and B2 whose hidden test passes at HEAD",
+    "precision": "0 when D1's hidden test fails or line 11 changed; otherwise the share of block or fix Polish and lens findings, not dropped, that name B1 or B2",
+    "public_tests": "every test passing at the feat commit passes at HEAD",
+    "review_md": "slices/01/review.md has the template's headings, a Range line and a filled Sign-off",
+    "fix_commit": "a commit fix(rev01): milestone 1 review exists",
+    "slice_done": "slice 01 is done in status.yaml"
+  }
+}

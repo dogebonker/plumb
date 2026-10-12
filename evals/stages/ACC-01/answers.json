@@ -1,0 +1,6 @@
+{
+  "acceptance fail or not run": {"match": "(?i)\\b(fail|not run)\\b.*\\b(defect|wrong example|not run accepted)\\b|\\bdefect\\b", "reply": "FR-02: defect"},
+  "module run command": {"match": "(?i)how (does )?a user run|dev_command|local url", "reply": "python3 app.py {port}, http://127.0.0.1:{port}"},
+  "drafts to confirm": {"match": "(?i)confirm|write them", "reply": "recommended"},
+  "default": {"match": ".*", "reply": "recommended"}
+}

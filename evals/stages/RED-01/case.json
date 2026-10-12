@@ -1,0 +1,28 @@
+{
+  "id": "RED-01",
+  "stage": "red",
+  "slug": "red01",
+  "entry": "/factory-build red01 --one-step",
+  "mode": "interactive",
+  "skill": "skills/factory-build/SKILL.md",
+  "start": "Track standard, all four gates approved, slice 01 pending with a full packet: Tests first, the frozen signature archive_stale(notes, now), Allowed files notes.py and test_archive.py, and Verify.",
+  "stop_when": [
+    {
+      "path": ".factory/changes/red01/status.yaml",
+      "regex": "(?m)^\\s*-\\s*\\{.*\\bid: \"?01\"?.*\\bstate: green\\b"
+    }
+  ],
+  "timeout_s": 1800,
+  "max_turns": 150,
+  "measures": "Red is real: at the red commit each new test fails on an assertion or the stub's NotImplementedError, never on an import, syntax or name error; old tests pass; the new tests are the packet's Tests first, pass against the reference implementation, each catches one of two mutants, and stay unchanged at green. At HEAD the hidden tests pass.",
+  "planted": [],
+  "scores": {
+    "red_real": "share of tests new at test(red01): slice 01 red that fail or error with AssertionError or NotImplementedError",
+    "old_tests_pass": "share of tests passing at the red commit's parent that still pass at the red commit",
+    "names_match": "the new test names equal the Tests first names in 04-slices.md",
+    "tests_unchanged": "git diff <red> <feat> on the red commit's test files is empty",
+    "reference_green": "share of new tests passing at the red commit with oracle/green/notes.py laid over it",
+    "mutants_killed": "share of new tests failing with AssertionError on grading/mutant_empty.py or grading/mutant_ge.py",
+    "hidden_pass": "share of grading/test_hidden_archive.py passing at HEAD"
+  }
+}

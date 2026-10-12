@@ -26,7 +26,16 @@ Research runs behind a firewall: the agent that answers never sees the task, so 
 
    > Answer every question in `<tmp>/questions.md` from the code at `<tmp>/repo` and, through Pond's tools, from sessions dated before `<date of change_base_commit>`. Write the answers to `<tmp>/answers.md`, numbered like the questions. Facts only, each with `path:line` or a Pond session id; write "not found" where the code and Pond are silent.
 
-4. Copy questions and answers into `<change>/research.md`, then `git worktree remove <tmp>/repo`. Gaps become new questions, answered the same way. A resumed run keeps the questions already answered.
+4. Copy questions and answers into `<change>/research.md`, then `git worktree remove <tmp>/repo`. The form:
+
+   ```markdown
+   # Research: <slug>
+
+   1. <question>
+      Answer: <facts, each with path:line or a Pond session id>, or "not found"
+   ```
+
+   One numbered item per question, its answer indented under it. Gaps become new questions, answered the same way. A resumed run keeps the questions already answered.
 5. Read the files the answers point to, and `.factory/system/`: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
 6. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules and the Principles in `~/.software-factory/principles.md`.
 

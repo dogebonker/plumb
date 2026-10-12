@@ -44,6 +44,8 @@ In interactive mode `/factory-build` and `/factory-review` start the autopilot, 
 3. A reported question: show it to the user as reported, without shortening it. Continue the same step agent with the user's answer, word for word and labelled as the user's; the step agent treats it as the user's answer in chat, and the orchestrator never answers for the user. Where the agent cannot be continued, start a fresh one with the question and the answer; it applies the answer where its skill asked it.
 4. When the step ends, append one `step_tokens` event (History) with the ids of every step agent the step used and their usage summed over every return, then go to 1.
 
+`--one-step` after the slug (the slug is the arguments without it) runs build or review for exactly one step in this session, with no orchestrator: the skill asks the user directly and stops when the step ends. An eval trial or a user who wants one slice uses it.
+
 The autopilot asks and continues for a rewind, a file a step may not allow on its own, a retry that failed twice, a signing failure, held review items and each milestone's sign-off. It ends at a send-back, at a gate that is not approved, and after reconcile.
 
 ## Commits
