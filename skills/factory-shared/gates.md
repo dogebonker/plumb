@@ -8,7 +8,7 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 | --- | --- | --- | --- |
 | product | `<change>/01-product.md` | `/factory-product` | 100 |
 | architecture | `<change>/02-architecture.md` | `/factory-architecture` | 150 |
-| interface | `<change>/03-interface.md` | `/factory-interface` | 200, or 250 when it designs a frontend root |
+| interface | `<change>/03-interface.md` | `/factory-interface` | 200, or 250 when it designs a frontend root (factory-interface, step 2) |
 | slices | `<change>/04-slices.md` | `/factory-slices` | 100 |
 
 Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, architecture and interface; triage marks them `skipped`.
@@ -24,7 +24,7 @@ Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, arch
 
 ## Layout
 
-A change's Layout is the Layout section of `02-architecture.md` together with the module's tree in `.factory/system/layout.md`. A line names a folder or a file, relative to the module path, and says what lives there; `<name>` matches one folder name. A frontend's lines sit under `Frontend root: <path>, tree: small | fsd`. A file fits the Layout when any of these admits it:
+A change's Layout is the Layout section of `02-architecture.md` together with the module's tree in `.factory/system/layout.md`. Under each module, lines come in one group per root, headed `Pattern: <id>, root: <path>, check: <tool or none>`: the reference layout from `~/.software-factory/layouts/index.yaml` (or `<host>+cqrs`, or `existing` for a tree recorded as it is), the folder it was laid out for, and its checker from `~/.software-factory/layouts/tools.yaml`. A line names a folder or a file, relative to the module path, and says what lives there; `<name>` matches one folder name, and `{a,b}` matches either. A file fits the Layout when any of these admits it:
 
 - a line names the file, or names a folder the file is in or below
 - the file sits directly in a folder that held tracked files at `change_base_commit`, and no line names that folder or a path directly inside it

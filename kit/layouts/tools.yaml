@@ -1,0 +1,72 @@
+# Checkers that enforce a layout mechanically. Versions checked 2026-10-12; each pin is the newest stable release
+# at least two weeks old. Several stacks offer more than one: the Layout Decision picks one and records it on the
+# Pattern line (gates.md, Layout). The Decision also writes the checker's config in full, from the pattern's layers and
+# sibling rules, following `docs`; the first slice for that root creates it and proves it catches a planted violation.
+# The ordered `layers` list in lenses.yaml cannot express sibling rules; these tools can.
+
+typescript:
+  dependency-cruiser:
+    install: dependency-cruiser@18.4.0 as a devDependency    # 18.6.0 (2026-10-11) is too recent
+    config: .dependency-cruiser.cjs
+    docs: https://github.com/sverweij/dependency-cruiser/blob/main/doc/rules-reference.md
+    checks: path-regex forbidden rules, cycles, a baseline of known violations (depcruise-baseline, --ignore-known)
+    command: npx --no-install depcruise src
+  eslint-plugin-boundaries:
+    install: eslint-plugin-boundaries@7.2.0 as a devDependency
+    config: the repository's ESLint config
+    docs: https://github.com/javierbrea/eslint-plugin-boundaries
+    checks: element types by glob, boundaries/dependencies allow and deny policies
+    command: npx --no-install eslint .
+  steiger:                       # Feature-Sliced Design only
+    install: steiger@0.7.0 and @feature-sliced/steiger-plugin@0.8.0 as devDependencies
+    config: steiger.config.js, using the plugin's recommended config
+    docs: https://github.com/feature-sliced/steiger
+    checks: FSD rules, forbidden-imports, no-cross-imports, public-api
+    command: npx --no-install steiger ./src
+  eslint-plugin-import:          # feature folders
+    install: eslint-plugin-import@2.32.0 as a devDependency
+    config: the repository's ESLint config, import/no-restricted-paths zones
+    docs: https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-restricted-paths.md
+    checks: a folder may not import from another
+    command: npx --no-install eslint .
+python:
+  import-linter:
+    install: import-linter==2.15 as a dev dependency
+    config: .importlinter (or [tool.importlinter] in pyproject.toml)
+    docs: https://github.com/seddonym/import-linter/blob/main/docs/contract_types/layers.md
+    checks: layers (with containers per module), independence, forbidden, acyclic_siblings, ignore_imports as a baseline
+    note: its layers list runs highest first, the opposite of lenses.yaml
+    command: lint-imports
+  tach:
+    install: tach==0.35.1 as a dev dependency   # 0.35.3 (2026-10-06) is too recent
+    config: tach.toml
+    docs: https://github.com/gauge-sh/tach
+    checks: declared module dependencies, public interfaces, no cycles
+    command: tach check
+go:
+  compiler:
+    config: none; put each private part under internal/
+    checks: internal/ is importable only from the tree above it; import cycles are illegal
+    command: go build ./...
+  go-arch-lint:
+    install: go get -tool github.com/fe3dback/go-arch-lint@v1.19.0 (a tool dependency in go.mod)
+    config: .go-arch-lint.yml
+    docs: https://github.com/fe3dback/go-arch-lint
+    checks: components by path, mayDependOn
+    command: go tool go-arch-lint check
+rust:
+  cargo:
+    config: none; put each layer or module in its own workspace crate and list only inward dependencies
+    checks: a crate uses only what its Cargo.toml lists, and Cargo rejects cyclic crates
+    command: cargo check --workspace
+  cargo-modules:
+    install: cargo install cargo-modules --version 0.27.0 --locked (a global install the user runs)
+    config: none
+    checks: module cycles inside one crate (--acyclic), not layer direction
+    command: cargo modules dependencies --lib --acyclic
+ruby:                            # reference only: the factory has no Ruby adapter
+  packwerk:
+    install: packwerk v3.3.1
+    config: package.yml per package, package_todo.yml baseline
+    command: bin/packwerk check
+# Not recommended: cargo-pup (needs a pinned nightly), pytestarch (no stable release old enough), tsarch (no release since 2024-12).

@@ -31,7 +31,8 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
 | 26 | From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work | Accepted |
 | 27 | The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits | Accepted |
-| 28 | A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend | Accepted |
+| 28 | A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend | Accepted, amended by 29 |
+| 29 | A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers | Accepted |
 
 ---
 
@@ -269,3 +270,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** In `tg-mini-app` the Mini App came out as twelve flat files in `web/src`. The interface gate had designed every server module but not `web/`, the slice's Allowed files were `web/**`, and no lens covers folder structure: the design books judge interfaces and import direction, and the React pack is performance rules. The executor chose the layout alone. Layered server code passed because the architecture gate had chosen its layers.
 
 **Cost.** A Layout section in every architecture document and one more review check. Designing a frontend raises the interface budget from 200 to 250 lines. FSD is a convention the user must want; the threshold of five screens is judgment until a retro shows otherwise. steiger needs a local install.
+
+## 29. A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers
+
+**Decision.** `kit/layouts/` holds ten reference layouts: layered, MVC, hexagonal (with Clean and Onion), DDD, CQRS, vertical slice, modular monolith, Feature-Sliced Design, a small frontend tree and feature folders. Each pattern file gives Layout lines to copy for TypeScript, Python, Go and Rust where the pattern is used there, its layers innermost first, the sibling rules a linear layer list cannot express, a checker, and exemplar repositories to look at. `index.yaml` maps the lens profile and observable signals to a proposal and an alternative: legacy keeps its tree, crud-service gets MVC, layered or vertical slice, domain-core gets hexagonal, a modular monolith of DDD contexts, and CQRS inside one context, and a frontend root gets the small tree or FSD. `tools.yaml` pins checkers per stack, with their config files; the Layout Decision picks one, writes its config from the pattern's layers and sibling rules, and the first slice proves it catches a planted violation. A Layout's lines sit under `Pattern: <id>, root: <path>, check: <tool>`, which reconcile keeps in `layout.md`, and review runs that checker on what the diff changed. A tree kept as it is records `existing`. Layers come per stack, and combined patterns come merged: a modular monolith already has DDD layers inside each module, and CQRS has lines for each host. The React config no longer carries layouts.
+
+**Why.** The user wants proper layouts for the common patterns and real code to look up to, not one default per language. The research ([research/layouts-selection.md](research/layouts-selection.md)) read each pattern from its originator and verified every exemplar and tool version. It also corrected decision 28's FSD threshold: FSD's own test is reuse across pages and a growing team, and no source supports "more than five screens", so the small tree now lasts until an entity or user action is used by two screens.
+
+**Cost.** Exemplar star counts and push dates age; the files carry their check date. Several of the best-known samples are stale, and Rust has no well-known, maintained hexagonal, DDD or modular-monolith exemplar. The checkers were checked against their registries and docs, not run on a real repository; the planted-violation step is what proves each config. The selection rows are judgment from the sources until a retro calibrates them.

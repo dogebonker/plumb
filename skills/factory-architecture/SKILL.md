@@ -45,8 +45,11 @@ Where the change lives in the existing system, and what it reuses.
 
 ## Layout
 ### <module path>
-Frontend root: <path>, tree: small | fsd   (only for a frontend)
+Pattern: <id>, root: <path>, check: <tool or none>
 - `<folder>/` or `<file>`, relative to the module path: <what lives there, and what may not>
+
+Pattern: <id of a frontend root's layout>, root: <its path>, check: <tool or none>
+- <its lines, when the module has one>
 
 ## Contracts and data
 External contracts, data shapes, storage, migrations.
@@ -72,9 +75,9 @@ Consequences: <what gets easier, what gets harder>
 
 - Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves them into `.factory/system/adr/` once the change's slices are done, before it merges.
 - When `.factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
-- Layout gives every module the change creates or adds folders to its lines (gates.md, Layout). An existing convention wins: `.factory/system/layout.md`, or the folders the code already uses. A new module, or a new frontend root in an existing module, starts from the `layout` of its language pack config in `~/.software-factory/languages/<pack>.yaml` when it has one: the `small` tree, or `fsd` when its `when` holds, each path prefixed with the frontend root's path relative to the module path (no prefix when they are the same), under a `Frontend root` line naming that path and the tree. Choosing the tree is a Decision. An FSD Decision also lists the config's `install`, and appends the config's `layers`, prefixed the same way, after the module's existing `layers`; approval writes them to `lenses.yaml`.
+- Layout gives every module the change creates or adds folders to its lines, one group per root: the backend, and each frontend root (gates.md, Layout). Choose each root's layout as the procedure at the top of `~/.software-factory/layouts/index.yaml` says: an existing convention wins and is recorded as `existing`; otherwise propose rows with their reasons and two exemplars from the pattern file, in the root's stack when it has them. Choosing is a Decision. Copy the pattern's Layout lines for the root's stack, each path prefixed with the root's path relative to the module path (no prefix when they are the same); a `cqrs` addition goes under its host as `<host>+cqrs`. The Decision also appends the pattern's layers for that stack, prefixed the same way, after the module's existing `layers` (approval writes them to `lenses.yaml`), names its sibling rules, and picks a checker from `~/.software-factory/layouts/tools.yaml` for that stack with its config written in full from those layers and sibling rules, or `check: none`. For `existing`, the rules come from the module's current `layers` in `lenses.yaml` and any rule the user names, with a baseline of today's violations in the config; with neither, `check: none`.
 - Track critical: Budgets holds at least one NFR budget.
-- When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
+- When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, and the Layout Decision does not supply them, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
 
 ## 4. Walk the human through it
 

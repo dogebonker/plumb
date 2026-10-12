@@ -73,7 +73,7 @@ flowchart LR
 | Triage | Picks the track, detects money and BDD per module, picks the lens profile and language pack | `status.yaml` |
 | Product | Problem, success metric, the announcement you would write before building, mockups; requirements in EARS form; rules and examples worked out with Example Mapping | `01-product.md` |
 | Research | A sub-agent receives only the questions, never the task, and returns facts with file and line references | `research.md` |
-| Architecture | Fit with the existing system, the folder layout of every module it creates or extends (a small frontend tree, or Feature-Sliced Design for a big one), contracts, data, flow; NFRs become measurable budgets; each decision becomes an ADR | `02-architecture.md`, ADRs |
+| Architecture | Fit with the existing system, the folder layout of every module it creates or extends, proposed from a catalog of reference layouts, contracts, data, flow; NFRs become measurable budgets; each decision becomes an ADR | `02-architecture.md`, ADRs |
 | Interface Design | You draft signatures and interface comments, frontend pages and shared components included; lenses challenge them; you answer; stubs compile and freeze | `03-interface.md`, stubs |
 | Slices | Vertical slices, tracer bullet first; each slice names the requirements it covers and how it is verified | `04-slices.md` |
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
@@ -153,6 +153,7 @@ A typical milestone costs four review agents. The worst case, a money milestone 
 | Go | [cxuu/golang-skills](https://github.com/cxuu/golang-skills) | `go.mod` |
 | Python | [trailofbits/skills](https://github.com/trailofbits/skills) `modern-python` + [wshobson/agents](https://github.com/wshobson/agents) `python-development` | `pyproject.toml` and friends |
 | Simplification | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Packet, review rubric, and the prune job |
+| Reference layouts | `kit/layouts/`, from [docs/research/layouts-selection.md](docs/research/layouts-selection.md): ten patterns with exemplars and checkers | The architecture gate proposes one by profile and size |
 | Security | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), plus routed packs from OpenAI, Trail of Bits, Sentry and 15 mukul975 skills | `factory-security`; the selection is in [docs/research/security-selection.md](docs/research/security-selection.md) |
 | Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review, reconcile and retro query it |
 

@@ -11,7 +11,8 @@ ln -s ~/Work/software-factory/kit ~/.software-factory
 | `principles.md` | Your principles and quiet rules, kept up to date by reconcile from your answers |
 | `nfr-catalog/<domain>.md` | Default promises per domain, offered by triage when a project's constraints registry is created |
 | `profiles/<profile>.yaml` | Lens profiles: which design-book lenses load in which step, and the default domain model |
-| `languages/<pack>.yaml` | Language packs per stack: the index pack, extra rule packs, linter rules to propose, review checks (React: react-doctor) and default folder layouts (React: a small tree, or Feature-Sliced Design) |
+| `languages/<pack>.yaml` | Language packs per stack: the index pack, extra rule packs, linter rules to propose, and review checks (React: react-doctor) |
+| `layouts/` | Reference layouts the architecture gate proposes: layered, MVC, hexagonal, DDD, CQRS, vertical slice, modular monolith, FSD, a small frontend tree and feature folders, each with Layout lines per stack, layers, sibling rules, a pinned checker and exemplar repositories; `index.yaml` picks by profile and size |
 | `adapters/<language>.md` | Per language: how to write a signature as a stub, type-check it, run one BDD feature, find step definitions, list imports and find dead code |
 | `ui/slop-patterns.yaml`, `ui/slop-metrics.js` | factory-ui-ux's AI-slop catalog (22 patterns, most with tested code checks) and the computed-style script run in a real browser |
 | `ui/tools.yaml` | The pinned UI tools: the DESIGN.md linter, impeccable's detector, Playwright, axe |

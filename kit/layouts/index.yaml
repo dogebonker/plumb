@@ -1,0 +1,85 @@
+# Reference layouts: which one the architecture gate proposes.
+# Why each row and pattern is here, with sources: docs/research/layouts-selection.md in the factory repository.
+#
+# Procedure, per root (factory-architecture, Layout):
+# - An existing convention wins: record the tree the code already uses as `Pattern: existing`.
+# - A frontend root: row L8 or L9, under any profile.
+# - Any other root: the first row from the top whose profile and signal match. Then, for each domain-core context,
+#   also evaluate L7, which adds to the chosen pattern.
+# - Propose the row's alternative too when the facts fit both, or the user is unsure.
+# - No row matches: crud-service with several business areas gets modular-monolith with layered modules (modular-monolith.md);
+#   anything else gets layered and modular-monolith as options, and the user chooses.
+# - Each proposal carries the row's reason and two exemplars from its pattern file, in the root's stack when it has them.
+#
+# Each pattern file lists Layout lines per stack in one order with one description each, layers per stack,
+# sibling rules, and a checker from tools.yaml.
+
+rows:                             # evaluated top to bottom; ids are stable, order is not
+  - id: L1
+    profile: legacy
+    signal: a module that already exists (a new module in a legacy repository takes the rows below, as crud-service unless it has real business rules)
+    propose: existing             # record the current tree; the checker's config carries a baseline of known violations
+    alternative: layered or hexagonal, as a strangler module beside it
+    reason: Rewriting structure at once is the risk the Strangler Fig avoids; it begins with small additions (Fowler)
+  - id: L2
+    profile: crud-service
+    signal: a framework with its own folder convention (Django, AdonisJS, Loco; Rails and Laravel as reference)
+    propose: mvc
+    alternative: layered, inside the framework's app folder
+    reason: The framework's convention is the documented default; framework-style top-level layers are fine for smaller systems (Fowler)
+  - id: L3
+    profile: crud-service
+    signal: no framework convention, one business area whose requests share most of their models
+    propose: layered
+    alternative: vertical-slice
+    reason: Simple data-driven services need a plain stack, not DDD layers (Microsoft)
+  - id: L4
+    profile: crud-service
+    signal: no framework convention, one business area with many requests that each touch their own data (the product's FRs mostly map to one request each)
+    propose: vertical-slice
+    alternative: layered
+    reason: Slices cut coupling between requests (Bogard)
+  - id: L6
+    profile: domain-core
+    signal: two or more bounded contexts in one deployable (the same word means different things to different groups)
+    propose: modular-monolith
+    alternative: none             # separate services are out of scope
+    reason: Boundaries are hard to get right first time and easier to move inside one process (Fowler)
+  - id: L5
+    profile: domain-core
+    signal: one bounded context
+    propose: hexagonal
+    alternative: vertical-slice, when its use cases are many and independent
+    reason: DDD layering applies only when the service has significant business rules (Microsoft)
+  - id: L7
+    profile: domain-core, after L5 or L6, per context
+    signal: "read shapes differ from the write model, reads far outnumber writes, a task-based UI, or concurrent edits"
+    propose: cqrs                 # adds to the chosen pattern: Pattern <host>+cqrs
+    alternative: a read-only views folder in the host's application layer (cqrs.md)
+    reason: Fowler limits CQRS to specific bounded contexts; most systems fit CRUD
+  - id: L8
+    profile: any
+    signal: a frontend root where no entity or user action is used by two or more screens, and the team is not growing
+    propose: frontend-small
+    alternative: fsd
+    reason: React advises not spending long choosing and splitting as the app grows
+  - id: L9
+    profile: any
+    signal: a frontend root with an entity or user action that two or more screens use, or a growing team
+    propose: fsd
+    alternative: feature-folders
+    reason: FSD moves code out of a page when it is reused on several pages
+
+patterns:                         # id: file in this folder; `existing` has none: the Layout records the current tree
+  layered: layered.md
+  mvc: mvc.md
+  hexagonal: hexagonal.md         # Hexagonal, Onion and Clean: one rule, three vocabularies
+  ddd: ddd.md                     # reference: the inside of a context, used by hexagonal and modular-monolith
+  cqrs: cqrs.md
+  vertical-slice: vertical-slice.md
+  modular-monolith: modular-monolith.md
+  fsd: fsd.md
+  frontend-small: frontend-small.md
+  feature-folders: feature-folders.md
+
+tools: tools.yaml                 # pinned checkers per stack
