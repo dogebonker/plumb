@@ -1,0 +1,13 @@
+# Docs: https://github.com/fe3dback/go-arch-lint
+#       https://github.com/fe3dback/go-arch-lint/blob/master/docs/syntax/README.md
+# Pattern: hexagonal (kit/layouts/hexagonal.md). Rule: domain may not import adapters.
+version: 3
+workdir: internal
+components:
+  domain:   { in: domain/** }
+  adapters: { in: adapters/** }
+# domain has no deps entry, so it may depend on no component (an empty mayDependOn is rejected).
+deps:
+  adapters:
+    mayDependOn:
+      - domain

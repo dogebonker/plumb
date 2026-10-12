@@ -1,0 +1,14 @@
+# Docs: https://github.com/seddonym/import-linter/blob/main/docs/contract_types/layers.md
+#       https://github.com/seddonym/import-linter/blob/main/docs/get_started/configure.md
+# Pattern: hexagonal (kit/layouts/hexagonal.md). Rule: domain may not import adapters.
+# Layers run highest first, the opposite of lenses.yaml.
+[importlinter]
+root_package = shop
+
+[importlinter:contract:hexagonal]
+name = Hexagonal rings, outermost first
+type = layers
+layers =
+    shop.adapters
+    shop.service_layer
+    shop.domain

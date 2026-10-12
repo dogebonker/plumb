@@ -39,7 +39,7 @@ Versions checked 2026-10-12. "Pinned" is the newest stable release on or before 
 | TypeScript | [dependency-cruiser][depcruise] | 18.4.0 (2026-09-20) | 18.6.0 (2026-10-11) | Path-regex `forbidden` rules, cycles, baseline of known violations (`depcruise-baseline`, `--ignore-known`) | `npx --no-install depcruise src` |
 | TypeScript | [eslint-plugin-boundaries][boundaries] | 7.2.0 (2026-08-09) | none | Element types by glob, `boundaries/dependencies` allow/deny policies | `npx --no-install eslint .` |
 | TypeScript (FSD) | [steiger][steiger] + `@feature-sliced/steiger-plugin` | 0.7.0 and 0.8.0 (both 2026-09-25) | none | FSD rules incl. `forbidden-imports`, `no-cross-imports`, `public-api` ([plugin source][steiger-rules]) | `npx --no-install steiger ./src` |
-| TypeScript (feature folders) | eslint-plugin-import, `import/no-restricted-paths` | 2.32.0 (2025-06-20) | none | Zones: target folder may not import from folder | `npx --no-install eslint .` |
+| TypeScript (feature folders) | eslint-plugin-import-x, `import-x/no-restricted-paths` | 4.17.1 (2026-06-28) | none | Zones: target folder may not import from folder | `npx --no-install eslint .` |
 | Python | [import-linter][il-layers] | 2.15 (2026-09-04) | none | `layers` (with `containers` per module), `independence`, `forbidden`, `acyclic_siblings`, `ignore_imports` | `lint-imports` |
 | Python | [tach][tach] | 0.35.1 (2026-09-14) | 0.35.3 (2026-10-06) | Declared module dependencies, public interfaces, no cycles | `tach check` |
 | Go | compiler | Go 1.27.1 here | n/a | `internal/` is importable only from the tree above it ([cmd/go][go-internal]). Import cycles are illegal ([Go spec][go-spec]) | `go build ./...` |
@@ -49,6 +49,8 @@ Versions checked 2026-10-12. "Pinned" is the newest stable release on or before 
 | Ruby | [packwerk][packwerk-repo] | v3.3.1 (2026-08-26) | none | Package dependencies and privacy, `package_todo.yml` baseline | `bin/packwerk check` |
 | Java (reference) | ArchUnit, [Spring Modulith][modulith] | 1.5.1 (2026-09-25), 2.1.1 (2026-08-26) | 2.2.0-M2 (milestone) | Layer and module rules as tests | `ApplicationModules.of(App.class).verify()` |
 | .NET (reference) | NetArchTest.Rules, NetArchTest.eNhancedEdition | 1.3.2 (2021-05-23), 1.4.5 (2025-06-04) | none | Layer rules as tests | test runner |
+
+After LAY-01 ran these tools (decision 29's untested claim): eslint-plugin-import 2.32.0 does not install beside ESLint 10, so the kit uses eslint-plugin-import-x 4.17.1 (`import-x/no-restricted-paths`), steiger 0.7.0 needs Node 22.18.0 or later, and dependency-cruiser and both ESLint checkers need typescript 6.0.x (6.0.3): TypeScript 7 has no compiler API, so dependency-cruiser checks 0 modules and exits 0, and typescript-eslint requires <6.1. Evidence: `evals/checkers/FINDINGS.md`.
 
 Not recommended: [cargo-pup][cargo-pup] 0.1.8 (2026-06-09, 64 stars) needs a pinned nightly toolchain because it uses compiler internals. pytestarch's only release old enough is 4.0.1 (2025-08-08), and 5.0.0 came out 2026-10-11. tsarch has had no release since 5.4.1 (2024-12-23).
 

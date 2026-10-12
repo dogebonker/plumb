@@ -1,0 +1,15 @@
+# Docs: https://docs.gauge.sh/usage/configuration (linked from https://github.com/gauge-sh/tach)
+# Pattern: hexagonal (kit/layouts/hexagonal.md). Rule: domain may not import adapters.
+source_roots = ["src"]
+
+[[modules]]
+path = "shop.domain"
+depends_on = []
+
+[[modules]]
+path = "shop.service_layer"
+depends_on = ["shop.domain"]
+
+[[modules]]
+path = "shop.adapters"
+depends_on = ["shop.domain"]

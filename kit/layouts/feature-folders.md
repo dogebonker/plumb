@@ -28,7 +28,7 @@ Sibling rule: features may not import each other.
 
 ## Check
 
-eslint-plugin-import `import/no-restricted-paths` zones (`tools.yaml`).
+eslint-plugin-import-x `import-x/no-restricted-paths` zones (`tools.yaml`).
 
 ## Exemplars (checked 2026-10-12)
 

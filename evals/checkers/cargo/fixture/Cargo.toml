@@ -1,0 +1,7 @@
+# Docs: https://doc.rust-lang.org/cargo/reference/workspaces.html
+#       https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html
+# Pattern: hexagonal (kit/layouts/hexagonal.md), one crate per ring. No checker config: a crate may use only the
+# crates its Cargo.toml lists, so domain lists none.
+[workspace]
+resolver = "2"
+members = ["crates/domain", "crates/memory", "crates/clock"]

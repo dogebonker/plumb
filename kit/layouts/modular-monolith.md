@@ -38,7 +38,7 @@ The same `src/shared/`, `index.ts` public API, `src/main.ts` and sibling rule, w
 
 ## Check
 
-TypeScript: dependency-cruiser. Python: import-linter `independence` with `containers`, or tach. Go: nested `internal/`. Rust: Cargo crates. See `tools.yaml`.
+TypeScript: dependency-cruiser. Python: import-linter `independence` with `containers`, or tach. Go: nested `internal/` for the sibling rule, and go-arch-lint for the layers inside a module (the compiler stops domain importing adapters only through a cycle). Rust: Cargo crates. See `tools.yaml`.
 
 ## Exemplars (checked 2026-10-12)
 
