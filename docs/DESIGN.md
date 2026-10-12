@@ -102,7 +102,7 @@ Severity is earned: only anchored challenges can block or require a fix. Three p
 
 **Packet** (`slices/NN/packet.md`): goal; requirement IDs with fit criteria; frozen signatures, interface comments and depth statements; allowed files; tests to write, which must fail on the base commit; verify commands; a don't list; a budget. Rules in their smallest form only: the code-quality lens, the legacy-code lens on brownfield, the slice's money skill when relevant, Ponytail's ladder, and the language pack's rule index. In BDD-native modules: the slice's scenarios and an inventory of existing step definitions.
 
-**Build loop.** Per slice: a fresh executor, red check (new tests fail on the base commit), implement until green inside the module boundary, mechanical checks. Per milestone: review, validated fixes applied, human reads the diff and `review.md`, signs off. The loop runs in one session on autopilot and stops only for the human.
+**Build loop.** Per slice: a fresh executor, red check (new tests fail on the base commit), implement until green inside the module boundary, mechanical checks. Per milestone: review, validated fixes applied, human reads the diff and `review.md`, signs off. The loop runs on autopilot: a thin orchestrator starts a fresh step agent per slice and per milestone review, keeps only their short reports, and stops only for the human.
 
 ## 8. Review
 

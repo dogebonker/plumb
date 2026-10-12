@@ -30,9 +30,10 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 24 | factory-retro: measured friction, environment fixes first, an evidence-gated playbook per repository | Accepted |
 | 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
 | 26 | From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work | Accepted |
-| 27 | The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits | Accepted |
+| 27 | The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits | Accepted, amended by 30 |
 | 28 | A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend | Accepted, amended by 29 |
 | 29 | A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers | Accepted |
+| 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
 
 ---
 
@@ -278,3 +279,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** The user wants proper layouts for the common patterns and real code to look up to, not one default per language. The research ([research/layouts-selection.md](research/layouts-selection.md)) read each pattern from its originator and verified every exemplar and tool version. It also corrected decision 28's FSD threshold: FSD's own test is reuse across pages and a growing team, and no source supports "more than five screens", so the small tree now lasts until an entity or user action is used by two screens.
 
 **Cost.** Exemplar star counts and push dates age; the files carry their check date. Several of the best-known samples are stale, and Rust has no well-known, maintained hexagonal, DDD or modular-monolith exemplar. The checkers were checked against their registries and docs, not run on a real repository; the planted-violation step is what proves each config. The selection rows are judgment from the sources until a retro calibrates them.
+
+## 30. A thin orchestrator for the autopilot, and token budgets per step
+
+**Decision.** The autopilot of decision 27 no longer runs build, review and the next milestone in one session. `/factory-build` makes its session a thin orchestrator that holds only `status.yaml` and short reports. Each slice's build and each milestone's review runs as a fresh step agent in the foreground, which follows the skill for that one step, reads its inputs from files, and stops and reports wherever the skill would ask the user; the orchestrator asks and continues that agent with the answer. Reconcile, the last step, runs in the orchestrator. The orchestrator records each step agent's token total as a `step_tokens` event, and retro checks every step against a token budget in `metrics.md`.
+
+**Why.** The `tg-mini-app` retro measured 351M tokens, of which 890k were output: the rest is the main session re-reading its own context on every turn, 8.8M per slice in build and 11.7M per slice in review. Skill text is a small share of that context; packets, diffs, test output and polish's reports are most of it. Decision 27's one-session autopilot would have made every later turn more expensive. A step agent's context dies with its step.
+
+**Cost.** Each step agent re-reads its skill and inputs, which a long session would have cached. A question costs a round trip through the orchestrator. Step agents nest their own sub-agents (the executor, polish's reviewers, and under factory-security's lens its hunters at a third level), which needs a harness that allows that depth: Claude Code does; Codex's default is one level and Cursor allows two (docs/research/harness-adapters.md), which the harness adapters must handle. A question's answer reaches a step agent by continuing it (Claude Code: SendMessage), or by a fresh agent that applies the answer where the skill asked it. The budgets are guesses until a repository has three changes of a track.

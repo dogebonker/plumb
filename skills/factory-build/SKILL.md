@@ -10,9 +10,13 @@ argument-hint: "[slug]"
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
-You orchestrate. A fresh executor writes the code from the packet alone. You prove the result mechanically.
+A step agent, or a headless run, builds one slice: a fresh executor writes the code from the packet alone, and you prove the result mechanically.
 
-Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets `done`). `rewind` means the slice's code must be undone before it is rebuilt. Build runs a milestone's slices back to back and then the milestone's review, on autopilot ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot).
+Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets `done`). `rewind` means the slice's code must be undone before it is rebuilt. In interactive mode, `/factory-build` starts the autopilot: the session becomes a thin orchestrator, and each slice is built by a fresh step agent that follows this skill for that slice ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot).
+
+## 0. Orchestrator or step agent
+
+Interactive mode, and you were not started as a factory step agent: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
 
 ## 1. Check the gate
 
@@ -20,7 +24,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
 - The milestone in progress is the one holding the first slice not `done`. When every one of its slices that is not `done` is `green`, go to step 7. Otherwise take its first slice that is neither `done` nor `green` and resume by its state:
   - `pending`: step 2.
   - `rewind`: rewind (below, cause `sent_back`), then step 2.
-  - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. Otherwise rewind (cause `interrupted`), then step 3.
+  - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. If the slice's last `history` event is an `executor_stop` you were given the answer to, apply it (step 3) and dispatch a fresh executor that keeps the work already in the tree and any red commit. Otherwise rewind (cause `interrupted`), then step 3.
   - `red`: step 5.
 - The working tree must be clean apart from `.factory/`.
 
@@ -47,7 +51,7 @@ Done when an engineer who has never seen the gate documents could build the slic
 
 ## 3. Dispatch the executor
 
-Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start one fresh sub-agent. It receives the packet path and these instructions, nothing else from this conversation:
+Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start one fresh sub-agent in the foreground. It receives the packet path and these instructions, nothing else from this conversation:
 
 > Read `<packet path>` and every allowed file it lists. Build the slice in two commits. Stage files by path, only files in Allowed files.
 >
@@ -58,7 +62,7 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 >
 > Report: both commit shas, the tail of the failing run from step 1, the tail of the passing run from step 2, and anything you stopped on.
 
-When the executor stops, append an `executor_stop` event with the reason:
+When the executor stops, append an `executor_stop` event with the reason. To continue the executor after an answer: apply the answer first (the deviation and packet entry, the `--no-verify` permission), then continue it, or dispatch a fresh one that keeps the work in the tree if it is gone. The reasons:
 
 - **Frozen signature or wrong test:** send the slice back.
 - **File outside the list:** run the adapter's Typecheck on the working tree. When it reports an error in that file caused by a signature this slice adds or changes in the packet's Frozen contract (a fake, a caller, the composition root), allow the file without asking: log `{ slice, file, reason: "typecheck: <the error, one line>" }` in `deviations`, append it to the packet's Allowed files, and continue the executor. Otherwise ask the user. Allowed: log `{ slice, file, reason }` in `deviations`, append the file to the packet's Allowed files, and continue the executor. Refused: send the slice back.
@@ -108,5 +112,4 @@ When the checks pass, set the slice to `green`.
 ## 7. Next
 
 - Headless mode: `git add .factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
-- Another slice of this milestone is not `green`: step 1, in this session.
-- Every slice of the milestone is `green`: set `notes_for_fresh_session` to "Milestone M green. Next: /factory-review <slug>." and follow [../factory-review/SKILL.md](../factory-review/SKILL.md) in this session.
+- Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot).

@@ -34,7 +34,17 @@ A change's Layout is the Layout section of `02-architecture.md` together with th
 
 A milestone is a group of slices reviewed and signed off together: the `Milestone` line of each slice in `04-slices.md`, copied as `milestone` into its `status.yaml` entry. A slice without one is its own milestone, and so is every slice in headless mode. A milestone's work is its slices that are not `done`; `M` is its number, or the slice id when the slice has none.
 
-In interactive mode the factory runs on autopilot from build through reconcile: `/factory-build` builds a milestone's slices one after another, each through a fresh executor and its own mechanical checks, then goes straight on to `/factory-review` for the milestone, after the sign-off back to `/factory-build` for the next milestone, and after the last one on to `/factory-reconcile`, all in one session. It stops wherever a skill asks the user something, for example a send-back, a rewind, a file it may not allow on its own, a retry that failed twice, a signing failure, each milestone's sign-off, and reconcile's questions. Start a fresh session only when this one's context runs long; `status.yaml` resumes from any step.
+In interactive mode `/factory-build` and `/factory-review` start the autopilot, and the session that runs them stays a thin orchestrator: it holds `status.yaml` and the step agents' reports, never code, diffs, packets or test output, so its context stays small however long the change runs.
+
+1. Load the change (Load a change, steps 1 and 2). Re-read `status.yaml` from disk before every decision and every write. When a gate is not `approved` or `skipped`, or `sent_back` is set, name that gate's skill and stop. Otherwise the next step is: build the next slice of the milestone in progress ([../factory-build/SKILL.md](../factory-build/SKILL.md)), review a milestone whose open slices are all `green` ([../factory-review/SKILL.md](../factory-review/SKILL.md)), or, when every slice is `done`, reconcile ([../factory-reconcile/SKILL.md](../factory-reconcile/SKILL.md)), which the orchestrator follows itself, with its own `step_start`, before it stops.
+2. For a build or review step, start one fresh step agent in the foreground (Models, below) and give it the absolute path of the step's skill. It receives only:
+
+   > You are a factory step agent. Follow `<skill path>` for `<slug>`, for one step: one slice, or one milestone's review. Read what the skill says to read, from files. Your `step_start` detail is "session <the orchestrator's session id>, step agent, factory <sha>". Wait for every sub-agent you start before you report. A question the skill answers itself, such as review's `fix <numbers>` to polish, is not a question to report. Wherever the skill asks the user something, stop. Report the outcome and the new state in at most five lines, then the question whole: every file list, output tail and numbered item the user needs to answer it. Save long output to a file under `.factory/changes/<slug>/` and name that file in the question.
+
+3. A reported question: show it to the user as reported, without shortening it. Continue the same step agent with the user's answer, word for word and labelled as the user's; the step agent treats it as the user's answer in chat, and the orchestrator never answers for the user. Where the agent cannot be continued, start a fresh one with the question and the answer; it applies the answer where its skill asked it.
+4. When the step ends, append one `step_tokens` event (History) with the ids of every step agent the step used and their usage summed over every return, then go to 1.
+
+The autopilot asks and continues for a rewind, a file a step may not allow on its own, a retry that failed twice, a signing failure, held review items and each milestone's sign-off. It ends at a send-back, at a gate that is not approved, and after reconcile.
 
 ## Commits
 
@@ -86,7 +96,7 @@ Then:
 
 ## Models
 
-Sub-agents run on the session's model, except where a skill says *smaller model*: the harness's mid-size model (in Claude Code, the Agent tool's `model: sonnet`), or the session's model when that is not larger. Only agents whose output a later step checks against files get it: research answers, which cite `path:line` that the architecture gate reads, and retro's candidates, which retro tries to disprove. The executor, the reviewers, the challenge panel and the acceptance agent keep the session's model, because their mistakes cost review time or pass unseen.
+Sub-agents run on the session's model, except where a skill says *smaller model*: the harness's mid-size model (in Claude Code, the Agent tool's `model: sonnet`), or the session's model when that is not larger. Only agents whose output a later step checks against files get it: research answers, which cite `path:line` that the architecture gate reads, and retro's candidates, which retro tries to disprove. The executor, the reviewers, the challenge panel and the acceptance agent keep the session's model, because their mistakes cost review time or pass unseen. Step agents run on the session's model; in Claude Code, `subagent_type: general-purpose`, which has the Agent and Skill tools they need.
 
 ## History
 
@@ -97,10 +107,11 @@ history:
   - { at: 2026-10-11T09:12:03Z, step: factory-build, event: step_start, ref: "01", detail: "session <id>, factory <sha>" }
 ```
 
-- `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`. A skill followed in the same session (autopilot) appends its own `step_start`, with the session id of the skill that started the session.
+- `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and `git -C ~/.software-factory rev-parse --short HEAD`. A step agent writes the `step_start` detail its orchestrator gives it; the orchestrator writes its own `step_start` for reconcile.
 - `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice, or `-`; detail: target gate and reason).
 - From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `check_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook`, `signing` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
 - `factory_updated` (detail: "<old>..<new>"), from the Factory version check at Load.
+- `step_tokens` (step: `factory-build` or `factory-review`; ref: the slice or milestone; detail: "agents <ids>, usage <total>"), from the autopilot orchestrator when a step ends.
 - `detail` is one line in double quotes.
 
 ## Headless mode

@@ -12,10 +12,15 @@ Session: ${CLAUDE_SESSION_ID}
 
 Scripts first, then `/polish`, then the human. Requires the `polish` skill. A review covers one milestone ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot), meaning its slices that are not `done`: `M` is its number as gates.md defines it, `<last>` the id of its last such slice, `<base>` the `base_commit` of its first and `<head>` the `head_commit` of its last. In headless mode a milestone is one slice. `<tmp>` is a new temp directory made at the start of the review and deleted at hand-off.
 
+## 0. Orchestrator or step agent
+
+Interactive mode, and you were not started as a factory step agent: you are the orchestrator. Follow [../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot, and do none of the steps below.
+
 ## 1. Load the milestone
 
 - Load the change as gates.md describes: the work is the first milestone with a slice not `done`, and every one of its slices that is not `done` must be `green`. Otherwise point to `/factory-build <slug>` and stop.
 - Read each of its slices' `packet.md` and `checks.md`.
+- When `slices/<last>/review.md` exists with an empty Sign-off and its Range ends at `<last>`'s `head_commit`, the review already ran: go to step 5.
 
 ## 2. Phase 1: mechanical checks
 
@@ -55,7 +60,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
    - the check command is `check_command`. Fix its failures only inside the Allowed files; failures elsewhere are findings
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this milestone
    - leave your fixes uncommitted: the review commits them
-   - interactive mode: when you ask which findings to fix, the review answers in its next message with `fix <numbers>`: every validated finding you recommend fixing that stays inside the Allowed files and the frozen contracts and does not touch a file under any packet's Tests first. The rest are skipped or held for the user's sign-off; the user sees all of them there
+   - interactive mode: when you ask which findings to fix, the review answers in its next message with `fix <numbers>`: every validated finding you recommend fixing that stays inside the Allowed files and the frozen contracts and does not touch a file under any packet's Tests first. The rest are skipped or held for the user's sign-off; the user sees all of them there. In a step agent this answer is yours: give it and go on in the same turn
    - track small: use your small-diff fast path, without agent fan-out, whatever the diff size
    - findings from a rule under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) are recommended as skip, and are never in the review's `fix` answer
    - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
@@ -66,7 +71,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
 
    Headless mode: polish's report is the question. Write its findings and the lens cards to `slices/<last>/proposed.md`, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `proposed.md`, continues at step 6, and deletes `proposed.md` once `review.md` is written.
-5. Collect the lens reviewers' cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Interactive mode: apply every remaining `block` and `fix` card after polish's own fixes, without asking, and skip notes. A card is held for the user at sign-off instead when its Alternative changes a frozen signature (a possible send-back), touches a file outside the Allowed files, or touches a file under any packet's Tests first. Apply each card only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
+5. Wait until every lens reviewer has written its `<tmp>/<lens>.md`, then collect the cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Interactive mode: apply every remaining `block` and `fix` card after polish's own fixes, without asking, and skip notes. A card is held for the user at sign-off instead when its Alternative changes a frozen signature (a possible send-back), touches a file outside the Allowed files, or touches a file under any packet's Tests first. Apply each card only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
 6. A fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage by path only the changed files that are in the milestone's packets' Allowed files or in `deviations`; restore, or delete when untracked, any other changed file and record its finding as a follow-up. Commit them as `fix(<slug>): milestone M review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
 8. Each test that commit adds or changes proves itself: `git restore -s <fix commit>~1 -SW -- <the commit's non-test files>`, run the test (it must fail), then `git restore -s HEAD -SW -- <the same files>`. After an interruption, that last command restores the fix. A commit with no non-test files has nothing to prove. A test that still passes is reported, not kept as proof.
@@ -109,4 +114,4 @@ Headless mode: commit and push `review.md`, then wait for the user (gates.md) wi
 Interactive mode only: a headless run stops at step 5's wait, and the runner records the sign-off.
 
 1. Delete `<tmp>`. Nothing is committed here (gates.md, Commits).
-2. More slices left: set `notes_for_fresh_session` to "Milestone M done. Next: /factory-build <slug>." and follow [../factory-build/SKILL.md](../factory-build/SKILL.md) in this session. All done: set it to "All slices done. Next: /factory-reconcile <slug>." and follow [../factory-reconcile/SKILL.md](../factory-reconcile/SKILL.md) in this session.
+2. Set `notes_for_fresh_session` to "Milestone M done. Next: /factory-build <slug>." or, when all slices are done, "All slices done. Next: /factory-reconcile <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot).
