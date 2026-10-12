@@ -34,6 +34,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 28 | A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend | Accepted, amended by 29 |
 | 29 | A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers | Accepted |
 | 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
+| 31 | A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel | Accepted (planned) |
 
 ---
 
@@ -287,3 +288,18 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** The `tg-mini-app` retro measured 351M tokens, of which 890k were output: the rest is the main session re-reading its own context on every turn, 8.8M per slice in build and 11.7M per slice in review. Skill text is a small share of that context; packets, diffs, test output and polish's reports are most of it. Decision 27's one-session autopilot would have made every later turn more expensive. A step agent's context dies with its step.
 
 **Cost.** Each step agent re-reads its skill and inputs, which a long session would have cached. A question costs a round trip through the orchestrator. Step agents nest their own sub-agents (the executor, polish's reviewers, and under factory-security's lens its hunters at a third level), which needs a harness that allows that depth: Claude Code does; Codex's default is one level and Cursor allows two (docs/research/harness-adapters.md), which the harness adapters must handle. A question's answer reaches a step agent by continuing it (Claude Code: SendMessage), or by a fresh agent that applies the answer where the skill asked it. The budgets are guesses until a repository has three changes of a track.
+
+## 31. A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel
+
+**Decision.** The factory becomes a framework for the software lifecycle that runs on the harnesses people already use, in four steps, in this order:
+
+1. S13 evals, using Harbor: fixtures, script graders, a simulated user, a baseline.
+2. S14 one `.software-factory/` per project. It holds the living documents and changes that `.factory/` holds today, plus a lockfile, config, principles and eval cases. A user layer carries taste across projects, and the project wins on conflict.
+3. S15 adapters for Claude Code, Codex CLI and Cursor.
+4. S16 a Slack channel for questions and replies, with approvals kept on the pull request.
+
+This changes decisions 2 (the factory stays skills plus files, now behind adapters), 3 and 10 (calibration moves to the project and user layers), and 20 (packs are pinned per project).
+
+**Why.** The kit was global, shared by every project, and updating it changed all of them at once. Nine skills, the hook and the runner were written for Claude Code only. Nothing measured whether a skill, model or harness change helped. Evals come first because S14 and S15 rewrite how every skill finds the kit and talks to the harness. In chat-native agents (Claude Tag, OpenClaw, OpenAI's dots, Grok Bot), no product binds an approval to a verified person and a commit, so the pull request stays the approval record. Research: [research/evals-selection.md](research/evals-selection.md), [research/harness-adapters.md](research/harness-adapters.md), [research/chat-channels.md](research/chat-channels.md).
+
+**Cost.** Migrating `.factory/` to `.software-factory/` in repositories that already have one (bitxchange-tg). Docker for evals. Each harness is one more adapter to keep current, and Codex and Cursor need upgrades and trust steps before a first trial.

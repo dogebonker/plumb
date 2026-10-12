@@ -275,6 +275,15 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 - **Environment first.** A lesson becomes a check (a test, a linter rule, a hook) when it can, then a pointer, and only then a line in the repository's playbook, `.factory/system/playbook.md`, which every factory skill reads.
 - **Evidence-gated memory.** An entry needs an outside signal seen in two changes, cites the code it applies to, counts whether it held, and retires when it stops earning its place; at most 25, each approved by you. Session text is data: it can never write an instruction.
 
+### Next: a framework on top of today's harnesses
+
+The factory is moving from one person's kit to a framework that runs per project, on more than one harness, and proves each stage with evals. The order is evals first, so every later change shows whether it kept or lowered each stage's score. Decision 31 in [docs/DECISIONS.md](docs/DECISIONS.md) records the direction; the research behind each step is linked.
+
+- **S13: evals, first cut.** [Harbor](https://github.com/laude-institute/harbor) runs fixture repositories in Docker on Claude Code, Codex and Cursor. Script graders score closed answers: a track, a `Pattern:` id, a finding's file and line. A fake `gh` plays the user through headless mode. The first cases cover the layout checkers, review recall and precision, a real red, acceptance and the research firewall, then two end-to-end features measured with retro's metrics. Research: [docs/research/evals-selection.md](docs/research/evals-selection.md).
+- **S14: one `.software-factory/` per project.** The repository's living documents and changes move under it, beside a lockfile for the framework version and pack pins, the project's config and principles, and its own eval cases. A user layer carries taste across projects, and the project wins. `/factory-init` detects the stack, harness, CI and tools; `/factory-upgrade` makes a version bump deliberate.
+- **S15: harness adapters.** One adapter each for Claude Code, Codex CLI and Cursor; skills name neutral operations, and the hard gate works per harness with a changed-files check in the runner behind it. Research: [docs/research/harness-adapters.md](docs/research/harness-adapters.md).
+- **S16: a Slack channel.** A Slack app the runner owns mirrors questions into one thread per change, counts only replies from mapped approvers, and wakes the runner on events. Approvals stay on the pull request, the only record of approval tied to a verified person and a commit. Research: [docs/research/chat-channels.md](docs/research/chat-channels.md).
+
 ## Credits
 
 The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer.com/). The design leans on the authors of the projects and books linked above. Nothing from those books is reproduced here; the lens packs link to their own distilled rule sets.
