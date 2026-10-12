@@ -12,5 +12,32 @@ checks:                                # run by factory-review Phase 1; skipped 
   extensions: [.jsx, .tsx]
   static: npx --no-install react-doctor --no-telemetry {files}
   runtime: npx --no-install react-doctor scan {dev_url} --format json --no-telemetry
+layout:                                # architecture gate default for a new frontend root; an existing convention wins. Paths are relative to the frontend root; the gate prefixes them with its path in the module
+  small:                               # up to five screens, and no entity that two screens use
+    "src/main.tsx": the entry
+    "src/app.tsx": the app shell with routing
+    "src/pages/<page>/": one folder per screen, with the parts only that screen uses
+    "src/components/": components two or more pages use; no data fetching
+    "src/lib/": API client, platform bindings and helpers; no JSX
+    "src/styles/": design tokens and global CSS
+    "public/": static assets served as they are
+    "index.html": the page that loads the entry
+    "vite.config.ts": the bundler config (or the stack's own)
+  fsd:                                 # Feature-Sliced Design, https://feature-sliced.design
+    when: more than five screens, or an entity (an order, a coin, a user) that two or more screens use
+    tree:
+      "src/app/": providers, routing, global styles
+      "src/pages/<page>/": one slice per screen, composed from widgets and features
+      "src/widgets/<widget>/": large blocks a page combines
+      "src/features/<feature>/": one user action each, with its ui, model and api segments
+      "src/entities/<entity>/": the domain objects features share
+      "src/shared/": ui kit, api client, lib and config with no business logic
+      "public/": static assets served as they are
+      "index.html": the page that loads the entry
+      "vite.config.ts": the bundler config (or the stack's own)
+      "steiger.config.js": the FSD linter's config
+    layers: ["src/shared/**", "src/entities/**", "src/features/**", "src/widgets/**", "src/pages/**", "src/app/**"]   # innermost first, into lenses.yaml
+    install: steiger@0.7.0 and @feature-sliced/steiger-plugin@0.8.0 as devDependencies, with a steiger.config.js that uses the plugin's recommended config
+    check: npx --no-install steiger ./src
 # react-scan (aidenybai/react-scan) stays a tool for interactive render debugging in the browser:
 # it has no headless mode, report or exit code, and its maintainers point to react-doctor for automated checks.

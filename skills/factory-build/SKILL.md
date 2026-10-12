@@ -40,6 +40,7 @@ Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md),
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
 - the frozen signatures, interface comments and depth statements it touches, from `03-interface.md`, and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
 - its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
+- under Layout, the lines that admit each Allowed file (gates.md, Layout), with what lives there and what may not; a file admitted only because its folder already existed is listed as `existing`
 - under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); then the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.

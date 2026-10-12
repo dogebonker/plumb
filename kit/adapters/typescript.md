@@ -7,7 +7,7 @@
 - Imports: whatever the signatures need, from the paths the module already uses.
 
 ## Typecheck
-`npx --no-install tsc --noEmit -p <the module's tsconfig.json> --noUnusedLocals false --noUnusedParameters false` (stub bodies leave parameters unused)
+`npx --no-install tsc --noEmit -p <tsconfig.json> --noUnusedLocals false --noUnusedParameters false` (stub bodies leave parameters unused), once per distinct config: the nearest `tsconfig*.json` that includes the stub file, and for a config with `references` (Vite's default), the referenced one that includes it. A stub file no config includes is unchecked.
 
 ## BDD
 - Run one feature: `npx --no-install cucumber-js <feature file>`

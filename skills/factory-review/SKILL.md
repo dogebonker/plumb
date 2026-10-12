@@ -19,7 +19,7 @@ Scripts first, then `/polish`, then the human. Requires the `polish` skill. A re
 
 ## 2. Phase 1: mechanical checks
 
-Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; take the results of checks 1 to 4, and run them now for a slice without that file. Run checks 5 to 8 once over the milestone, since a later slice can change what an earlier one's results mean. "The adapter" is `~/.software-factory/adapters/<language>.md` for the module's `language`. Below, for one slice, `<b>` and `<test>` are its own `base_commit` and `test_commit` and "the packet" is its packet; over the milestone, `<b>` is `<base>` and the packet is the union of the milestone's packets. After a review fix commit `<fix>`, rerun every check over the milestone, except that Red tests unchanged diffs only that commit: `git diff <fix>~1 <fix> -- <every packet's Tests first files>`. The `runtime` scan reruns only when the change touched files with that pack's `extensions`.
+Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; take the results of checks 1 to 4, and run them now for a slice without that file. Run checks 5 to 9 once over the milestone, since a later slice can change what an earlier one's results mean. "The adapter" is `~/.software-factory/adapters/<language>.md` for the module's `language`. Below, for one slice, `<b>` and `<test>` are its own `base_commit` and `test_commit` and "the packet" is its packet; over the milestone, `<b>` is `<base>` and the packet is the union of the milestone's packets. After a review fix commit `<fix>`, rerun every check over the milestone, except that Red tests unchanged diffs only that commit: `git diff <fix>~1 <fix> -- <every packet's Tests first files>`. The `runtime` scan reruns only when the change touched files with that pack's `extensions`.
 
 1. **Allowed files.** `git diff --name-only <b>..HEAD -- . ':!.factory'` is a subset of the packet's Allowed files. Each extra file needs an entry in `deviations`. An unlogged extra is a finding.
 2. **Frozen contract.** Find each signature from the packet's Frozen contract in the code. Formatting may differ. A change to the name, parameters, types, return type, errors or visibility is a difference.
@@ -32,6 +32,7 @@ Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; t
    - A tool that is not installed, a server that never answers, or a scan that cannot start (for example, no browser) is reported as skipped, with the error or the `install` line.
 7. **Dependency rule.** For each module with `layers` in `lenses.yaml` (globs relative to the module path), list the imports of the changed files with the adapter's Import graph command. An import from a file in one layer into a later (outer) layer is a finding tagged `[clean-architecture/dependency rule]`. Files in no layer are not checked.
 8. **Dead code.** The adapter's Dead code command; each result in the changed files is a finding, except frozen signatures, step definitions a scenario uses, and code a constraint's enforcement names. A tool that is not installed is reported as skipped.
+9. **Layout.** Each file the diff adds (`git diff --name-only --no-renames --diff-filter=A <b>..HEAD -- . ':!.factory'`) fits the Layout (gates.md, Layout). Each one that does not is a finding. For each `Frontend root` line with `tree: fsd`, also run the `fsd` `check` of its language pack config from that root; each issue is a finding, and a tool that is not installed is reported as skipped with its `install` line.
 
 A frozen-contract difference sends its slice back, as gates.md describes.
 
@@ -80,7 +81,7 @@ Range: <base>..<head>
 
 ## Phase 1
 - Per slice: `slices/NN/checks.md`, each pass | <its failures>
-- Milestone checks 5 to 8: pass | <findings> | skipped: <reason>
+- Milestone checks 5 to 9: pass | <findings> | skipped: <reason>
 - After review fixes: pass | <failures> | no fixes
 - Red: each slice's test_commit failed on its new tests. Green: <head> passes test_command.
 

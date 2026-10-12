@@ -73,8 +73,8 @@ flowchart LR
 | Triage | Picks the track, detects money and BDD per module, picks the lens profile and language pack | `status.yaml` |
 | Product | Problem, success metric, the announcement you would write before building, mockups; requirements in EARS form; rules and examples worked out with Example Mapping | `01-product.md` |
 | Research | A sub-agent receives only the questions, never the task, and returns facts with file and line references | `research.md` |
-| Architecture | Fit with the existing system, contracts, data, flow; NFRs become measurable budgets; each decision becomes an ADR | `02-architecture.md`, ADRs |
-| Interface Design | You draft signatures and interface comments; lenses challenge them; you answer; stubs compile and freeze | `03-interface.md`, stubs |
+| Architecture | Fit with the existing system, the folder layout of every module it creates or extends (a small frontend tree, or Feature-Sliced Design for a big one), contracts, data, flow; NFRs become measurable budgets; each decision becomes an ADR | `02-architecture.md`, ADRs |
+| Interface Design | You draft signatures and interface comments, frontend pages and shared components included; lenses challenge them; you answer; stubs compile and freeze | `03-interface.md`, stubs |
 | Slices | Vertical slices, tracer bullet first; each slice names the requirements it covers and how it is verified | `04-slices.md` |
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
 | Build | Fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |

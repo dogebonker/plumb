@@ -59,6 +59,7 @@ Consequences: <what gets easier, what gets harder>
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile, and follow the Principles in `~/.software-factory/principles.md`.
+- Every module the change creates or changes has a section, and so does each frontend root the Layout names (gates.md, Layout). A frontend's interface is each page, and each export another folder imports: components with their props type, hooks, the API client. Each gets an interface comment saying what it shows or does, and sits in its folder from the Layout (gates.md, Layout). On its Cost line, each exported component or hook counts as a public method and each prop as a parameter.
 - The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`. When `ui` is `true`, it also covers each state the design file's States position names (empty, running, failed, no change, done) for the screens this change touches.
 - In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
 - Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
@@ -69,7 +70,7 @@ Prove the signatures compile against the real code, using `~/.software-factory/a
 
 1. Tracked files outside `.factory/` must be unchanged; otherwise ask the user to commit or stash. Record the untracked files (`git status --short`).
 2. Set `stubbing: true` in `status.yaml`, so the factory hook lets the stubs through. Write every module's signatures as stubs in their real files, in the adapter's stub form, with any `mod` lines or exports they need.
-3. Run the adapter's typecheck. An error in a stub or its imports is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat. An error from the environment (dependencies not installed, missing toolchain) leaves the module unchecked: tell the user why.
+3. Run the adapter's typecheck. An error in a stub or its imports is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat. An error from the environment (dependencies not installed, missing toolchain), or a stub file the adapter's typecheck does not cover, leaves the module unchecked: tell the user why.
 4. Fill each module's Cost line by counting in the stubs. A pass-through method forwards to another method with nearly the same signature.
 5. Undo the stubs: `git restore --worktree -- . ':!.factory'`, then delete every untracked file that was not in the list from step 1. Set `stubbing: false`.
 

@@ -43,6 +43,11 @@ Facts from `research.md`, each with its `path:line` or Pond session id.
 ## Fit
 Where the change lives in the existing system, and what it reuses.
 
+## Layout
+### <module path>
+Frontend root: <path>, tree: small | fsd   (only for a frontend)
+- `<folder>/` or `<file>`, relative to the module path: <what lives there, and what may not>
+
 ## Contracts and data
 External contracts, data shapes, storage, migrations.
 
@@ -67,6 +72,7 @@ Consequences: <what gets easier, what gets harder>
 
 - Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves them into `.factory/system/adr/` once the change's slices are done, before it merges.
 - When `.factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
+- Layout gives every module the change creates or adds folders to its lines (gates.md, Layout). An existing convention wins: `.factory/system/layout.md`, or the folders the code already uses. A new module, or a new frontend root in an existing module, starts from the `layout` of its language pack config in `~/.software-factory/languages/<pack>.yaml` when it has one: the `small` tree, or `fsd` when its `when` holds, each path prefixed with the frontend root's path relative to the module path (no prefix when they are the same), under a `Frontend root` line naming that path and the tree. Choosing the tree is a Decision. An FSD Decision also lists the config's `install`, and appends the config's `layers`, prefixed the same way, after the module's existing `layers`; approval writes them to `lenses.yaml`.
 - Track critical: Budgets holds at least one NFR budget.
 - When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
 

@@ -31,6 +31,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 25 | The first retro's two fixes: at most three interface panel rounds, and a factory version per change | Accepted |
 | 26 | From Factory's talk: acceptance on the running product, flaky tests at triage, tests that assert the example, a smaller model for checked work | Accepted |
 | 27 | The tg-mini-app retro: milestone review, an autopilot build loop, fewer questions and commits | Accepted |
+| 28 | A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend | Accepted |
 
 ---
 
@@ -260,3 +261,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 **Why.** Over about 13 active hours, the executor wrote code for 36 minutes. Build and review took about 7 hours, at 20 to 50 minutes per slice, mostly packets, session hand-offs, `/polish` and sign-off. Of the 49 questions to the user, 28 took the recommended option, all 8 file-allow questions were answered Allow (7 of them the same test fake breaking), and 3 of 9 sign-offs came within 15 seconds: the per-slice sign-off was not a real read. The change made 72 commits, 43 of them factory bookkeeping, and commit signing failed about five times, costing about an hour. Interface rounds 7 to 11 ran after a send-back, outside the cap.
 
 **Cost.** A milestone's diff is larger to read than a slice's, and a review finding can now land after later slices were built on the code it fixes. Applied fixes reach the user after the fact, though each can be undone. A long autopilot session can run out of context; `status.yaml` resumes it. The expected saving, about 13 hours down to 5 or 6, is an estimate until the next change's retro measures it.
+
+## 28. A Layout every gate holds: folder trees at architecture, frontend interfaces, exact Allowed files, a layout check; FSD only for a big frontend
+
+**Decision.** The architecture gate gets a Layout section: a tree per module, one line per folder or file saying what lives there. An existing convention wins (`.factory/system/layout.md`, which reconcile keeps, or the folders the code already uses), and gates.md defines once what fits it: a named folder or file, or a file directly in a folder that already existed and that the Layout does not describe. A change only writes lines for new folders. A new frontend starts from the React config's default: a small tree (`pages/<page>/`, `components/`, `lib/`, `styles/`) up to five screens with no entity two screens use, and Feature-Sliced Design above that. FSD's layers go into `lenses.yaml`, so the existing dependency-rule check enforces them, and its own linter, steiger, runs in review. The interface gate designs frontends too: each page, and each export another folder imports (components with their props, hooks, the API client). Allowed files are exact paths, never wildcards, and must fit the Layout. Review check 9 flags every added file outside it.
+
+**Why.** In `tg-mini-app` the Mini App came out as twelve flat files in `web/src`. The interface gate had designed every server module but not `web/`, the slice's Allowed files were `web/**`, and no lens covers folder structure: the design books judge interfaces and import direction, and the React pack is performance rules. The executor chose the layout alone. Layered server code passed because the architecture gate had chosen its layers.
+
+**Cost.** A Layout section in every architecture document and one more review check. Designing a frontend raises the interface budget from 200 to 250 lines. FSD is a convention the user must want; the threshold of five screens is judgment until a retro shows otherwise. steiger needs a local install.

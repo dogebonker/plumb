@@ -21,6 +21,10 @@ Stub form: <the Stubs section of the language's adapter>
 One path per bullet.
 - <path>
 
+## Layout
+Where each Allowed file belongs and what may not go there, copied.
+- `<folder>/`: <what lives there, and what may not>
+
 ## Tests first
 Each fails in the red commit, before any implementation exists.
 - `<test file>` :: <test name>: <what it asserts>

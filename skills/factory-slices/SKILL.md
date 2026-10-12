@@ -58,6 +58,8 @@ Rules:
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
 - Slice 01 is milestone 1 on its own. Later slices form milestones of two to four slices, each ending where the user can try something new; review and sign-off happen once per milestone (gates.md, Milestones and autopilot). A slice added after its milestone was signed off gets a new milestone number. Headless mode: every slice is its own milestone, so its Milestone line is its own number.
 - Allowed files include every file that implements, fakes or constructs a type whose signature the slice adds or changes: test fakes, the composition root, other callers.
+- Allowed files are exact paths, never wildcards like `web/**`, and every new file fits the Layout (gates.md, Layout). A file that fits no line is an open question.
+- When an FSD Decision lists an install, the first slice that touches that frontend adds it: `package.json`, the lockfile and `steiger.config.js` are in its Allowed files.
 - A slice touching more than two modules is a sign of a shallow interface: raise it as an open question.
 - Slices are vertical. A slice that only adds a layer (all models, then all handlers) is replaced by one that cuts through.
 - Every ID in Coverage of `03-interface.md` (track small: every FR and SYS ID above) is covered by a slice. When Coverage names a test, that slice writes it.
