@@ -1,7 +1,7 @@
 # Tools for factory-ui-ux. Why these and not others: docs/research/ui-ux-selection.md (UI-3).
 #
 # Variables: $REPO (absolute repository path), $NEUTRAL (fresh mktemp -d, the working directory), $OUT (the run
-# folder, .factory/ui/<run>/), $URL (the running app), $KIT (~/.software-factory).
+# folder, .software-factory/runs/ui/<run>/), $URL (the running app), $KIT (<kit>, factory-shared/gates.md, Paths).
 # Every result is a candidate. What DESIGN.md declares (a brand hue, a chosen face, allowed motion) is a waiver
 # recorded in the report, never an inline ignore in the repository. A missing tool is skipped, with its install line.
 

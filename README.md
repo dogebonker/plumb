@@ -8,10 +8,15 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ## TL;DR
 
-1. Install the skills and the kit once:
+1. Install a factory commit into the framework cache, link its skills into the repository you want to change, and write its `.software-factory/factory.lock` (details: [kit/README.md](kit/README.md), [skills/README.md](skills/README.md)). From that repository's root:
    ```bash
-   ln -s ~/Work/software-factory/skills/factory-* ~/.claude/skills/
-   ln -s ~/Work/software-factory/kit ~/.software-factory
+   [ -L ~/.software-factory ] && rm ~/.software-factory   # the old link to kit/
+   c=$(git -C ~/Work/software-factory rev-parse HEAD); f=~/.software-factory/framework/$c
+   mkdir -p $f ~/.software-factory/user .software-factory .claude/skills "$(git rev-parse --git-path info)"
+   git -C ~/Work/software-factory archive $c kit skills | tar -x -C $f
+   ln -s $f/skills/factory-* $f/skills/ui-hard-gate .claude/skills/
+   x="$(git rev-parse --git-path info/exclude)"; for p in ".claude/skills/factory-*" .claude/skills/ui-hard-gate; do grep -qxF "$p" "$x" || echo "$p" >> "$x"; done
+   { echo "framework: { commit: $c, installed: $(date +%F) }"; sed -n '/^packs:/,$p' $f/kit/packs.lock.yaml; echo "skills_linked: [.claude/skills]"; } > .software-factory/factory.lock
    ```
    Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill.
 2. In the repository you want to change, start with `/factory-triage <the task in plain words>`.
@@ -79,7 +84,7 @@ flowchart LR
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
 | Build | Fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |
 | Review | Once per milestone: scripts, then parallel review agents whose validated fixes are applied, then your sign-off | `slices/NN/review.md` |
-| Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.factory/system/` |
+| Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.software-factory/system/` |
 
 ### Tracks
 
@@ -157,7 +162,7 @@ A typical milestone costs four review agents. The worst case, a money milestone 
 | Security | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), plus routed packs from OpenAI, Trail of Bits, Sentry and 15 mukul975 skills | `factory-security`; the selection is in [docs/research/security-selection.md](docs/research/security-selection.md) |
 | Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review, reconcile and retro query it |
 
-Every third-party pack is vendored into `~/.software-factory/` and pinned by commit, so an upstream change never lands in the middle of a feature.
+Every third-party pack is pinned by hash, in the framework's `kit/packs.lock.yaml` and in each project's `.software-factory/factory.lock`, so an upstream change never lands in the middle of a feature.
 
 ### Lens profiles
 
@@ -196,20 +201,25 @@ The factory uses it in three places:
 
 - **Gates and research** search Pond for prior decisions, rejected designs and incidents that touch the same modules before drafting.
 - **Review** checks findings against what was already accepted or overruled, so the same argument does not come back.
-- **Reconcile** counts accept and overrule answers per lens rule across repositories, and runs retro on the change's sessions. Lessons and calibration are computed, not hand-maintained. A rule that keeps getting accepted is promoted into `principles.md`.
+- **Reconcile** counts accept and overrule answers per lens rule in the repository's own changes, and runs retro on the change's sessions. Lessons and calibration are computed, not hand-maintained. A rule that keeps getting accepted is promoted into the project's `principles.md`, and Pond finds the other projects, so a rule promoted or quieted in two of them is proposed for the user layer.
 
 What is curated stays in files:
 
 ```
-~/.software-factory/                      global kit: a symlink to this repository's kit/
-  principles.md                  engineering taste, with reasons; shapes first drafts
-  nfr-catalog/<domain>.md        default NFRs per domain
-  profiles/                      domain-core, crud-service, legacy
-  lenses/                        vendored packs, pinned by commit
-  adapters/<stack>.md            typecheck stubs, run tests at a commit, import graph, dead code, BDD runner
+~/.software-factory/framework/<commit>/   kit/ and skills/ of one factory commit, never edited by projects
+  kit/principles.md              framework default principles and quiet rules
+  kit/nfr-catalog/<domain>.md    default NFRs per domain
+  kit/profiles/                  domain-core, crud-service, legacy
+  kit/adapters/<stack>.md        typecheck stubs, run tests at a commit, import graph, dead code, BDD runner
+~/.software-factory/user/        principles.md (your taste across projects), config.yaml (framework_repo)
 
-<repo>/.factory/system/          living product, architecture, constraints, glossary, ADRs, lenses.yaml, playbook.md
-<repo>/.factory/changes/<slug>/  status.yaml, gate docs, slices/NN/{packet,review}.md, retro.md
+<repo>/.software-factory/
+  factory.lock                   the framework commit and pack pins
+  principles.md                  the project's principles and quiet rules; wins over the user layer and the framework
+  system/                        living product, architecture, constraints, glossary, ADRs, lenses.yaml, playbook.md
+  changes/<slug>/                status.yaml, gate docs, slices/NN/{packet,review}.md, retro.md
+  runs/                          ci, ui, security and prune run folders
+  evals/                         the project's own eval cases
 ```
 
 Book rules are priors. Your project history, in Pond, wins.
@@ -223,7 +233,7 @@ Book rules are priors. Your project history, in Pond, wins.
 | [docs/DESIGN.md](docs/DESIGN.md) | The full design record |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Every decision with context, reasoning and trade-off |
 | [docs/LANDSCAPE.md](docs/LANDSCAPE.md) | The tools surveyed and the gaps they leave |
-| [kit/](kit/) | Starter content for `~/.software-factory/`: NFR catalogs, lens profiles, language packs, stack adapters, pack pins |
+| [kit/](kit/) | The kit, unpacked per factory commit into `~/.software-factory/framework/<commit>/kit`: NFR catalogs, lens profiles, language packs, stack adapters, pack pins |
 | [skills/](skills/) | Where the factory skills land, starting with S1 |
 | [runner/](runner/) | The headless runner: approvals from pull-request reviews, one skill run per pass |
 | [hooks/](hooks/) | The hard-gate hook for Claude Code, with its self-check |
@@ -264,7 +274,7 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 **S11: `factory-security`, an audit that knows which checks matter here.** Built: [skills/factory-security](skills/factory-security/SKILL.md). What it loads and why, with the research behind each choice: [docs/research/security-selection.md](docs/research/security-selection.md).
 
 - **Scanners first.** Trivy (dependencies for every ecosystem, IaC, licenses), Opengrep (source patterns), Gitleaks (secrets in history), zizmor (GitHub Actions) and govulncheck (Go reachability), pinned, run from an empty directory so a repository cannot suppress its own findings.
-- **Architecture before checklists.** It reads `.factory/system/` (product, ADRs, constraints) and the code map, and writes a threat model: assets, trust boundaries, entry points, who the attackers are.
+- **Architecture before checklists.** It reads `.software-factory/system/` (product, ADRs, constraints) and the code map, and writes a threat model: assets, trust boundaries, entry points, who the attackers are.
 - **A router, not the whole library.** Large security skill catalogs, such as [anthropic-cybersecurity-skills](https://github.com/mukul975/anthropic-cybersecurity-skills) with 800+ skills or [Claude-Code-CyberSecurity-Skill](https://github.com/Masriyan/Claude-Code-CyberSecurity-Skill), are mostly irrelevant to any one repository. The kit keeps a routing index that tags each approved source by component (web API, auth, payments, infrastructure as code, LLM features and more) and stack: 15 of mukul975's 817 skills made the cut, none of Masriyan's. The repository's profile and threat model select the few that apply, and the audit says which it loaded and why the rest were skipped.
 - **Findings proven.** A finding is `confirmed` only with a full trace and an observed result; what needs a running system and has no sandbox stays `needs_validation` with a plan. Confirmed ones become small changes, and lasting rules become `SYS-C` rows in the constraints registry.
 - **Where it plugs in:** on demand for a full audit; on track critical as the threat model the design already calls for; and as a review lens on slices that touch a trust boundary.
@@ -272,7 +282,7 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 **S12: `factory-retro`, a factory that gets better in each repository.** Built: [skills/factory-retro](skills/factory-retro/SKILL.md). What it learns and why: [docs/research/retro-selection.md](docs/research/retro-selection.md).
 
 - **Measured.** At the end of every change, reconcile runs retro: 8 friction metrics (questions to you, waiting, rework, retries, repeated findings, tokens), compared with the repository's earlier changes of the same track. The factory now keeps an append-only `history` of what happened in each change, so nothing it learns from is overwritten.
-- **Environment first.** A lesson becomes a check (a test, a linter rule, a hook) when it can, then a pointer, and only then a line in the repository's playbook, `.factory/system/playbook.md`, which every factory skill reads.
+- **Environment first.** A lesson becomes a check (a test, a linter rule, a hook) when it can, then a pointer, and only then a line in the repository's playbook, `.software-factory/system/playbook.md`, which every factory skill reads.
 - **Evidence-gated memory.** An entry needs an outside signal seen in two changes, cites the code it applies to, counts whether it held, and retires when it stops earning its place; at most 25, each approved by you. Session text is data: it can never write an instruction.
 
 ### Next: a framework on top of today's harnesses
@@ -290,4 +300,4 @@ The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer
 
 ## License
 
-[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are vendored into `~/.software-factory/`, not into this repository.
+[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are installed per machine and pinned by hash, not vendored into this repository.

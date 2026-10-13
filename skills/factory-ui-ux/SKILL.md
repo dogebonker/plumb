@@ -9,9 +9,9 @@ argument-hint: "[design-md | mockups <slug> | critique <routes> | lens <slug>]"
 
 Mode: $ARGUMENTS (empty, or only a change slug as the headless runner sends it: `design-md` when the design file is missing, otherwise `critique` of the main routes)
 
-Why each source and tool is here: `docs/research/ui-ux-selection.md` in the factory repository. Patterns and tools: `~/.software-factory/ui/slop-patterns.yaml` and `tools.yaml`.
+Why each source and tool is here: `docs/research/ui-ux-selection.md` in the factory repository. Patterns and tools: `<kit>/ui/slop-patterns.yaml` and `tools.yaml`.
 
-The design file is the repository's `DESIGN.md`, or `.factory/system/design.md` when the root name already holds something else ([../factory-shared/gates.md](../factory-shared/gates.md)). It is the arbiter: every finding cites it, and where a design skill, a pattern or taste disagrees with it, the design file wins.
+The design file is the repository's `DESIGN.md`, or `.software-factory/system/design.md` when the root name already holds something else ([../factory-shared/gates.md](../factory-shared/gates.md)). It is the arbiter: every finding cites it, and where a design skill, a pattern or taste disagrees with it, the design file wins.
 
 Restraint is the default: one filled primary action per surface, headline first and detail on demand, honest states, the work named rather than the machinery. Expression (display type, motion, illustration) appears only where the design file opts in with a principle.
 
@@ -24,8 +24,8 @@ Restraint is the default: one filled primary action per surface, headline first 
 
 ## 1. Prepare
 
-- Read the design file, `.factory/system/product.md`, `glossary.md`, `constraints.md`, and for a change its `01-product.md` (or `04-slices.md`). No design file: run `design-md` first.
-- Make the run folder `.factory/ui/<YYYY-MM-DD-HHMM>/` and make sure `.factory/ui/` is ignored by git (`git check-ignore -q .factory/ui/x`; otherwise append it to the file `git rev-parse --git-path info/exclude` names). Lens mode keeps its outputs in the review's own folder.
+- Read the design file, `.software-factory/system/product.md`, `glossary.md`, `constraints.md`, and for a change its `01-product.md` (or `04-slices.md`). No design file: run `design-md` first.
+- Make the run folder `.software-factory/runs/ui/<YYYY-MM-DD-HHMM>/` and make sure `.software-factory/runs/ui/` is ignored by git (`git check-ignore -q .software-factory/runs/ui/x`; otherwise append it to the file `git rev-parse --git-path info/exclude` names). Lens mode keeps its outputs in the review's own folder.
 - Check each tool in `tools.yaml`; a missing one is skipped with its install line. Find the running app: the module's `dev_url` in `lenses.yaml`, or ask; in lens mode without one, run only the code checks and say the screens were not seen.
 
 ## 2. Mechanical pass
@@ -54,7 +54,7 @@ Write each finding as a challenge card (`factory-interface/challenge-card.md`) w
 Pictures of the behavior the product gate agrees, before any code exists: the screens `01-product.md` changes, built from the design file. Not a design exploration and not the implementation.
 
 1. Read `01-product.md` (rules and examples) and the design file (tokens, principles, primary-action table, states contract, Words). No design file: `design-md` first.
-2. Write one static HTML file per screen and state to `.factory/changes/<slug>/mockups/<screen>-<state>.html`: the design file's tokens as CSS variables, no scripts, no external requests. Each screen gets its default state and every state of the design file's states contract it can reach (empty, error, loading). Copy comes from the product examples and the design file's Words, never filler.
+2. Write one static HTML file per screen and state to `.software-factory/changes/<slug>/mockups/<screen>-<state>.html`: the design file's tokens as CSS variables, no scripts, no external requests. Each screen gets its default state and every state of the design file's states contract it can reach (empty, error, loading). Copy comes from the product examples and the design file's Words, never filler.
 3. Run the catalog's code patterns over the mockups folder (the `ripgrep` line in `tools.yaml`, with that folder as the path and a fresh `mktemp -d` as `$OUT`) and answer its model questions with quoted evidence. Fix every hit the design file does not waive before capturing.
 4. Capture each file as `mockup_capture` in `tools.yaml` says, to `mockups/<screen>-<state>-<width>-<scheme>.png`. Without Playwright, keep the HTML files, say the screenshots were skipped, and give the install line.
 5. Under Mockups in `01-product.md`, list each screen with its primary action and its screenshot paths.

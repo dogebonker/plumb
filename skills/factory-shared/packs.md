@@ -1,21 +1,21 @@
 # Factory packs
 
-How a factory skill loads a lens or a language pack. The kit is `~/.software-factory/`; packs are installed skills under `~/.agents/skills/`.
+How a factory skill loads a lens or a language pack. `<kit>` and `<project>` are defined in [gates.md](gates.md), Paths; packs are installed skills under `~/.agents/skills/`.
 
 ## Pick
 
-- **Lenses.** The repository profile is `profile` in `.factory/system/lenses.yaml`; its lenses per step are in `~/.software-factory/profiles/<profile>.yaml`. One agent loads at most two lenses in any step, in the profile's order; the interface challenge panel gives each reviewer a single lens.
-- **Language pack.** Each module's `pack` in `lenses.yaml` names `~/.software-factory/languages/<pack>.yaml`: an `index` pack and optional extra `rules` packs. They load in packets, in the interface panel's APoSD reviewer, and as rubric in review.
+- **Lenses.** The repository profile is `profile` in `.software-factory/system/lenses.yaml`; its lenses per step are in `<kit>/profiles/<profile>.yaml`. One agent loads at most two lenses in any step, in the profile's order; the interface challenge panel gives each reviewer a single lens.
+- **Language pack.** Each module's `pack` in `lenses.yaml` names `<kit>/languages/<pack>.yaml`: an `index` pack and optional extra `rules` packs. They load in packets, in the interface panel's APoSD reviewer, and as rubric in review.
 
 ## Check the pin
 
 For each pack:
 
-1. Pinned hash: `hash` in the pack's line of `~/.software-factory/packs.lock.yaml`.
+1. Pinned hash: `hash` in the pack's entry under `packs` in `<project>/factory.lock`.
 2. Installed hash: `jq -r '.skills["<name>"].skillFolderHash' ~/.agents/.skill-lock.json`
-3. Equal: load it. Not installed: tell the user `npx skills add <source>` and continue without it. Different: the pack changed upstream. Tell the user to run `/factory-packs <name>`, and continue without it. No kit, no pin for the pack, or no `jq`: say which, and continue without it.
+3. Equal: load it. Not installed: tell the user `npx skills add <source>` and continue without it. Different: the installed pack is not the one this project pinned. Tell the user to run `/factory-packs <name>` to read what changed and pin it in the framework, then `/factory-upgrade` to take the new pin into this project, and continue without it. No pin for the pack in `factory.lock`, or no `jq`: say which, and continue without it.
 
-A pin approves a pack's content, so it follows a read: `/factory-packs` shows what changed and writes pins the user approves.
+A pin approves a pack's content, so it follows a read: `/factory-packs` shows what changed and writes the pins the user approves into the framework's `kit/packs.lock.yaml`, and a project takes them into its `factory.lock` only through `/factory-upgrade`. Packs are installed once per machine, so two projects pinned to different hashes of one pack cannot both load it; a cache per hash is a later step.
 
 ## Load
 

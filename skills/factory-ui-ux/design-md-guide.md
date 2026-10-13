@@ -10,11 +10,11 @@ Front-end dependencies (react, next, vue, svelte, solid, angular), templates or 
 
 - No root `DESIGN.md`: the file is the root `DESIGN.md`.
 - A root `DESIGN.md` that is a design file (DESIGN.md frontmatter, or the factory's stamp comment): refresh it. Show the diff and ask before replacing any prose.
-- A root `DESIGN.md` that holds something else (architecture, for example): the file is `.factory/system/design.md`; tell the user why.
+- A root `DESIGN.md` that holds something else (architecture, for example): the file is `.software-factory/system/design.md`; tell the user why.
 
 ## 3. Read the product evidence
 
-`.factory/system/product.md`, `glossary.md`, `constraints.md` (accessibility promises), the latest `01-product.md` (problem, user, success metric), a `PRODUCT.md` if present, and Pond for the users' own words and complaints.
+`.software-factory/system/product.md`, `glossary.md`, `constraints.md` (accessibility promises), the latest `01-product.md` (problem, user, success metric), a `PRODUCT.md` if present, and Pond for the users' own words and complaints.
 
 ## 4. Extract tokens from code
 

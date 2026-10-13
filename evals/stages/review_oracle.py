@@ -12,7 +12,7 @@ def review(workspace, slug, fixes, polish, planning_commit=True):
     base = re.search(r"\bbase_commit: (\w+)", text).group(1)
     head = re.search(r"\bhead_commit: (\w+)", text).group(1)
     if planning_commit:
-        commit(workspace, "chore(factory): milestone 1 review", ".factory")
+        commit(workspace, "chore(factory): milestone 1 review", ".software-factory")
     for path, pairs in fixes.items():
         source = (workspace / path).read_text()
         for old, new in pairs:

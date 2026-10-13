@@ -19,7 +19,7 @@ Load the change as gates.md describes, for the `product` gate.
 ## 2. Gather
 
 - The task in `status.yaml`, and the sessions in `pond_sessions`, read from the end (latest decisions win).
-- Read `.factory/system/constraints.md`.
+- Read `.software-factory/system/constraints.md`.
 - Search Pond for earlier requests, complaints and decisions about the same behavior.
 - Read the code in scope only far enough to describe today's behavior in user terms.
 

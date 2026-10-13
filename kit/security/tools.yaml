@@ -3,9 +3,9 @@
 # Variables:
 #   $REPO        absolute path of the repository under audit
 #   $NEUTRAL     a fresh empty directory (mktemp -d) used as the working directory, new for every run
-#   $OUT         the run folder, .factory/security/<run>/
+#   $OUT         the run folder, .software-factory/runs/security/<run>/
 #   $CACHE       ~/.cache/factory-security (databases, rule packs, the history mirror), never in the repository
-#   $KIT         ~/.software-factory
+#   $KIT         <kit>, the framework cache's kit/ (factory-shared/gates.md, Paths)
 #   $TREE        a fresh checkout of the commit under audit, from the history mirror (see gitleaks):
 #                GIT_LFS_SKIP_SMUDGE=1 git -c core.hooksPath=/dev/null clone --quiet --no-checkout
 #                $CACHE/mirror/<repo-slug>.git $TREE && git -C $TREE -c core.hooksPath=/dev/null

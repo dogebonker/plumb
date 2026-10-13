@@ -10,7 +10,7 @@ from stagelib import FACTORY, change_dir, commit, workspace_arg, write  # noqa: 
 
 if __name__ == "__main__":
     workspace = workspace_arg()
-    commit(workspace, "chore(factory): milestone 1 review", ".factory")
+    commit(workspace, "chore(factory): milestone 1 review", ".software-factory")
     template = (FACTORY / "skills/factory-review/SKILL.md").read_text()
     body = re.search(r"```markdown\n(# Review:.*?)```", template, re.S).group(1)
     write(change_dir(workspace, "rev02") / "slices/01/review.md", body)

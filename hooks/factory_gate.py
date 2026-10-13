@@ -2,7 +2,7 @@
 """Claude Code PreToolUse hook: hard gates for factory changes.
 
 Blocks Edit/Write/MultiEdit/NotebookEdit on source files (anything outside
-.factory/ and the root DESIGN.md) in a repository with an active factory change
+.software-factory/ and the root DESIGN.md) in a repository with an active factory change
 on the current branch, unless the change's gates allow it. Exit 2 blocks the tool call and
 shows stderr to the agent; exit 0 allows it. Once an active change is found,
 an unreadable state blocks too, so a broken status.yaml cannot open the gate.
@@ -81,7 +81,7 @@ def check(change, status, rel):
     root = change.parent.parent.parent
     if status["scalars"].get("ui") == "true" and not any(
             (root / f).exists() and DESIGN_STAMP in (root / f).read_text(errors="replace")
-            for f in ("DESIGN.md", ".factory/system/design.md")):
+            for f in ("DESIGN.md", ".software-factory/system/design.md")):
         return "this change touches UI and the repository has no design file. Run /factory-ui-ux design-md."
     if status["stubbing"] and gates["interface"]["state"] == "pending":
         return None
@@ -112,7 +112,7 @@ def check(change, status, rel):
 
 def find_changes(start):
     for folder in [start, *start.parents]:
-        if (folder / ".factory" / "changes").is_dir():
+        if (folder / ".software-factory" / "changes").is_dir():
             return folder
     return None
 
@@ -142,8 +142,8 @@ def main():
         rel = path.resolve().relative_to(root).as_posix()
     except ValueError:
         return 0
-    changes = root / ".factory" / "changes"
-    if rel.startswith(".factory/") or rel == "DESIGN.md" or not changes.is_dir():
+    changes = root / ".software-factory" / "changes"
+    if rel.startswith(".software-factory/") or rel == "DESIGN.md" or not changes.is_dir():
         return 0
     branch = git(root, "symbolic-ref", "--short", "HEAD")
     for status_file in sorted(changes.glob("*/status.yaml")):

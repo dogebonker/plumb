@@ -43,6 +43,7 @@ Existing step definitions, to reuse before writing new ones:
 ## Rules in scope
 Read these before writing code, and apply them inside the frozen contract.
 - `~/.agents/skills/<lens>/<lens>.nano.md`
+- Principles: <copied from the principle layers, merged (gates.md, Paths)>
 - Simplification ladder: <copied from packs.md>
 - Language pack: `~/.agents/skills/<index pack>/SKILL.md`, plus `~/.agents/skills/<rules pack>/SKILL.md` for each rules pack. Read only the one or two rules this slice needs, apply them to the code this slice writes, leave what the linter enforces to the linter, and skip rules that need a newer <language> than <language_version>.
 

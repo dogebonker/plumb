@@ -6,14 +6,14 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | --- | --- | --- |
 | 1 | Four gates from Dex Horthy's talk, plus a research step | Accepted |
 | 2 | Skills plus files, not a platform | Accepted |
-| 3 | Decisions in files, recall in Pond | Accepted |
+| 3 | Decisions in files, recall in Pond | Accepted, amended by 32 |
 | 4 | Hard gates tied to a document hash | Accepted |
 | 5 | A constraints registry that must map to enforcement | Accepted |
 | 6 | Tracks that scale process to risk | Accepted |
 | 7 | One handoff packet per slice | Accepted |
 | 8 | Design-book lenses, chosen by profile | Accepted |
 | 9 | APoSD as the spine of Interface Design | Accepted |
-| 10 | A fair challenge panel with calibration | Accepted |
+| 10 | A fair challenge panel with calibration | Accepted, amended by 32 |
 | 11 | No design-it-twice step | Accepted |
 | 12 | Review built on `/polish` | Accepted, amended by 27 |
 | 13 | A converging multi-round reviewer | Rejected |
@@ -35,6 +35,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 29 | A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers | Accepted |
 | 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
 | 31 | A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel | Accepted (planned) |
+| 32 | S14 P1 and P2: `.software-factory/` per project, a framework cache per commit, three principle layers | Accepted, on branch s14-per-project until P3 lands |
 
 ---
 
@@ -303,3 +304,32 @@ This changes decisions 2 (the factory stays skills plus files, now behind adapte
 **Why.** The kit was global, shared by every project, and updating it changed all of them at once. Nine skills, the hook and the runner were written for Claude Code only. Nothing measured whether a skill, model or harness change helped. Evals come first because S14 and S15 rewrite how every skill finds the kit and talks to the harness. In chat-native agents (Claude Tag, OpenClaw, OpenAI's dots, Grok Bot), no product binds an approval to a verified person and a commit, so the pull request stays the approval record. Research: [research/evals-selection.md](research/evals-selection.md), [research/harness-adapters.md](research/harness-adapters.md), [research/chat-channels.md](research/chat-channels.md).
 
 **Cost.** Migrating `.factory/` to `.software-factory/` in repositories that already have one (bitxchange-tg). Docker for evals. Each harness is one more adapter to keep current, and Codex and Cursor need upgrades and trust steps before a first trial.
+
+## 32. S14 P1 and P2: `.software-factory/` per project, a framework cache per commit, three principle layers
+
+**Decision.** The first two phases of S14 (decision 31):
+
+- **P1, the folder.** A project's state moves from `.factory/` to `.software-factory/`: `system/`, `changes/`, `runs/ci|ui|security|prune/` (the run folders that were `.factory/ci|ui|security|prune/`), `factory.lock`, `principles.md` and `evals/`. Skills, the hook, the runner, the stage evals and the docs use the new paths. Older decisions and dated research keep the old name, since they record what was true then.
+- **P2, the layers.** The kit is no longer a symlink to this repository. `~/.software-factory/framework/<commit>/` holds `kit/` and `skills/` of one factory commit, unpacked once per machine and never edited by projects. A project's `factory.lock` names the commit and copies its pack pins, and `<kit>` is that commit's `kit/`. The user layer, `~/.software-factory/user/`, holds `principles.md` and `config.yaml` (`framework_repo`). Principles load in three layers: kit, user, project. A later layer wins on the same `<lens>/<rule>`, and a project Principle whose Source is a rule a lower layer quiets takes it out of Quiet rules. gates.md's Paths section defines all of this once.
+- **Development path.** `framework: { dev_path: <absolute path to a factory checkout> }` may replace the commit, for developing the factory: `<kit>` is `<dev_path>/kit`, the skills are linked from `<dev_path>/skills`, and the version check uses that checkout's HEAD. Every skill first resolves `<kit>` and checks that the `realpath` of the gates.md it runs is inside the locked skills folder (the cache commit's or `dev_path`'s). Otherwise it names the commit or path actually running and stops. `step_start` records what ran.
+- **Runner.** Before running the harness, the runner reads the change's `factory.lock` at the branch head and skips the change, with a message, when the lock, its cache folder or its `dev_path` is missing. A sign-off's "only planning state changed" no longer covers `factory.lock` or `principles.md`. A runner host links the skills user-level from the cache commit (or `dev_path`), because a project's links are untracked and absent from the throwaway clone, and `--setting-sources user` may skip project skills.
+- **Installation.** A project's skill links live in `.claude/skills/`, and the factory's links (`factory-*`, `ui-hard-gate`) go into `.git/info/exclude`, so review's committed-source check and rewind's `git clean` neither trip over them nor delete them. An old `~/.software-factory` symlink to `kit/` is removed first, or the cache and the user layer would write into this repository.
+
+Where the design left a choice open:
+
+- **D1.** A project without `factory.lock`, or whose locked commit is not in the cache, stops at Load (step 0), at triage's first step and at the top of ci, security and prune, pointing to `/factory-init`. No skill guesses a kit. Until P3 ships `/factory-init` and `/factory-upgrade`, a project is set up by hand from the install docs.
+- **D2.** `framework_repo` is used for the version log and also by `/factory-packs`, which bumps the framework's pins in that clone's `kit/packs.lock.yaml`. With the symlink gone, it is the only known path to the factory repository.
+- **D3.** Reconcile counts accept and overrule answers in this repository's changes only. Counting across repositories would let one project's answers rewrite another project's file, which is the coupling decision 31 removes.
+- **D4.** Pond finds the other projects. A rule that is a Principle in two or more of them, or quiet in two or more (never a money or security rule), and a playbook entry active in two repositories, are proposed for the user layer. The user decides each one.
+- **D5.** A lesson that would add a linter rule to a language pack's `linter.propose` is now a proposal for the factory repository, since projects never edit the cache.
+- **D6.** Packets copy the merged Principles of the three layers under Rules in scope. Review pastes the merged Quiet rules into its message to `/polish`, rather than a link.
+- **D7.** The rule that money and security rules never go quiet moves into gates.md's Paths, so it holds in every layer. It no longer depends on a sentence inside one `principles.md`.
+- **D8.** Triage asks "committed or ignored" only while `.software-factory/changes/` holds no change, since the folder now exists from init on. Triage commits `factory.lock` and `principles.md` with the change when they exist.
+- **D9.** Retro still never writes principles. Its lessons reach them through reconcile, which now writes the project's file.
+- **D10.** The stage evals' setups write a `factory.lock` whose commit is the `factory_commit` they record (this repository's HEAD), with the kit's pins at that commit and `skills_linked: []`. The trial runner installs that commit as the cache.
+
+**Why.** One global kit changed every project at once, and the user's taste, the framework's defaults and a project's own calibration lived in one file. A lockfile makes the framework version a project's own, reviewed choice. The layers keep taste that holds everywhere apart from what one repository taught. The runner and the skills refuse a framework they cannot prove is the locked one, instead of running whatever is linked.
+
+**Calibration against decision 10.** Kept: the challenge card, counting accept and overrule answers per `<lens>/<rule>`, the threshold of three, and money and security rules never going quiet. Lost: answers no longer pool across repositories, so a new project needs three answers of its own before a rule is promoted or quieted, and it starts from the framework defaults plus the user layer. Cross-project taste reaches the user layer only through proposals the user approves. Until P4 moves it, `kit/principles.md` still holds one user's taste as framework defaults. Gained: a project's answers no longer change other projects, and a project can un-quiet a rule a lower layer quiets.
+
+**Cost.** Projects need `/factory-init` (P3), so this lands on the default branch only together with P3. Every machine and runner host keeps a cache folder per commit in use, and a runner host runs one linked framework at a time. Pins are per project, but packs are still installed once per machine: two projects pinned to different hashes of one pack cannot both load it until a cache per hash exists. A rule now takes longer to calibrate in a new repository.

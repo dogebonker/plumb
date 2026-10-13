@@ -5,7 +5,7 @@ Five cases that each put one factory skill in a known start state and score what
 Each `<ID>/` holds:
 
 - `case.json`: the entry command (build and review use `--one-step`, so no orchestrator continues to the next step), mode, planted faults with their lines, scores, `stop_when`, `timeout_s` and `max_turns`. `stop_when` is a list of `{path, regex}`, relative to the workspace: the trial stops once every file exists and its regex matches (an empty regex only needs the file).
-- `fixture/` and `setup.py <target>`: the git history plus `.factory/` state, with real SHAs and gate hashes.
+- `fixture/` and `setup.py <target>`: the git history plus `.software-factory/` state (`factory.lock`, `system/`, the change), with real SHAs and gate hashes.
 - `answers.json`: the scripted user, as `{kind: {match, reply}}`. The first `match` regex that fits a question gives the reply, and `default` matches anything. `recommended` means "your recommendation".
 - `grade.py <workspace>`: prints one JSON line of scores between 0 and 1, plus `pass`. Hidden tests and mutants in `grading/` are copied into an export of the workspace only when grading.
 - `oracle/apply.py <workspace>`: the ideal end state. Each `oracle/wrong_*.py` is a plausible wrong end state that must fail.
@@ -22,8 +22,8 @@ For each case it builds the start state and checks that the factory hook and the
 
 No runner drives these cases yet: wiring them into the trial runner (setup, an agent run with `answers.json` as the scripted user, then grade) comes next. The runner must:
 
-- Install only a `git archive` of `kit/` and `skills/` as the trial's kit, never this repository: the kit symlink would expose `grading/` and `oracle/` to the agent.
-- Run the kit at the commit `setup.py` wrote as `factory_commit` (this repository's HEAD), or Load's version check asks questions no answer covers.
+- Install only a `git archive` of `kit/` and `skills/` as the trial's framework cache, `~/.software-factory/framework/<commit>/`, never this repository: a link to it would expose `grading/` and `oracle/` to the agent.
+- Install it at the commit `setup.py` wrote as `factory_commit` and as the framework commit in `.software-factory/factory.lock` (this repository's HEAD), or Load's version check asks questions no answer covers.
 - Kill the trial's process group when the trial ends, so a dev server the agent started does not outlive it.
 - For ACC-01, read the answers with the port resolved from `<workspace>/.git/acc01-answers.json`. `setup.py` picks a free port for the dev server, writes it into `lenses.yaml` and resolves `{port}` there.
 

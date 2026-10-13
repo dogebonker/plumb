@@ -1,6 +1,6 @@
 # The playbook
 
-`.factory/system/playbook.md` holds what the factory learned about this repository: rules that prevented a repeated failure here. `/factory-retro` is its only writer, after the user confirms each change; every factory skill reads it.
+`.software-factory/system/playbook.md` holds what the factory learned about this repository: rules that prevented a repeated failure here. `/factory-retro` is its only writer, after the user confirms each change; every factory skill reads it.
 
 ## Reading it
 

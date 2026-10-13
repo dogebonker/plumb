@@ -10,7 +10,9 @@ from factory_run import (
     approver_reviews,
     command,
     created_commits,
+    missing_framework,
     new_head_trusted,
+    only_factory,
     next_skill,
     parse_status,
     triage_skips,
@@ -69,7 +71,7 @@ with tempfile.TemporaryDirectory() as tmp:
     git("init", "-q", "-b", "factory/demo")
     git("config", "user.email", "t@t")
     git("config", "user.name", "t")
-    change = ".factory/changes/demo"
+    change = ".software-factory/changes/demo"
     (repo / change).mkdir(parents=True)
     (repo / change / "01-product.md").write_bytes(b"# product v1\r\n")  # CRLF hashes as bytes
     git("add", ".")
@@ -130,7 +132,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert parse_status(text)["slices"][0]["state"] == "done"
 
     # The sign-off must sit on the branch head, after the slices approval, over a full head_commit with
-    # only .factory/ changes since it.
+    # only .software-factory/ changes since it.
     assert check(head_status.replace(v2, v2[:12]), [*gates_ok, {**sign, "commit": reviewed}])[1] == []
     early = {**sign, "commit": reviewed, "at": "2026-10-10T09:00:00Z"}
     assert check(head_status, [*gates_ok, early])[1] == []
@@ -245,6 +247,39 @@ with tempfile.TemporaryDirectory() as tmp:
     detached = git("commit-tree", "HEAD^{tree}", "-m", "unrelated history")
     assert check(STATUS.format(p=PENDING), [{**product_again, "commit": detached}])[1] == []
 
+    # Planning state is .software-factory/ minus the lock and the project's principles: a sign-off does not
+    # cover a change to either.
+    base = git("rev-parse", "HEAD")
+    (repo / change / "notes.md").write_text("planning\n")
+    git("add", change)
+    git("commit", "-qm", "planning")
+    assert only_factory(repo, base, git("rev-parse", "HEAD"))
+    for path in (".software-factory/factory.lock", ".software-factory/principles.md"):
+        before = git("rev-parse", "HEAD")
+        (repo / path).write_text("changed\n")
+        git("add", path)
+        git("commit", "-qm", path)
+        assert not only_factory(repo, before, git("rev-parse", "HEAD")), path
+
+    # The harness runs only when this host has the framework the change's lock names.
+    installed = repo / "framework"
+    (installed / ("a" * 40)).mkdir(parents=True)
+    with patch.object(factory_run, "FRAMEWORK", installed):
+        for lock, missing in [(None, "no .software-factory/factory.lock"),
+                              ("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n", None),
+                              ("framework: { commit: " + "b" * 40 + ", installed: 2026-10-13 }\n", "is not installed"),
+                              ("framework: { commit: ../.., installed: 2026-10-13 }\n", "names no framework commit"),
+                              (f"framework: {{ dev_path: {repo} }}\n", None),
+                              (f"framework: {{ dev_path: {repo}/gone }}\n", "is missing on this host")]:
+            if lock is None:
+                git("rm", "-q", ".software-factory/factory.lock")
+            else:
+                (repo / ".software-factory/factory.lock").write_text(lock)
+                git("add", ".software-factory/factory.lock")
+            git("commit", "-qm", "lock", "--allow-empty")
+            reason = missing_framework(repo, "HEAD", change)
+            assert (reason is None) if missing is None else (missing in (reason or "")), (lock, reason)
+
 # Recording approvals must pass the pushed head to the harness and use that head for trust checks.
 with tempfile.TemporaryDirectory() as tmp:
     remote = Path(tmp) / "remote.git"
@@ -260,14 +295,16 @@ with tempfile.TemporaryDirectory() as tmp:
     git("config", "user.name", "t")
     git("checkout", "-b", "factory/demo")
     git("config", "commit.gpgsign", "false")
-    change = ".factory/changes/demo"
+    change = ".software-factory/changes/demo"
     status_path = f"{change}/status.yaml"
     (repo / change).mkdir(parents=True)
     (repo / status_path).write_text(STATUS.format(p=PENDING))
     (repo / change / "01-product.md").write_text("# product\n")
+    (repo / ".software-factory/factory.lock").write_text("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n")
     git("add", ".")
     git("commit", "-qm", "triage")
     git("push", "-u", "origin", "factory/demo")
+    (Path(tmp) / "framework" / ("a" * 40)).mkdir(parents=True)
     before = git("rev-parse", "HEAD")
     start = {"login": "alice", "state": "APPROVED", "body": "start", "commit": before,
              "at": "2026-10-10T10:00:00Z"}
@@ -286,9 +323,21 @@ with tempfile.TemporaryDirectory() as tmp:
         return 0, {git("rev-parse", "HEAD")}
 
     with patch.object(factory_run, "pull_request", return_value=([start, approve], [])), \
-            patch.object(factory_run, "harness_pass", side_effect=harness):
+            patch.object(factory_run, "harness_pass", side_effect=harness), \
+            patch.object(factory_run, "FRAMEWORK", Path(tmp) / "framework"):
         factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
     assert len(harness_heads) == 1
     assert heads["factory/demo"] == git("rev-parse", "HEAD")
+
+    # Without the locked framework on this host, the runner records approvals but never runs the harness.
+    git("rm", "-q", ".software-factory/factory.lock")
+    git("commit", "-qm", "drop the lock")
+    git("push", "origin", "HEAD:factory/demo")
+    heads["factory/demo"] = git("rev-parse", "HEAD")
+    with patch.object(factory_run, "pull_request", return_value=([start, approve], [])), \
+            patch.object(factory_run, "harness_pass", side_effect=harness), \
+            patch.object(factory_run, "FRAMEWORK", Path(tmp) / "framework"):
+        factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+    assert len(harness_heads) == 1
 
 print("factory_run: all checks passed")

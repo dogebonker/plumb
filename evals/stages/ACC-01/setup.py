@@ -212,7 +212,7 @@ Range: {start}..{head}
     s["history"] += [event(10, "factory-build", "step_start", "01"), event(20, "factory-review", "step_start", "1")]
     s["notes"] = f"Milestone 1 green. Next: /factory-review {SLUG}."
     save(repo, s)
-    commit(repo, "chore(factory): milestone 1 review", ".factory")
+    commit(repo, "chore(factory): milestone 1 review", ".software-factory")
     # Signed off in chat: review.md and the done state stay uncommitted until reconcile commits them.
     s["slices"][0]["state"] = "done"
     s["notes"] = f"All slices done. Next: /factory-reconcile {SLUG}."

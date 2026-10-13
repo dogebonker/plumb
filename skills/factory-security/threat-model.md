@@ -1,8 +1,8 @@
 # Threat model: <project>
 
-Structure after OpenAI's `security-threat-model` (Apache-2.0). Built from `.factory/system/` and the code; every claim cites a file and line or an ADR.
+Structure after OpenAI's `security-threat-model` (Apache-2.0). Built from `.software-factory/system/` and the code; every claim cites a file and line or an ADR.
 
-Components: <tags from ~/.software-factory/security/index.yaml, e.g. web-api, auth, frontend, ci, container, money, nextjs, go>
+Components: <tags from <kit>/security/index.yaml, e.g. web-api, auth, frontend, ci, container, money, nextjs, go>
 
 ## System
 <what runs where: services, clients, workers, data stores, third parties, CI and deployment, each with the code that defines it>

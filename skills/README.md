@@ -4,17 +4,26 @@ The factory skills land here, built in roadmap order. Each follows the open Agen
 
 ## Install
 
+`/factory-init` links the skills of the project's framework commit into the project and writes its lock. By hand, from the repository root, with that commit installed in the framework cache ([kit/](../kit/README.md)):
+
 ```bash
-ln -s ~/Work/software-factory/skills/factory-* ~/Work/software-factory/skills/ui-hard-gate ~/.claude/skills/
+[ -L ~/.software-factory ] && rm ~/.software-factory   # the old link to kit/: the cache and the user layer must not write into the factory repository
+c=<framework commit>; f=~/.software-factory/framework/$c
+mkdir -p .software-factory .claude/skills "$(git rev-parse --git-path info)"
+ln -s $f/skills/factory-* $f/skills/ui-hard-gate .claude/skills/
+x="$(git rev-parse --git-path info/exclude)"; for p in ".claude/skills/factory-*" .claude/skills/ui-hard-gate; do grep -qxF "$p" "$x" || echo "$p" >> "$x"; done
+{ echo "framework: { commit: $c, installed: $(date +%F) }"; sed -n '/^packs:/,$p' $f/kit/packs.lock.yaml; echo "skills_linked: [.claude/skills]"; } > .software-factory/factory.lock
 ```
 
-The skills read the kit at `~/.software-factory/`. Set it up once from [kit/](../kit/README.md).
+The links are machine-specific, so `.claude/skills/factory-*` and `.claude/skills/ui-hard-gate` stay out of git through `.git/info/exclude`, and a project's own skills there are unaffected: review's committed-source check and rewind's `git clean` would otherwise trip over them or delete them. To develop the factory, link from a checkout's `skills/` instead and write `framework: { dev_path: <that checkout> }` (gates.md, Paths).
+
+The skills read the kit as `<kit>`, the framework cache's `kit/` for that commit, and the project's state under `.software-factory/` ([gates.md](factory-shared/gates.md), Paths).
 
 Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates, the playbook contract). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
 
 ## Hard gates
 
-`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.factory/` and the root `DESIGN.md` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
+`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.software-factory/` and the root `DESIGN.md` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
 
 ```json
 {
@@ -51,7 +60,7 @@ python3 runner/factory_run.py <clone> --approvers alice,bob
 - Gate approvals are also GitHub pull-request approvals: protect the default branch with "dismiss stale approvals" so an early `approve product` cannot merge later code.
 - Approvers come only from `--approvers`. The login `gh` runs as on the server never counts, even when listed, so give the runner its own GitHub account.
 - Gates skipped in the change's first commit stay skipped only when an approver's `start` review covers that commit; any other `skipped` gate is reset to pending.
-- The server needs the skills installed, the kit, `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
+- The server needs the framework cache installed for the commit in each change's `.software-factory/factory.lock` (`~/.software-factory/framework/<commit>/`, [kit/](../kit/README.md)), or the checkout its `dev_path` names; the runner skips a change whose lock or cache is missing. Link the skills user-level, into `~/.claude/skills/`, from that cache commit (or `dev_path`): a project's links are untracked, so the throwaway clone has none, and `--setting-sources user` may skip project skills anyway. One server therefore runs one framework commit at a time. It also needs `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
 - Interactive triage creates the change and its pull request; the runner takes over from there.
 - The hard-gate hook guards the harness's editing tools only. Headless enforcement rests on the runner resetting what no approval backs.
 
@@ -59,7 +68,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 
 ## Run one change
 
-`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices, its review and your sign-off, then the next milestone, then `/factory-reconcile` before merging. Each skill resumes from `.factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step.
+`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices, its review and your sign-off, then the next milestone, then `/factory-reconcile` before merging. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step.
 
 ## Skills
 
@@ -73,7 +82,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |
-| `factory-reconcile` | S7 | Before merge: the examples tried on the running product, then ADRs, standing constraints, living product and glossary in `.factory/system/`; calibration and lessons into the kit's `principles.md` |
+| `factory-reconcile` | S7 | Before merge: the examples tried on the running product, then ADRs, standing constraints, living product and glossary in `.software-factory/system/`; calibration and lessons into the project's `.software-factory/principles.md`, with rules shared by two projects proposed for the user layer |
 | `factory-packs` | S7 | Pin check, upstream changes read from changelogs, re-review of changes that relied on a changed rule, pin bumps |
 | `factory-ui-ux` | S9 | The repository's DESIGN.md (created by guide, enforced for UI changes), optional mockup screenshots at the product gate, mechanical de-slop, anchored critique of rendered screens |
 | `factory-ci` | S10 | Measured CI history (health, strata, critical path, queue, minutes, dollars, noise floor), ranked fixes with labelled savings, posture through zizmor, each approved fix as a small change and verified after merge |

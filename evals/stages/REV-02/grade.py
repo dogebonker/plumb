@@ -15,7 +15,7 @@ if __name__ == "__main__":
     status = read_status(workspace, "rev02")
     feat = commit_by_subject(workspace, r"^feat\(rev02\): slice 01$")
     subjects = (git_ok(workspace, "log", "--format=%s", f"{feat}..HEAD") or "").splitlines() if feat else []
-    unchanged = feat and git_ok(workspace, "diff", "--quiet", feat, "HEAD", "--", ".", ":!.factory") is not None
+    unchanged = feat and git_ok(workspace, "diff", "--quiet", feat, "HEAD", "--", ".", ":!.software-factory") is not None
     start, end = review_range(review)
     report({
         "review_md": review_md_ok(review),

@@ -5,10 +5,10 @@
   "entry": "/factory-review rev01 --one-step",
   "mode": "interactive",
   "skill": "skills/factory-review/SKILL.md",
-  "start": "Track small, slices gate approved; 04-slices.md has the small-track Interface section with the three frozen signatures, copied into the packet's Frozen contract. milestone 1 is slice 01, green, with base, test and head commits. As interactive build leaves it, .factory/ (status.yaml, packet.md, checks.md) is not committed yet.",
+  "start": "Track small, slices gate approved; 04-slices.md has the small-track Interface section with the three frozen signatures, copied into the packet's Frozen contract. milestone 1 is slice 01, green, with base, test and head commits. As interactive build leaves it, .software-factory/ (status.yaml, packet.md, checks.md) is not committed yet.",
   "stop_when": [
     {
-      "path": ".factory/changes/rev01/slices/01/review.md",
+      "path": ".software-factory/changes/rev01/slices/01/review.md",
       "regex": "(?m)^## Sign-off[ \\t]*\\n+[ \\t]*[^<\\s#]"
     }
   ],

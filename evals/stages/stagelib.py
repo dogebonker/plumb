@@ -45,6 +45,12 @@ def factory_commit():
     return git_ok(FACTORY, "rev-parse", "HEAD") or "unknown"
 
 
+def factory_lock():
+    """factory.lock as /factory-init writes it: this repository's HEAD and the kit's pins at that commit."""
+    pins = (git_ok(FACTORY, "show", "HEAD:kit/packs.lock.yaml") or "").partition("\npacks:\n")[2]
+    return f"framework: {{ commit: {factory_commit()}, installed: 2026-10-01 }}\npacks:\n{pins}\nskills_linked: []\n"
+
+
 def new_repo(target, case_dir, exclude=()):
     """Copy the case's fixture into an empty target, minus `exclude`, and start a git repository on main."""
     target = Path(target)
@@ -165,16 +171,17 @@ modules:
 
 
 def triage(repo, s, profile, dev_command="none", dev_url=""):
-    """Branch off main, write .factory/system and the change's status.yaml, and commit as triage does."""
+    """Branch off main, write .software-factory/ (factory.lock, system, the change's status.yaml) and commit it."""
     git(repo, "checkout", "-q", "-b", f"factory/{s['slug']}")
-    write(repo / ".factory/system/lenses.yaml", lenses_yaml(profile, dev_command, dev_url))
-    write(repo / ".factory/system/constraints.md", CONSTRAINTS)
+    write(repo / ".software-factory/factory.lock", factory_lock())
+    write(repo / ".software-factory/system/lenses.yaml", lenses_yaml(profile, dev_command, dev_url))
+    write(repo / ".software-factory/system/constraints.md", CONSTRAINTS)
     save(repo, s)
-    return commit(repo, f"chore(factory): triage {s['slug']}", ".factory")
+    return commit(repo, f"chore(factory): triage {s['slug']}", ".software-factory")
 
 
 def change_dir(repo, slug):
-    return Path(repo) / ".factory/changes" / slug
+    return Path(repo) / ".software-factory/changes" / slug
 
 
 def save(repo, s):
@@ -187,7 +194,7 @@ def approve(repo, s, gate, doc_name, text, minute):
     s["gates"][gate] = approved(doc, minute)
     s["history"].append(event(minute - 1, f"factory-{gate}", "step_start"))
     save(repo, s)
-    return commit(repo, f"chore(factory): {gate} {s['slug']}", ".factory")
+    return commit(repo, f"chore(factory): {gate} {s['slug']}", ".software-factory")
 
 
 def build_slice(repo, slug, stubs, tests, number="01"):

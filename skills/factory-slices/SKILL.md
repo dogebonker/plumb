@@ -19,7 +19,7 @@ Load the change as gates.md describes, for the `slices` gate. Read every earlier
 ## 2. Gather
 
 - Read the files in scope fully, with their tests, to name real test files, allowed files and verify commands.
-- Track small: read the sessions in `pond_sessions`, from the end, and `.factory/system/constraints.md`.
+- Track small: read the sessions in `pond_sessions`, from the end, and `.software-factory/system/constraints.md`.
 
 Done when every slice can name existing or new files by path.
 

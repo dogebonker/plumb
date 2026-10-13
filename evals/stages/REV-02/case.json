@@ -8,7 +8,7 @@
   "start": "Same shape as REV-01, with a correct implementation whose tests assert every FR example. listing.py:11 keeps REV-01's decoy.",
   "stop_when": [
     {
-      "path": ".factory/changes/rev02/slices/01/review.md",
+      "path": ".software-factory/changes/rev02/slices/01/review.md",
       "regex": "(?m)^## Sign-off[ \\t]*\\n+[ \\t]*[^<\\s#]"
     }
   ],
@@ -33,7 +33,7 @@
   "scores": {
     "review_md": "slices/01/review.md has the template's headings, a Range line and a filled Sign-off",
     "no_block_or_fix": "review.md has no Polish line or card with severity block or fix, except dropped ones",
-    "no_fix_commit": "no fix( commit after the feat commit, and no source change outside .factory/",
+    "no_fix_commit": "no fix( commit after the feat commit, and no source change outside .software-factory/",
     "head_unchanged": "slice 01's head_commit in status.yaml is still the feat commit",
     "slice_done": "slice 01 is done in status.yaml",
     "review_commit": "a commit chore(factory): milestone 1 review follows the feat commit",

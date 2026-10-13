@@ -26,26 +26,26 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
   - `rewind`: rewind (below, cause `sent_back`), then step 2.
   - `building`: an executor was interrupted. If `git log <base_commit>..HEAD` shows both `test(<slug>): slice NN red` and `feat(<slug>): slice NN`, go to step 4. If the slice's last `history` event is an `executor_stop` you were given the answer to, apply it (step 3) and dispatch a fresh executor that keeps the work already in the tree and any red commit. Otherwise rewind (cause `interrupted`), then step 3.
   - `red`: step 5.
-- The working tree must be clean apart from `.factory/`.
+- The working tree must be clean apart from `.software-factory/`.
 
-**Rewind** undoes a slice's code without touching `.factory/` or rewriting history, and appends a `rewind` event with its cause (gates.md, History):
+**Rewind** undoes a slice's code without touching `.software-factory/` or rewriting history, and appends a `rewind` event with its cause (gates.md, History):
 
-1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.factory'`, and ask the user to confirm.
-2. `git restore --source=<base_commit> --staged --worktree -- . ':!.factory'` then `git clean -fd -- . ':!.factory'`.
+1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.software-factory'`, and ask the user to confirm.
+2. `git restore --source=<base_commit> --staged --worktree -- . ':!.software-factory'` then `git clean -fd -- . ':!.software-factory'`.
 3. If anything is staged, commit it as `revert(<slug>): slice NN`.
 4. Set the slice to `{ state: pending, base_commit: null, test_commit: null, head_commit: null }`, and every later slice that is not `done` too: the restore removed their code as well.
 
 ## 2. Write the packet
 
-Write `.factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice, with the Written from line set to the current `doc_sha256` of the slices and interface gates. Copy, never paraphrase:
+Write `.software-factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice, with the Written from line set to the current `doc_sha256` of the slices and interface gates. Copy, never paraphrase:
 
 - the slice's heading from `04-slices.md` as Goal
-- the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.factory/system/constraints.md`
+- the covered IDs with their fit criteria: each FR's Example line from `01-product.md` (track small: `04-slices.md`), each SYS ID's fit criterion from `.software-factory/system/constraints.md`
 - the NFR budgets it covers and the Research facts it needs, with their `path:line`, from `02-architecture.md`
-- the frozen signatures, interface comments and depth statements it touches, from `03-interface.md` (track small: the Interface section of `04-slices.md`), and the Stubs section of `~/.software-factory/adapters/<language>.md` for the module's language
+- the frozen signatures, interface comments and depth statements it touches, from `03-interface.md` (track small: the Interface section of `04-slices.md`), and the Stubs section of `<kit>/adapters/<language>.md` for the module's language
 - its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
 - under Layout, the lines that admit each Allowed file (gates.md, Layout), with what lives there and what may not; a file admitted only because its folder already existed is listed as `existing`
-- under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); then the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
+- under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); the Principles of the principle layers (gates.md, Paths), merged and copied; then the paths of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 
@@ -111,5 +111,5 @@ When the checks pass, set the slice to `green`.
 
 ## 7. Next
 
-- Headless mode: `git add .factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
+- Headless mode: `git add .software-factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
 - Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot); with `--one-step`, tell the user the next skill and stop.

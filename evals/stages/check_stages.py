@@ -33,7 +33,7 @@ def grade(case, workspace):
 
 def check_state(case, metadata, workspace):
     """The status.yaml parses as the hook reads it, approved gates match their hashes, commits exist."""
-    change = workspace / ".factory/changes" / metadata["slug"]
+    change = workspace / ".software-factory/changes" / metadata["slug"]
     status = factory_gate.parse_status((change / "status.yaml").read_text())
     assert len(status["gates"]) == 4, "status.yaml: the hook cannot read four gates"
     assert status["branch"] == git(workspace, "symbolic-ref", "--short", "HEAD"), "status.yaml: branch"

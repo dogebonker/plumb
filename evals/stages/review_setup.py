@@ -122,7 +122,7 @@ def setup(case_dir, target, slug):
     approve(repo, s, "slices", "04-slices.md", slices_doc(slug), 5)
     start = git(repo, "rev-parse", "HEAD")
     test, head = build_slice(repo, slug, {"listing.py": STUB}, ["test_listing.py"])
-    # Interactive mode: build does not commit .factory/; the milestone review's first commit carries it.
+    # Interactive mode: build does not commit .software-factory/; the milestone review's first commit carries it.
     s["slices"][0].update(state="green", base_commit=start, test_commit=test, head_commit=head)
     s["history"] += [event(10, "factory-build", "step_start", "01"), event(20, "factory-build", "step_tokens", "01",
                                                                            "agents 3b7d0f12, usage 182340")]

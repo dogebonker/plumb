@@ -29,7 +29,7 @@ def call(url, method, path, body=None):
 
 def try_examples(workspace):
     """Run dev_command, try each example, and return the three evidence lines."""
-    lenses = (workspace / ".factory/system/lenses.yaml").read_text()
+    lenses = (workspace / ".software-factory/system/lenses.yaml").read_text()
     command = re.search(r'dev_command: "(.*)"', lenses).group(1)
     url = re.search(r'dev_url: "(.*)"', lenses).group(1)
     server = subprocess.Popen(command.split(), cwd=workspace, start_new_session=True,
@@ -70,7 +70,7 @@ def record(workspace, url, fr1, fr2, fr3):
     text += f"  - {flow(event(40, 'factory-reconcile', 'step_start'))}\n"
     text += f"  - {flow(event(41, 'factory-reconcile', 'sent_back', '-', 'slices: ' + REASON))}\n"
     write(status, text)
-    commit(workspace, "chore(factory): send back acc01 to slices", ".factory")
+    commit(workspace, "chore(factory): send back acc01 to slices", ".software-factory")
 
 
 if __name__ == "__main__":

@@ -9,6 +9,13 @@ in a dedicated clone:
 
     python3 runner/factory_run.py <clone> --approvers alice,bob
 
+Changes are read from .software-factory/changes/*/status.yaml. The harness's clone
+reads the kit and skills from the framework cache, so the runner host must have
+~/.software-factory/framework/<commit>/ (or the lock's dev_path) installed for each
+change's .software-factory/factory.lock, with its skills linked user-level: project
+links are untracked, so the clone has none. The runner does not install it; it skips
+a change whose lock or framework is missing.
+
 Approver reviews in state APPROVED, first line:
     start                                          the runner may work on this change
     approve <product|architecture|interface|slices>
@@ -38,7 +45,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "hooks"))
-from factory_gate import GATES, parse_status
+from factory_gate import GATES, field, parse_status
 
 BRANCH = re.compile(r"^factory/[A-Za-z0-9._/-]+$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -47,6 +54,8 @@ HARNESS = "claude -p --setting-sources user --strict-mcp-config"
 GIT_TIMEOUT = 300
 MAX_REPLY_BYTES = 100_000
 PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
+FRAMEWORK = Path.home() / ".software-factory" / "framework"
+NOT_PLANNING = {".software-factory/factory.lock", ".software-factory/principles.md"}
 
 
 def run(cwd, *cmd, timeout=GIT_TIMEOUT, binary=False):
@@ -132,7 +141,24 @@ def set_slice_state(text, sid, state):
 
 def only_factory(repo, older, newer):
     changed = run(repo, "git", "diff", "--no-renames", "--name-only", older, newer).split()
-    return all(path.startswith(".factory/") for path in changed)
+    return all(path.startswith(".software-factory/") and path not in NOT_PLANNING for path in changed)
+
+
+def missing_framework(repo, ref, change):
+    """Why this host cannot run the framework the change's factory.lock names at ref, or None when it can."""
+    lock = f"{Path(change).parent.parent}/factory.lock"
+    try:
+        line = re.search(r"^framework:(.*)$", run(repo, "git", "show", f"{ref}:{lock}"), re.MULTILINE)
+    except RuntimeError:
+        return f"no {lock}; run /factory-init in the project"
+    commit, dev_path = (field(line.group(1), "commit"), field(line.group(1), "dev_path")) if line else (None, None)
+    if dev_path:
+        return None if Path(dev_path).is_dir() else f"dev_path {dev_path} from {lock} is missing on this host"
+    if not commit or not re.fullmatch(r"[0-9a-f]{7,40}", commit):
+        return f"{lock} names no framework commit or dev_path"
+    if not (FRAMEWORK / commit).is_dir():
+        return f"framework {commit[:12]} from {lock} is not installed in {FRAMEWORK}"
+    return None
 
 
 def verify(repo, ref, change, text, approvals, may_skip):
@@ -195,7 +221,7 @@ def verify(repo, ref, change, text, approvals, may_skip):
         nn = s["id"].zfill(2)
         signed = [r for r in approvals if (c := command(r["body"])) and c[0] == "sign-off"
                   and c[1].lstrip("0") == s["id"].lstrip("0")]
-        # A sign-off covers the slice's code exactly: head_commit is a full sha, only .factory/ changed
+        # A sign-off covers the slice's code exactly: head_commit is a full sha, only .software-factory/ changed
         # between it and the reviewed commit, and the review came after a slices gate approval.
         signed = [r for r in signed if s["head_commit"] and SHA.match(s["head_commit"])
                   and first_slices_at and r["at"] > first_slices_at
@@ -335,7 +361,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     text, recorded = verify(repo, ref, change, text, approvals, may_skip)
     if recorded and verify(repo, ref, change, text, approvals, may_skip)[1]:
         raise RuntimeError("status.yaml has duplicate or malformed gate or slice lines; fix it by hand")
-    has_design = any(has_stamp(repo, ref, f) for f in ("DESIGN.md", ".factory/system/design.md"))
+    has_design = any(has_stamp(repo, ref, f) for f in ("DESIGN.md", ".software-factory/system/design.md"))
     skill = next_skill(parse_status(text), has_design)
     waiting = parse_status(text)["scalars"].get("waiting_since")
     replies = []
@@ -365,6 +391,10 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
         if trusted:
             heads[branch] = head
     if skill is None or not trusted:
+        return
+    missing = missing_framework(repo, ref, change)
+    if missing:
+        print(f"{slug}: {missing}; not running {skill}", file=sys.stderr)
         return
     message = prompt.format(skill=skill, slug=slug)
     if replies:
@@ -411,8 +441,8 @@ def main():
             branch = ref.removeprefix("origin/")
             if not BRANCH.match(branch):
                 continue
-            names = run(repo, "git", "ls-tree", "-r", "--name-only", ref, ".factory/changes/").split()
-            own = [n for n in names if re.fullmatch(r"\.factory/changes/[^/]+/status\.yaml", n)
+            names = run(repo, "git", "ls-tree", "-r", "--name-only", ref, ".software-factory/changes/").split()
+            own = [n for n in names if re.fullmatch(r"\.software-factory/changes/[^/]+/status\.yaml", n)
                    and parse_status(run(repo, "git", "show", f"{ref}:{n}"))["branch"] == branch]
             if len(own) > 1:
                 print(f"{branch}: {len(own)} changes claim this branch; expected 1", file=sys.stderr)

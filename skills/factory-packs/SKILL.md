@@ -1,6 +1,6 @@
 ---
 name: factory-packs
-description: Check the kit's pinned packs against what is installed, read what changed upstream, re-review the changes that relied on it, and bump pins you approve.
+description: Check the framework's pinned packs against what is installed, read what changed upstream, re-review the changes that relied on it, and bump pins you approve.
 disable-model-invocation: true
 argument-hint: "[pack name]"
 ---
@@ -9,7 +9,7 @@ argument-hint: "[pack name]"
 
 Pack: $ARGUMENTS (empty: every pin)
 
-A pin approves a pack's content as you read it. When the installed pack moves, nothing loads it until you read what changed and bump the pin. Pins live in `~/.software-factory/packs.lock.yaml`; installed packs are in `~/.agents/.skill-lock.json`.
+A pin approves a pack's content as you read it. When the installed pack moves, nothing loads it until you read what changed and bump the pin. This skill maintains the framework's pins, in `kit/packs.lock.yaml` of the factory repository: the clone `framework_repo` names in `~/.software-factory/user/config.yaml` (no `framework_repo`: say so and stop). Installed packs are in `~/.agents/.skill-lock.json`. A project's own pins are in its `.software-factory/factory.lock` and change only through `/factory-upgrade`, which copies the framework's pins; the framework cache is never edited.
 
 ## 1. Compare
 
@@ -36,14 +36,14 @@ Done when every moved pack has a summary of its rule changes, or the note that t
 
 A changed or removed rule matters where the factory applied it:
 
-1. Search `.factory/changes/*/` and `.factory/system/` in this repository for the rule's `[<lens>/<rule>]` tag, its name in `challenges.md`, and its file in packets' Rules in scope.
+1. Search `.software-factory/changes/*/` and `.software-factory/system/` in this repository for the rule's `[<lens>/<rule>]` tag, its name in `challenges.md`, and its file in packets' Rules in scope.
 2. Search Pond (read `schema://pond-sql` first) for the same tag in other projects.
 3. List each change that relied on the rule, with the finding or decision it shaped.
 
-For each listed change in this repository, the user chooses: re-review it now as a small change (`/factory-triage re-review <slug> against <pack> <rule>`), record it in `.factory/system/rereview.md` for later, or accept it as is.
+For each listed change in this repository, the user chooses: re-review it now as a small change (`/factory-triage re-review <slug> against <pack> <rule>`), record it in `.software-factory/system/rereview.md` for later, or accept it as is.
 
 ## 4. Bump
 
-Only for packs the user approves after reading the summary: set the pin to `{ source, hash: <installed hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. Commit it in the factory repository (`~/.software-factory` links into it), staging only `packs.lock.yaml`, and push only when the user asks.
+Only for packs the user approves after reading the summary: set the pin to `{ source, hash: <installed hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. Commit it in the factory repository, staging only `kit/packs.lock.yaml`, and push only when the user asks. Tell the user that each project takes the new pin with `/factory-upgrade`.
 
 A pack the user does not approve keeps its old pin and stays unloaded until they do.

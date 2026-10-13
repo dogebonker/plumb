@@ -8,7 +8,7 @@
   "start": "Track standard, all four gates approved, slice 01 pending with a full packet: Tests first, the frozen signature archive_stale(notes, now), Allowed files notes.py and test_archive.py, and Verify.",
   "stop_when": [
     {
-      "path": ".factory/changes/red01/status.yaml",
+      "path": ".software-factory/changes/red01/status.yaml",
       "regex": "(?m)^\\s*-\\s*\\{.*\\bid: \"?01\"?.*\\bstate: green\\b"
     }
   ],

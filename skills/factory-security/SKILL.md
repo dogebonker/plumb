@@ -1,6 +1,6 @@
 ---
 name: factory-security
-description: Security audit of a repository - threat model from the code and .factory/system, pinned scanners, the security-audit method with routed knowledge, proven findings proposed as small factory changes.
+description: Security audit of a repository - threat model from the code and .software-factory/system, pinned scanners, the security-audit method with routed knowledge, proven findings proposed as small factory changes.
 disable-model-invocation: true
 argument-hint: "[audit [quick|standard|deep] | threat-model | lens <slug>] [path to scope]"
 ---
@@ -9,7 +9,9 @@ argument-hint: "[audit [quick|standard|deep] | threat-model | lens <slug>] [path
 
 Mode and scope: $ARGUMENTS (empty: `audit quick` of the whole repository)
 
-Defensive review of this repository, never of systems it does not own. Why each source and tool is here: `docs/research/security-selection.md` in the factory repository. Routing and scanner commands: `~/.software-factory/security/index.yaml` and `tools.yaml`.
+`<kit>` and `<project>`: [../factory-shared/gates.md](../factory-shared/gates.md), Paths; stop as it says.
+
+Defensive review of this repository, never of systems it does not own. Why each source and tool is here: `docs/research/security-selection.md` in the factory repository. Routing and scanner commands: `<kit>/security/index.yaml` and `tools.yaml`.
 
 | Mode | When | Runs |
 | --- | --- | --- |
@@ -21,13 +23,13 @@ Never copy a secret value into any file, report or message: cite file:line, rule
 
 ## 1. Prepare (audit)
 
-- Load the `security-audit` skill (Cloudflare) in full audit mode with the profile. Invoking `/factory-security audit` is the user's choice of `.factory/security/<YYYY-MM-DD-HHMM>/` as its output folder.
-- That folder must be ignored by git: `git check-ignore -q .factory/security/x` must succeed; otherwise append `.factory/security/` to the file `git rev-parse --git-path info/exclude` names.
+- Load the `security-audit` skill (Cloudflare) in full audit mode with the profile. Invoking `/factory-security audit` is the user's choice of `.software-factory/runs/security/<YYYY-MM-DD-HHMM>/` as its output folder.
+- That folder must be ignored by git: `git check-ignore -q .software-factory/runs/security/x` must succeed; otherwise append `.software-factory/runs/security/` to the file `git rev-parse --git-path info/exclude` names.
 - Check each tool in `tools.yaml` against its pinned version. A missing or older tool is skipped, with its install line in the report.
 
 ## 2. Threat model
 
-Draft `.factory/system/threat-model.md` from [threat-model.md](threat-model.md), reading `.factory/system/` (product, ADRs, constraints, lenses.yaml) and the code itself: entry points, data stores, outbound calls, secrets, deployment files, CI. Every entry point and every trust boundary gets at least one threat or an explicit "none, because". The Components line uses the tags of `index.yaml`; routing reads it.
+Draft `.software-factory/system/threat-model.md` from [threat-model.md](threat-model.md), reading `.software-factory/system/` (product, ADRs, constraints, lenses.yaml) and the code itself: entry points, data stores, outbound calls, secrets, deployment files, CI. Every entry point and every trust boundary gets at least one threat or an explicit "none, because". The Components line uses the tags of `index.yaml`; routing reads it.
 
 Show the draft, and its differences from an existing model, to the user; write it once they confirm, with their corrections. Done when the file is written and confirmed.
 

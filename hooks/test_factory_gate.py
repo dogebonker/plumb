@@ -25,7 +25,7 @@ def status(gates, slices="slices: []", stubbing="false", branch="factory/demo"):
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     subprocess.run(["git", "init", "-q", "-b", "factory/demo", str(root)], check=True)
-    change = root / ".factory" / "changes" / "demo"
+    change = root / ".software-factory" / "changes" / "demo"
     (change / "slices" / "01").mkdir(parents=True)
     docs = {}
     for gate, doc in GATES:
@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     # Gate documents are always editable; source edits wait for every gate.
     st.write_text(status(pending_product))
-    assert run(root, ".factory/changes/demo/01-product.md").returncode == 0
+    assert run(root, ".software-factory/changes/demo/01-product.md").returncode == 0
     r = run(root, "src/a.ts")
     assert r.returncode == 2 and "product gate" in r.stderr, r.stderr
 

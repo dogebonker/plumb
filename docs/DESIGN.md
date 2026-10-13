@@ -15,14 +15,14 @@ The complete specification of the factory. The README explains the why; this doc
 
 | Layer | Where it lives | Shared across projects | How it gets there |
 | --- | --- | --- | --- |
-| Factory skills | This repository, installed user-level | Yes | One install per machine or server, pinned to a tag |
-| Factory kit | `~/.software-factory/`, a symlink to this repository's `kit/` | Yes | Comes with the factory repository on every machine and server |
+| Factory skills and kit | `~/.software-factory/framework/<commit>/`: `skills/` and `kit/` of one commit of this repository | Yes | Unpacked once per machine or server per commit; each project pins its commit in `.software-factory/factory.lock` and links the skills |
+| User layer | `~/.software-factory/user/`: `principles.md`, and `config.yaml` with `framework_repo` | Yes | Taste across projects; the project's `principles.md` wins over it |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
-| Third-party packs | Vendored inside `~/.software-factory/`, pinned by commit | Yes | Bumped deliberately, changelog reviewed |
-| Project state | `<repo>/.factory/` | No | Created by triage on first run |
-| Stack specifics | `~/.software-factory/adapters/<stack>.md` | Yes | Written once per stack |
+| Third-party packs | Installed under `~/.agents/skills/`, pinned by hash in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Bumped deliberately, changelog reviewed |
+| Project state | `<repo>/.software-factory/` | No | Created by `/factory-init`; triage adds each change |
+| Stack specifics | `<kit>/adapters/<stack>.md` | Yes | Written once per stack |
 
-Rules: nothing project-specific in a skill; a new stack means one adapter file; a new domain means one profile and one NFR catalog; when a repository's owner should not see `.factory/`, it is gitignored and the state lives in a `~/.software-factory/` branch instead.
+Rules: nothing project-specific in a skill; a new stack means one adapter file; a new domain means one profile and one NFR catalog; when a repository's owner should not see `.software-factory/`, it is ignored through `.git/info/exclude` instead.
 
 ## 3. Tracks
 
@@ -49,7 +49,7 @@ Rules: nothing project-specific in a skill; a new stack means one adapter file; 
 
 **Packet, Build, Review.** See sections 7 and 8.
 
-**Reconcile.** After the last slice is signed off and before the branch merges, so the update ships with the code: a fresh agent that does not read the code tries every example on the running product, and a defect comes back as a new slice; then fold what shipped into `.factory/system/`, write ADRs, update constraints, tag lessons.
+**Reconcile.** After the last slice is signed off and before the branch merges, so the update ships with the code: a fresh agent that does not read the code tries every example on the running product, and a defect comes back as a new slice; then fold what shipped into `.software-factory/system/`, write ADRs, update constraints, tag lessons.
 
 ## 5. Constraints registry
 
@@ -61,7 +61,7 @@ One `constraints.md` per project. Every functional requirement, NFR and constrai
 | Architecture | NFRs as measurable budgets; constraints with the options they rule out |
 | Interface Design | Every ID mapped to a test, lint rule, monitor, or explicit "human-verified" |
 
-An unmapped ID blocks the Interface Design gate. The registry is seeded from `~/.software-factory/nfr-catalog/<domain>.md`. In money projects the money pack seeds invariants, which become property tests. Release It! and DDIA supply the elicitation questions: timeouts, retries, bulkheads, consistency, durability, schema evolution.
+An unmapped ID blocks the Interface Design gate. The registry is seeded from `<kit>/nfr-catalog/<domain>.md`. In money projects the money pack seeds invariants, which become property tests. Release It! and DDIA supply the elicitation questions: timeouts, retries, bulkheads, consistency, durability, schema evolution.
 
 ## 6. Interface Design
 
@@ -180,24 +180,29 @@ Never simplified away: frozen interfaces, code enforcing a constraint ID, money 
 | Research | The sub-agent answers its neutral questions from the code and from Pond; it still never sees the task |
 | Interface Design | Prior challenge cards and answers for the same lens rule |
 | Review | Findings already accepted or overruled are not raised again |
-| Reconcile | SQL for recurring findings and accept/overrule counts per lens rule |
+| Reconcile | The other projects where the factory ran, whose principles and playbooks feed user-layer proposals |
 
 **Curated files are the kit.** What shapes first drafts or is vendored stays reviewable in git.
 
 ```
-~/.software-factory/
-  principles.md
+~/.software-factory/framework/<commit>/kit/   <kit>, never edited by projects
+  principles.md            framework defaults, the first principle layer
   nfr-catalog/<domain>.md
   profiles/
-  lenses/                  vendored packs, pinned by commit
   adapters/<stack>.md      typecheck stubs, tests at a commit, import graph, dead code, BDD runner
+~/.software-factory/user/principles.md       the user layer
 
-<repo>/.factory/system/          product, architecture, constraints, glossary, adr/, external/, lenses.yaml
-<repo>/.factory/changes/<slug>/  status.yaml, gate docs, slices/NN/{packet,review}.md
+<repo>/.software-factory/
+  factory.lock             framework commit and pack pins
+  principles.md            the project layer, which wins
+  system/                  product, architecture, constraints, glossary, adr/, external/, lenses.yaml
+  changes/<slug>/          status.yaml, gate docs, slices/NN/{packet,review}.md
+  runs/                    ci, ui, security and prune run folders
+  evals/                   the project's own eval cases
 ```
 
 Every review finding is tagged by lens and rule, so reconcile can count it. Recurring findings are promoted to principles or lint rules; overruled rules are demoted at the next reconcile. Book rules are priors; project history wins.
 
 ## 12. Headless mode
 
-Install the skills user-level, clone `~/.software-factory/`, run `pond init` against the shared store, provide the runtimes the adapters call. The agent drafts gate documents and opens a plan pull request; approval is a review or a tracker state change, written into `status.yaml` by the runner. Executors run unattended between gates, and each slice opens or updates a pull request with `review.md` attached. Reviews of other people's pull requests use review mode only. Any Agent Skills harness can be the runner; the packet is the portability boundary.
+Install the framework cache for the project's locked commit, run `pond init` against the shared store, provide the runtimes the adapters call. The agent drafts gate documents and opens a plan pull request; approval is a review or a tracker state change, written into `status.yaml` by the runner. Executors run unattended between gates, and each slice opens or updates a pull request with `review.md` attached. Reviews of other people's pull requests use review mode only. Any Agent Skills harness can be the runner; the packet is the portability boundary.
