@@ -145,6 +145,7 @@ def verify(repo, ref, change, text, approvals, may_skip):
     head = run(repo, "git", "rev-parse", ref).strip()
     status = parse_status(text)
     notes, blocked, approved_at, approval_commit = [], False, {}, {}
+    chain = {}
     for gate, doc in GATES:
         state = status["gates"].get(gate, {}).get("state")
         if state == "skipped" and gate in may_skip:
@@ -154,8 +155,12 @@ def verify(repo, ref, change, text, approvals, may_skip):
             notes.append(f"{gate} reset to pending: triage did not skip it")
             state = "pending"
         current = blob_sha256(repo, ref, f"{change}/{doc}")
+        chain[doc] = current
+        # Each review covers the current upstream document snapshot, even when reviews arrive out of order.
         backing = [r for r in approvals if command(r["body"]) == ("approve", gate)
-                   and current and blob_sha256(repo, r["commit"], f"{change}/{doc}") == current]
+                   and is_ancestor(repo, r["commit"], head)
+                   and all(digest and blob_sha256(repo, r["commit"], f"{change}/{path}") == digest
+                           for path, digest in chain.items())]
         if state == "approved" and (blocked or not backing
                                     or status["gates"][gate]["doc_sha256"] != current):
             text = set_gate(text, gate, PENDING)
@@ -356,8 +361,9 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
             run(repo, "git", "reset", "-q", "--hard", ref)
             raise
         print(f"{slug}: {'; '.join(recorded)}")
+        head = run(repo, "git", "rev-parse", "HEAD").strip()
         if trusted:
-            heads[branch] = run(repo, "git", "rev-parse", "HEAD").strip()
+            heads[branch] = head
     if skill is None or not trusted:
         return
     message = prompt.format(skill=skill, slug=slug)

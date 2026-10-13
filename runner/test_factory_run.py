@@ -3,7 +3,9 @@ import hashlib
 import subprocess
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
+import factory_run
 from factory_run import (
     approver_reviews,
     command,
@@ -216,5 +218,77 @@ with tempfile.TemporaryDirectory() as tmp:
     text, notes = check(fix, [*gates_ok, signed_off, rewound])
     assert "slice 01 reset to green: no matching sign-off" in notes, notes
     assert parse_status(text)["slices"][0]["state"] == "green"
+
+    # Reapproving changed product content must not revive downstream reviews of its old snapshot.
+    (repo / change / "01-product.md").write_text("# product v3\n")
+    git("commit", "-qam", "revise product")
+    revised = git("rev-parse", "HEAD")
+    product_again = {**review, "commit": revised, "at": "2026-10-10T15:00:00Z"}
+    for prior in (head_status, approved_all.replace("state: approved", "state: pending")):
+        text, notes = check(prior, [*gates_ok, product_again, rewound])
+        states = parse_status(text)["gates"]
+        assert states["product"]["state"] == "approved", notes
+        assert all(states[g]["state"] == "pending" for g in ("architecture", "interface", "slices")), notes
+        assert check(text, [*gates_ok, product_again, rewound])[1] == []  # correction is idempotent
+
+    # Review submission order does not matter when every gate covers the same current chain snapshot.
+    renewed = [{**review, "body": f"approve {gate}", "commit": revised}
+               for gate in ("architecture", "interface", "slices")]
+    text, notes = check(STATUS.format(p=PENDING), [product_again, *renewed])
+    assert all(g["state"] == "approved" for g in parse_status(text)["gates"].values()), notes
+
+    # A skipped upstream gate has no required document snapshot.
+    text, notes = check(STATUS.format(p="{ state: skipped }"), [*gates_ok, rewound], {"product"})
+    assert parse_status(text)["gates"]["architecture"]["state"] == "approved", notes
+
+    # Matching document content on a disconnected commit is not an approval of this branch.
+    detached = git("commit-tree", "HEAD^{tree}", "-m", "unrelated history")
+    assert check(STATUS.format(p=PENDING), [{**product_again, "commit": detached}])[1] == []
+
+# Recording approvals must pass the pushed head to the harness and use that head for trust checks.
+with tempfile.TemporaryDirectory() as tmp:
+    remote = Path(tmp) / "remote.git"
+    repo = Path(tmp) / "runner"
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    subprocess.run(["git", "clone", "-q", str(remote), str(repo)], check=True)
+
+    def git(*args):
+        return subprocess.run(["git", "-c", "commit.gpgsign=false", "-C", str(repo), *args],
+                              capture_output=True, text=True, check=True).stdout.strip()
+
+    git("config", "user.email", "t@t")
+    git("config", "user.name", "t")
+    git("checkout", "-b", "factory/demo")
+    git("config", "commit.gpgsign", "false")
+    change = ".factory/changes/demo"
+    status_path = f"{change}/status.yaml"
+    (repo / change).mkdir(parents=True)
+    (repo / status_path).write_text(STATUS.format(p=PENDING))
+    (repo / change / "01-product.md").write_text("# product\n")
+    git("add", ".")
+    git("commit", "-qm", "triage")
+    git("push", "-u", "origin", "factory/demo")
+    before = git("rev-parse", "HEAD")
+    start = {"login": "alice", "state": "APPROVED", "body": "start", "commit": before,
+             "at": "2026-10-10T10:00:00Z"}
+    approve = {**start, "body": "approve product"}
+    heads = {}
+    harness_heads = []
+
+    def harness(repo, branch, head, cmd, setup, timeout):
+        harness_heads.append(head)
+        assert head != before and head == git("rev-parse", "HEAD"), head
+        assert heads[branch] == head
+        (repo / "code.txt").write_text("harness output\n")
+        git("add", ".")
+        git("commit", "-qm", "harness code")
+        git("push", "origin", f"HEAD:{branch}")
+        return 0, {git("rev-parse", "HEAD")}
+
+    with patch.object(factory_run, "pull_request", return_value=([start, approve], [])), \
+            patch.object(factory_run, "harness_pass", side_effect=harness):
+        factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+    assert len(harness_heads) == 1
+    assert heads["factory/demo"] == git("rev-parse", "HEAD")
 
 print("factory_run: all checks passed")
