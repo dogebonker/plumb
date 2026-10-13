@@ -10,7 +10,7 @@ ln -s ~/Work/software-factory/skills/factory-* ~/Work/software-factory/skills/ui
 
 The skills read the kit at `~/.software-factory/`. Set it up once from [kit/](../kit/README.md).
 
-Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates, the playbook contract). Review needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. Pond is used when its MCP tools are available.
+Install them as a set: the skills share `factory-shared/` (gate rules, pack loading, templates, the playbook contract). Pond is used when its MCP tools are available.
 
 ## Hard gates
 
@@ -67,7 +67,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | --- | --- | --- |
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check, mechanical checks per slice, a milestone's slices back to back |
-| `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), `/polish` with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off, once per milestone |
+| `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), review agents with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off, once per milestone |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
 | `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |

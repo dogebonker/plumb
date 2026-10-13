@@ -291,7 +291,7 @@ def review_md_ok(path):
     if not path.exists():
         return 0
     text = path.read_text()
-    needed = [r"^# Review: milestone", r"^Range: \S+\.\.\S+", r"^## Phase 1", r"^## Polish",
+    needed = [r"^# Review: milestone", r"^Range: \S+\.\.\S+", r"^## Phase 1", r"^## Review agents",
               r"^## Lens reviewers", r"^## Follow-ups", r"^## Sign-off[ \t]*\n+[ \t]*[^<\s#]"]
     return int(all(re.search(pattern, text, re.M) for pattern in needed))
 
@@ -306,13 +306,13 @@ def same_commit(full, given):
 
 
 def findings(text):
-    """(severity, outcome, line) for each finding in review.md's Polish and Lens reviewers sections.
+    """(severity, outcome, line) for each finding in review.md's Review agents and Lens reviewers sections.
 
     A finding is a line `[tag] severity path: finding -> outcome`, numbered, bulleted or bolded or not, or a
     challenge card table with a Severity row and a Response row.
     """
     found = []
-    for body in re.findall(r"^## (?:Polish|Lens reviewers)[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S):
+    for body in re.findall(r"^## (?:Review agents|Lens reviewers)[ \t]*\n(.*?)(?=^## |\Z)", text, re.M | re.S):
         for block in re.split(r"\n[ \t]*\n", body):
             card = re.search(r"\|\s*Severity\s*\|\s*\**\s*(block|fix|note)\b", block, re.I)
             if card:

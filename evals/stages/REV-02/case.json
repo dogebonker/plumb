@@ -14,9 +14,6 @@
   ],
   "timeout_s": 3600,
   "max_turns": 250,
-  "requires": [
-    "the polish skill"
-  ],
   "measures": "Review precision on a clean diff: no block or fix findings, no fix commit, slice 01's head_commit unchanged.",
   "planted": [],
   "decoys": [
@@ -32,7 +29,7 @@
   ],
   "scores": {
     "review_md": "slices/01/review.md has the template's headings, a Range line and a filled Sign-off",
-    "no_block_or_fix": "review.md has no Polish line or card with severity block or fix, except dropped ones",
+    "no_block_or_fix": "review.md has no Review agents line or card with severity block or fix, except dropped ones",
     "no_fix_commit": "no fix( commit after the feat commit, and no source change outside .factory/",
     "head_unchanged": "slice 01's head_commit in status.yaml is still the feat commit",
     "slice_done": "slice 01 is done in status.yaml",

@@ -1,6 +1,6 @@
 ---
 name: factory-review
-description: Review a green factory milestone - mechanical checks, /polish with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off into review.md.
+description: Review a green factory milestone - mechanical checks, review agents with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off into review.md.
 disable-model-invocation: true
 argument-hint: "[slug] [--one-step]"
 ---
@@ -10,7 +10,7 @@ argument-hint: "[slug] [--one-step]"
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
-Scripts first, then `/polish`, then the human. Requires the `polish` skill. A review covers one milestone ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot), meaning its slices that are not `done`: `M` is its number as gates.md defines it, `<last>` the id of its last such slice, `<base>` the `base_commit` of its first and `<head>` the `head_commit` of its last. In headless mode a milestone is one slice. `<tmp>` is a new temp directory made at the start of the review and deleted at hand-off.
+Scripts first, then the review agents, then the human. A review covers one milestone ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot), meaning its slices that are not `done`: `M` is its number as gates.md defines it, `<last>` the id of its last such slice, `<base>` the `base_commit` of its first and `<head>` the `head_commit` of its last. In headless mode a milestone is one slice. `<tmp>` is a new temp directory made at the start of the review and deleted at hand-off.
 
 ## 0. Orchestrator or step agent
 
@@ -42,9 +42,9 @@ Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; t
 
 A frozen-contract difference sends its slice back, as gates.md describes.
 
-## 3. Phase 2: /polish and lens reviewers
+## 3. Phase 2: review agents and lens reviewers
 
-1. Committed mode: `git add .factory/changes/<slug> .factory/system` and, when anything is staged, commit `chore(factory): milestone M review`, so polish sees a clean tree. In interactive mode this commit also carries the planning state since the last one (gates.md, Commits).
+1. Committed mode: `git add .factory/changes/<slug> .factory/system` and, when anything is staged, commit `chore(factory): milestone M review`, so the review starts from a clean tree. In interactive mode this commit also carries the planning state since the last one (gates.md, Commits).
 2. On tracks standard and critical, start the lens reviewers in the background, one fresh sub-agent each, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes:
    - **APoSD**, when the diff adds a public symbol in a non-test file that is not in any packet's Frozen contract: `a-philosophy-of-software-design.md` (full size) and the module's language pack index.
    - **UI/UX**, when `ui` is `true` and the milestone changed UI files: a sub-agent follows the `lens` mode of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) for the routes the milestone touches, and writes its findings as cards anchored to the design file or WCAG.
@@ -55,27 +55,24 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 
    > Review `git diff <base>..HEAD -- . ':!.factory'` in `<repo>` through `<lens files>`. The agreed contracts are `<packet paths>`; judge what the code does behind them. Write at most three findings to `<tmp>/<lens>.md`, each as a challenge card (`<absolute path of factory-interface/challenge-card.md>`) read for code: Where quotes the changed line, Alternative is the code change, and Response will be fix or skip. Severity `block` or `fix` needs an anchor: a constraint ID in a packet's Covers, the interface comment of a frozen signature the code contradicts, a threat ID in `.factory/system/threat-model.md`, a principle, position or word of the design file, or a WCAG 2.2 A or AA criterion; every other finding is a `note`. A finding about a rendered screen quotes the changed line that renders the element.
 
-3. Tell the user, in your own message before the call:
+3. Run the review agents through their report, as [review-agents.md](review-agents.md) describes, with these factory rules on top:
    - the packets' Covers and Frozen contracts are agreed and are not design findings
-   - `.factory/` is planning state, outside the review: write the diff with `-- . ':!.factory'`
-   - the check command is `check_command`. Fix its failures only inside the Allowed files; failures elsewhere are findings
+   - `check_command` failures are fixed only inside the Allowed files; failures elsewhere are findings
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this milestone
-   - leave your fixes uncommitted: the review commits them
-   - interactive mode: when you ask which findings to fix, the review answers in its next message with `fix <numbers>`: every validated finding you recommend fixing that stays inside the Allowed files and the frozen contracts and does not touch a file under any packet's Tests first. The rest are skipped or held for the user's sign-off; the user sees all of them there. In a step agent this answer is yours: give it and go on in the same turn
-   - track small: use your small-diff fast path, without agent fan-out, whatever the diff size
-   - findings from a rule under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) are recommended as skip, and are never in the review's `fix` answer
-   - rubric for its agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
+   - track small: the small-diff fast path, whatever the diff size
+   - findings from a rule under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines) are recommended as skip
+   - rubric for the agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
      - design and reuse: `refactoring-guru.mini.md` and the simplification ladder from packs.md
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness: each test under a packet's Tests first asserts the outcome its line names, and for an FR the outcome of its Example in Covers; a test that only calls the code, or only checks that it does not throw, is a finding tagged `[factory/example-asserted]`
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
 
-   Before invoking polish, perform one bounded missing-outcome pass over the milestone’s user-visible behavior: at most three reproducible violations of the product Problem, Success metric, agreed persistence decisions or standing promises. Each records the goal/promise quoted, concrete initial state and event sequence, expected and actual user outcome, changed code location, and reproduction evidence. Do not invent a requirement ID. Data loss or a false “saved” message is not downgraded merely because its precise scenario is absent from Covers. Record these separately as `[factory/missing-outcome]` held findings; a scenario already covered by an ID remains an ordinary conformance finding. Within-contract fixes follow the existing Allowed files and regression-test rules. An omitted promise or changed frozen contract is proposed for correction at sign-off and uses the existing send-back path after the user decides; never rewrite approved contracts or Tests first silently.
+   Before running the review agents, perform one bounded missing-outcome pass over the milestone’s user-visible behavior: at most three reproducible violations of the product Problem, Success metric, agreed persistence decisions or standing promises. Each records the goal/promise quoted, concrete initial state and event sequence, expected and actual user outcome, changed code location, and reproduction evidence. Do not invent a requirement ID. Data loss or a false “saved” message is not downgraded merely because its precise scenario is absent from Covers. Record these separately as `[factory/missing-outcome]` held findings; a scenario already covered by an ID remains an ordinary conformance finding. Within-contract fixes follow the existing Allowed files and regression-test rules. An omitted promise or changed frozen contract is proposed for correction at sign-off and uses the existing send-back path after the user decides; never rewrite approved contracts or Tests first silently.
 
-4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
+4. Interactive mode: fix, as review-agents.md's Fix step describes and without asking, every validated finding the report recommends fixing that stays inside the Allowed files and the frozen contracts and does not touch a file under any packet's Tests first. The rest are skipped, or held for the user's sign-off; the user sees all of them there. Then go on to step 5.
 
-   Headless mode: polish's report is the question. Write its findings and the lens cards to `slices/<last>/proposed.md`, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `proposed.md`, continues at step 6, and deletes `proposed.md` once `review.md` is written.
-5. Wait until every lens reviewer has written its `<tmp>/<lens>.md`, then collect the cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Interactive mode: apply every remaining `block` and `fix` card after polish's own fixes, without asking, and skip notes. A card is held for the user at sign-off instead when its Alternative changes a frozen signature (a possible send-back), touches a file outside the Allowed files, or touches a file under any packet's Tests first. Apply each card only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
+   Headless mode: the report is the question. Write its findings and the lens cards to `slices/<last>/proposed.md`, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `proposed.md` as the Fix step describes, continues at step 6, and deletes `proposed.md` once `review.md` is written.
+5. Wait until every lens reviewer has written its `<tmp>/<lens>.md`, then collect the cards. Drop a card whose quoted line is not in the diff; a `block` or `fix` card whose anchor does not exist, or whose lens and rule are under Quiet rules in `~/.software-factory/principles.md` (money and security rules excepted, as that file defines), becomes a `note`. Interactive mode: apply every remaining `block` and `fix` card after the review agents' fixes, without asking, and skip notes. A card is held for the user at sign-off instead when its Alternative changes a frozen signature (a possible send-back), touches a file outside the Allowed files, or touches a file under any packet's Tests first. Apply each card only if its quoted line still reads the same in the working tree; a card whose line changed is reported in `review.md` as stale.
 6. A fix may add its regression test in a new test file beside the slice's tests: before writing it, log `{ slice, file, reason: "regression test for finding N" }` in `deviations` and append the file to that slice's packet's Allowed files. Any other fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. If any fix changed code, stage by path only the changed files that are in the milestone's packets' Allowed files or in `deviations`; restore, or delete when untracked, any other changed file and record its finding as a follow-up. Commit them as `fix(<slug>): milestone M review`. Log each red-commit test the fix changes in `deviations`, with the finding that changed it.
 8. Each test that commit adds or changes proves itself: `git restore -s <fix commit>~1 -SW -- <the commit's non-test files>`, run the test (it must fail), then `git restore -s HEAD -SW -- <the same files>`. After an interruption, that last command restores the fix. A commit with no non-test files has nothing to prove. A test that still passes is reported, not kept as proof.
@@ -94,8 +91,8 @@ Range: <base>..<head>
 - After review fixes: pass | <failures> | no fixes
 - Red: each slice's test_commit failed on its new tests. Green: <head> passes test_command.
 
-## Polish
-<one line per finding, numbered as polish numbered it: `N. [<tag>] <severity> <path>: <finding> -> <outcome>`, where the severity follows polish's recommendation: a finding it recommends fixing is `fix`, one it recommends skipping is `note`, and `block` comes only from lens cards, the outcome one of: `fix` or `skip` (the user's answer), `auto-fixed` (applied without asking), `auto-skipped` (left out of the review's own answer), `undone` (auto-fixed, then undone by the user), `follow-up` or `dropped`. The tag is the rubric rule, written as interface cards write Lens / rule, or, without one, `polish/<category>` (correctness, cleanliness, design, efficiency, gating). Findings dropped after validation get their own lines.>
+## Review agents
+<one line per finding, numbered as the report numbered it: `N. [<tag>] <severity> <path>: <finding> -> <outcome>`, where the severity follows the report's recommendation: a finding it recommends fixing is `fix`, one it recommends skipping is `note`, and `block` comes only from lens cards, the outcome one of: `fix` or `skip` (the user's answer), `auto-fixed` (applied without asking), `auto-skipped` (left out of step 4's fixes), `undone` (auto-fixed, then undone by the user), `follow-up` or `dropped`. The tag is the rubric rule, written as interface cards write Lens / rule, or, without one, `review/<category>` (correctness, cleanliness, design, efficiency, gating). Findings dropped after validation get their own lines. Last, the report's coverage line.>
 
 ## Lens reviewers
 <each card, with its outcome: `fix` or `skip` (the user's answer, a held card included), `auto-fixed`, `auto-skipped` (a note), `undone`, or `stale`; "not run" with the reason when a reviewer did not apply>

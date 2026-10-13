@@ -13,7 +13,6 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
    ln -s ~/Work/software-factory/skills/factory-* ~/.claude/skills/
    ln -s ~/Work/software-factory/kit ~/.software-factory
    ```
-   Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill.
 2. In the repository you want to change, start with `/factory-triage <the task in plain words>`.
 3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`, stopping only for your answers and sign-offs.
 4. You approve every gate and sign off every milestone. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
@@ -36,7 +35,7 @@ flowchart LR
   B --> C[Gaps nobody closes]
   C --> D[Core loop, gates,<br/>constraints, Pond memory]
   D --> E[Design-book lenses]
-  E --> F[Review on polish]
+  E --> F[Review agents]
   F --> G[Domain packs:<br/>money, BDD]
   G --> H[APoSD as the spine]
   H --> I[Language packs]
@@ -130,7 +129,7 @@ Your answers are logged. A rule you overrule three times goes quiet for you; a r
 
 ![Review pipeline](assets/review.svg)
 
-Review is built on a `/polish` skill: parallel read-only agents for cleanliness, design and reuse, efficiency, and side-effect gating, findings validated against the actual code, and a report. It runs once per milestone. Interactive runs apply every validated fix inside the agreed files and contracts, and the sign-off question lists them so you can undo any; headless runs still wait for the numbers to fix. On top of it:
+Review runs four parallel read-only agents: cleanliness, design and reuse, efficiency, and correctness (side-effect gating plus per-language defect classes). Every finding is validated against the actual code, every changed file is accounted for as reviewed or skipped with a reason, and one numbered report recommends what to fix. It runs once per milestone. Interactive runs apply every validated fix inside the agreed files and contracts, and the sign-off question lists them so you can undo any; headless runs still wait for the numbers to fix. On top of it:
 
 - **Phase 1 grows.** The import graph (Clean Architecture's dependency rule), interface conformance against the frozen stubs, a dead-code tool and the language pack's linter rules all run as scripts.
 - **Books become rubric, not extra agents.** Refactoring.Guru and Ponytail's simplification ladder ride inside the design and reuse agent; the language pack rides inside design and efficiency.
@@ -180,7 +179,7 @@ The full log with trade-offs is in [docs/DECISIONS.md](docs/DECISIONS.md). The s
 - **APoSD as the spine.** Interfaces are the decisions that are expensive to change later and cheap to change now. Owning them is the highest-leverage use of human attention.
 - **No design-it-twice step.** Challenge cards already bring targeted alternative signatures, at a fraction of the cost.
 - **Lenses, not a rulebook.** Classic design books disagree with each other in places; loading all of them at once gives the agent noise. Profiles pick a small, coherent set.
-- **Review on `/polish`, not a heavier variant.** A converging multi-round reviewer was tried and dropped: it burned too many tokens for what it added. Its two cheap ideas (findings on disk, and regression tests that must fail when their fix is reverted) were kept.
+- **One review pass, not a converging reviewer.** A converging multi-round reviewer was tried and dropped: it burned too many tokens for what it added. Its two cheap ideas (findings on disk, and regression tests that must fail when their fix is reverted) were kept.
 - **Money rules only where money moves.** A money pack in a CRUD admin panel is pure noise; in a payout worker it is the most valuable reviewer in the room.
 - **BDD without forcing it.** Concrete examples are the cheapest way to find out you misunderstood a requirement, so example-first discovery runs everywhere. Gherkin files and runners only appear where a module already has them, because adding a test framework to someone's repo is a decision, not a side effect.
 - **Language packs.** Book lenses decide where boundaries go; a language pack decides how to say it well in that language. Linter-catchable rules go to the linter.

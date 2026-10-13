@@ -176,13 +176,10 @@ with socket.socket() as connection:
     def test_context_mode_is_deferred_before_any_model_launch(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            polish = root / "polish"
-            polish.mkdir()
-            (polish / "SKILL.md").write_text("test polish")
             with patch("benchmark.prepare_context", side_effect=ValueError("Context Mode dependencies are not ready")), \
                     patch("benchmark.subprocess.Popen") as launch, self.assertRaises(SystemExit) as caught:
                 benchmark.main(["run", "--superpowers", str(root), "--model", "claude-sonnet-5-5", "--out", str(root / "out"),
-                                "--polish", str(polish), "--context-mode", str(root), "--cases", "csv-targets"])
+                                "--context-mode", str(root), "--cases", "csv-targets"])
             self.assertEqual(caught.exception.code, 2)
             launch.assert_not_called()
             self.assertFalse((root / "out").exists())
@@ -200,15 +197,12 @@ class SnapshotTests(unittest.TestCase):
             kit = repository / "kit"
             kit.mkdir()
             (kit / "packs.lock.yaml").write_text("packs:\n")
-            polish = root / "polish"
-            polish.mkdir()
-            (polish / "SKILL.md").write_text("Local polish skill.\n")
             superpowers = root / "superpowers"
             (superpowers / ".claude-plugin").mkdir(parents=True)
             (superpowers / ".claude-plugin" / "plugin.json").write_text('{"name":"superpowers"}')
             output = root / "out"
             output.mkdir()
-            args = argparse.Namespace(out=output, polish=polish, superpowers=superpowers, context_mode=None)
+            args = argparse.Namespace(out=output, superpowers=superpowers, context_mode=None)
             with patch("benchmark.ROOT", repository), patch("benchmark.Path.home", return_value=root / "home"), \
                     patch("benchmark.git_info", return_value={"commit": None, "dirty": None}):
                 paths, provenance = benchmark.snapshots(args)

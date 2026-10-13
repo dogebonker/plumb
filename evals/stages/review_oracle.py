@@ -5,8 +5,8 @@ import re
 from stagelib import NAME, change_dir, commit, write
 
 
-def review(workspace, slug, fixes, polish, planning_commit=True):
-    """fixes maps a path to (old, new) replacements; polish is review.md's Polish lines."""
+def review(workspace, slug, fixes, findings, planning_commit=True):
+    """fixes maps a path to (old, new) replacements; findings is review.md's Review agents lines."""
     status = change_dir(workspace, slug) / "status.yaml"
     text = status.read_text()
     base = re.search(r"\bbase_commit: (\w+)", text).group(1)
@@ -34,8 +34,8 @@ Range: {base}..{head}
 - After review fixes: {"pass" if fixes else "no fixes"}
 - Red: each slice's test_commit failed on its new tests. Green: {head} passes test_command.
 
-## Polish
-{polish}
+## Review agents
+{findings}
 
 ## Lens reviewers
 not run: track small

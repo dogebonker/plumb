@@ -38,7 +38,7 @@ Browser cases require an already installed Playwright module and Chromium. Set
 `PLAYWRIGHT_MODULE` to its absolute module directory before fixture checks or runs.
 The runner records its exact version and browser path; it installs nothing.
 
-Use a pinned Superpowers checkout, installed `polish`, and a full Claude model ID:
+Use a pinned Superpowers checkout and a full Claude model ID:
 
 ```sh
 PLAYWRIGHT_MODULE=/path/to/installed/playwright \

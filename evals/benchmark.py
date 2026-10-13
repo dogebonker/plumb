@@ -163,7 +163,6 @@ def snapshots(args):
     write_json(factory / ".claude-plugin" / "plugin.json", {"name": "factory", "version": "0.0.0", "description": "Pinned local Factory benchmark snapshot"})
     shutil.copytree(ROOT / "skills", factory / "skills", ignore=IGNORED)
     shutil.copytree(ROOT / "kit", factory / "kit", ignore=IGNORED)
-    shutil.copytree(args.polish, factory / "skills" / "polish", ignore=IGNORED)
     installed = factory / "installed"
     (installed / "skills").mkdir(parents=True)
     lock_path = Path.home() / ".agents" / ".skill-lock.json"
@@ -212,7 +211,6 @@ def snapshots(args):
     paths = {"factory": factory}
     provenance = {"factory": {"source": str(ROOT), "skills_sha256": tree_hash(ROOT / "skills"),
                              "kit_sha256": tree_hash(ROOT / "kit"), **git_info(ROOT)},
-                  "polish": {"source": str(args.polish), "sha256": tree_hash(args.polish)},
                   "installed_packs": pack_provenance, "skipped_packs": skipped,
                   "adaptations": {"replacements": replacements, "files": adapted,
                                   "notes": "Kit is a read-only snapshot, not a git repository; propose kit changes locally. No Factory gate hooks were installed; skills are compared."}}
@@ -954,7 +952,6 @@ def main(argv=None):
     run.add_argument("--max-questions", type=int, default=12)
     run.add_argument("--repair-rounds", type=int, default=1)
     run.add_argument("--context-mode", type=Path)
-    run.add_argument("--polish", type=Path, default=Path.home() / ".agents" / "skills" / "polish")
     run.add_argument("--claude", default="claude")
     run.add_argument("--comparison-mode", choices=["execution", "discovery", "legacy-recommended"], default="discovery")
     run.add_argument("--approved-spec", type=Path)
@@ -1013,14 +1010,11 @@ def main(argv=None):
         parser.error("--model requires a full versioned Claude model ID, not an alias/latest")
     if args.repeats <= 0 or args.timeout <= 0 or args.budget_usd <= 0 or args.max_questions < 0 or args.repair_rounds < 0:
         parser.error("positive repeat/time/budget and nonnegative question/repair limits required")
-    if not (args.polish / "SKILL.md").is_file():
-        parser.error("Factory requires an installed polish skill; provide --polish PATH")
     for case in args.cases:
         if case not in {path.parent.name for path in CASES.glob("*/case.json")}:
             parser.error(f"unknown case: {case}")
     args.out = args.out.resolve()
     args.superpowers = args.superpowers.resolve()
-    args.polish = args.polish.resolve()
     args.context_mode = args.context_mode.resolve() if args.context_mode else None
     browser = any(json.loads((CASES / name / "case.json").read_text()).get("kind") == "browser" for name in args.cases)
     browser_runtime = None
