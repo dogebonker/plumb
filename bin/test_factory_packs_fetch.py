@@ -215,5 +215,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert r.returncode != 0 and "not a pack entry: demo:" in r.stderr, r.stdout + r.stderr
     r = fetch(lock_with("m", "packs: {}   # none yet\nskills_linked: []\n"))
     assert r.returncode == 0 and "no packs pinned" in r.stdout, r.stdout + r.stderr
+    entry = "  demo: { source: owner/repo, hash: " + tree1 + " }\n"
+    r = fetch(lock_with("n", "packs:\n" + entry + "skills_linked: []\npacks:\n" + entry))
+    assert r.returncode != 0 and "a second packs: block" in r.stderr, r.stdout + r.stderr
+    r = fetch(lock_with("o", "packs:\n" + entry + entry))
+    assert r.returncode != 0 and "pinned twice" in r.stderr, r.stdout + r.stderr
 
 print("factory-packs-fetch: all checks passed")

@@ -293,6 +293,13 @@ with tempfile.TemporaryDirectory() as tmp:
                               ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin + pin.replace("demo", "extra"),
                                "pins packs other than"),
                               ("framework: { commit: " + "a" * 40 + " }\n", "pins packs other than"),
+                              # Read as strictly as the fetch, so no entry hides from the runner.
+                              ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin + "other: 1\npacks:\n" + pin.replace("o/r", "evil/r"),
+                               "malformed packs"),
+                              ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin + pin.replace("o/r", "evil/r"),
+                               "malformed packs"),
+                              ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin + "  evil:\n    source: evil/r\n",
+                               "malformed packs"),
                               ("framework: { commit: " + "b" * 40 + ", installed: 2026-10-13 }\n", "is not installed"),
                               ("framework: { commit: ../.., installed: 2026-10-13 }\n", "no full 40-hex"),
                               ("framework: { commit: aaaaaaa, installed: 2026-10-13 }\n", "no full 40-hex"),

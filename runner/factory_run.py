@@ -56,6 +56,7 @@ from factory_gate import GATES, field, parse_status
 
 BRANCH = re.compile(r"^factory/[A-Za-z0-9._/-]+$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
+PACK_ENTRY = re.compile(r"\s+([^\s:#]+):\s*\{([^{}]*)\}\s*(#.*)?")  # the same entry form as bin/factory-packs-fetch
 GIT_SAFE = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false")
 HARNESS = "claude -p --setting-sources user --strict-mcp-config"
 GIT_TIMEOUT = 300
@@ -173,6 +174,8 @@ def missing_framework(repo, ref, change):
     # Pack pins steer what agents read as rules, so the branch may not choose them: they must equal the
     # approved pins of the installed framework, which the operator fetched from that framework's own lock.
     pinned = pack_pins(run(repo, "git", "show", f"{ref}:{lock}"))
+    if pinned is None:
+        return f"{lock} has a malformed packs: block; run /factory-upgrade"
     approved_file = FRAMEWORK / commit / "kit" / "packs.lock.yaml"
     approved = pack_pins(approved_file.read_text()) if approved_file.is_file() else {}
     if pinned != approved:
@@ -181,16 +184,21 @@ def missing_framework(repo, ref, change):
 
 
 def pack_pins(text):
-    """{name: (source, path, hash)} from a lock's block-style packs: section; pinned_at is not content."""
-    pins, inside = {}, False
+    """{name: (source, path, hash)} from a lock's packs: block, read as strictly as bin/factory-packs-fetch reads
+    it, so the runner and the fetch never disagree on what a lock pins; None when the block is malformed."""
+    pins, inside, blocks = {}, False, 0
     for line in text.splitlines():
-        if re.match(r"^packs:", line):
+        if re.match(r"^packs\s*:", line):
+            blocks += 1
+            if blocks > 1 or not re.fullmatch(r"packs:\s*(\{\})?\s*(#.*)?", line):
+                return None
             inside = True
-            continue
-        if inside and line and not line[0].isspace():
-            break
-        entry = re.match(r"^\s+([A-Za-z0-9_.-]+):\s*\{(.*)\}", line) if inside else None
-        if entry:
+        elif inside and re.match(r"^\S", line):
+            inside = False
+        elif inside and line.strip() and not line.lstrip().startswith("#"):
+            entry = PACK_ENTRY.fullmatch(line)
+            if not entry or entry[1] in pins:
+                return None
             pins[entry[1]] = tuple(field(entry[2], key) for key in ("source", "path", "hash"))
     return pins
 

@@ -74,19 +74,24 @@ def network(source, broken, git_dir, *args, stdin=None):
 
 def pins(lock):
     """{name: {key: value}} from the block of one-line flow maps under `packs:`; exits on anything else."""
-    found, inside = {}, False
+    found, inside, blocks = {}, False, 0
     for number, line in enumerate(lock.read_text().splitlines(), 1):
-        if re.match(r"^packs:", line):
+        if re.match(r"^packs\s*:", line):
+            blocks += 1
+            if blocks > 1:
+                sys.exit(f"factory-packs-fetch: {lock}:{number}: a second packs: block")
             if not re.fullmatch(r"packs:\s*(\{\})?\s*(#.*)?", line):
                 sys.exit(f"factory-packs-fetch: {lock}:{number}: write packs as a block, one indented "
                          "`<name>: { source: ..., path: ..., hash: ..., pinned_at: ... }` line per pack")
             inside = True
         elif inside and re.match(r"^\S", line):
-            break
+            inside = False
         elif inside and line.strip() and not line.lstrip().startswith("#"):
             m = ENTRY.fullmatch(line)
             if not m:
                 sys.exit(f"factory-packs-fetch: {lock}:{number}: not a pack entry: {line.strip()}")
+            if m.group(1) in found:
+                sys.exit(f"factory-packs-fetch: {lock}:{number}: pack {m.group(1)} pinned twice")
             found[m.group(1)] = dict(re.findall(r"(\w+):\s*[\"']?([^,\"'}\s]+)", m.group(2)))
     return found
 
