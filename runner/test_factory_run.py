@@ -364,5 +364,83 @@ with tempfile.TemporaryDirectory() as tmp:
             patch.object(factory_run, "FRAMEWORK", Path(tmp) / "framework"):
         factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
     assert len(harness_heads) == 1
+# Failed setup never starts the harness; failed and timed-out work stays recoverable.
+with tempfile.TemporaryDirectory() as tmp:
+    repo = Path(tmp) / "runner"
+    remote = Path(tmp) / "remote.git"
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    subprocess.run(["git", "clone", "-q", str(remote), str(repo)], check=True)
+    def git(*args):
+        return subprocess.check_output(["git", "-c", "commit.gpgsign=false", "-C", str(repo), *args], text=True).strip()
+    git("config", "user.email", "test@example.com")
+    git("config", "user.name", "test")
+    git("checkout", "-b", "factory/demo")
+    (repo / "code").write_text("GREEN")
+    git("add", ".")
+    git("commit", "-qm", "green")
+    git("push", "origin", "factory/demo")
+    head = git("rev-parse", "HEAD")
+    calls = []
+    def failing_setup(cmd, work, timeout):
+        calls.append(cmd)
+        (work / "code").write_text("dirty")
+        (work / "untracked").write_text("recover")
+        return 7
+    with patch.object(factory_run, "run_harness", side_effect=failing_setup):
+        code, _ = factory_run.harness_pass(repo, "factory/demo", head, ["must-not-run"], "setup", 1)
+    assert code == 7 and calls == [["setup"]]
+    recovery = list((repo / ".git/factory-recovery").glob("*/work"))
+    assert len(recovery) == 1
+    assert (recovery[0] / "code").read_text() == "dirty"
+    assert (recovery[0] / "untracked").read_text() == "recover"
+    assert (recovery[0] / ".git/objects").is_dir()
+    with patch.object(factory_run, "run_harness", side_effect=subprocess.TimeoutExpired("harness", 1)):
+        assert factory_run.harness_pass(repo, "factory/demo", head, ["timeout"], None, 1)[0] is None
+    assert len(list((repo / ".git/factory-recovery").glob("*/work"))) == 2
+    # Managed harness cannot publish; the runner publishes clean successful commits only.
+    def successful_harness(cmd, work, timeout):
+        def work_git(*args):
+            return subprocess.check_output(["git", "-c", "commit.gpgsign=false", "-C", str(work), *args], text=True).strip()
+        work_git("config", "user.email", "test@example.com")
+        work_git("config", "user.name", "test")
+        (work / "code").write_text((work / "code").read_text() + " completed")
+        work_git("add", "code")
+        work_git("commit", "-qm", "feat: completed step")
+        attempted = subprocess.run(["git", "-C", str(work), "push", "origin", "HEAD"], capture_output=True, check=False)
+        assert attempted.returncode != 0
+        return 0
+    with patch.object(factory_run, "run_harness", side_effect=successful_harness):
+        assert factory_run.harness_pass(repo, "factory/demo", head, ["build"], None, 1)[0] == 0
+    git("fetch", "origin", "factory/demo")
+    assert git("show", "origin/factory/demo:code") == "GREEN completed"
+    head = git("rev-parse", "origin/factory/demo")
+    # A failed run retains its committed work and never publishes it.
+    def failed_committed_harness(cmd, work, timeout):
+        successful_harness(cmd, work, timeout)
+        subprocess.run(["git", "-C", str(work), "checkout", "-q", "--detach", "HEAD"], check=True)
+        (work / "pending").write_text("retain untracked after failure")
+        return 3
+    with patch.object(factory_run, "run_harness", side_effect=failed_committed_harness):
+        assert factory_run.harness_pass(repo, "factory/demo", head, ["failed"], None, 1)[0] == 3
+    git("fetch", "origin", "factory/demo")
+    assert git("rev-parse", "origin/factory/demo") == head
+    failed_work = [w for w in (repo / ".git/factory-recovery").glob("*/work") if (w / "pending").exists()]
+    assert len(failed_work) == 1 and (failed_work[0] / ".git/HEAD").read_text().strip() != "ref: refs/heads/factory/demo"
+    original_run = factory_run.run
+    def clone_failure(cwd, *cmd, **kwargs):
+        if cmd[:2] == ("git", "clone"):
+            (cwd / "partial-clone").write_text("setup evidence")
+            raise RuntimeError("clone failed")
+        return original_run(cwd, *cmd, **kwargs)
+    with patch.object(factory_run, "run", side_effect=clone_failure):
+        try:
+            factory_run.harness_pass(repo, "factory/demo", head, ["unused"], None, 1)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("clone failure was swallowed")
+    recovery = list((repo / ".git/factory-recovery").glob("*/work"))
+    assert len(recovery) == 4
+    assert any((work / "partial-clone").exists() for work in recovery)
 
 print("factory_run: all checks passed")

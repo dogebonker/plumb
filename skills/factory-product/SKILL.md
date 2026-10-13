@@ -62,6 +62,8 @@ Done when you can state today's behavior and the requested change in the user's 
 ## Open questions
 ```
 
+For a capability that saves user data, make four decisions explicit in Promises and its examples, reusing applicable standing IDs: what “saved” guarantees (including reload and the supported failure boundary); what happens to the draft and success message when a write fails; how invalid existing data is preserved and recovered without silently replacing it with defaults; and how a stale writer or open editor avoids overwriting another writer’s changes. Record deliberate limits as user-agreed non-goals, not implied implementation defaults. Use `<kit>/nfr-catalog/stateful-data.md` for failure sequences. Revisit these decisions when the capability changes, even with an existing registry.
+
 Work the Rules section as Example Mapping: every rule gets at least one requirement and one concrete example. A rule whose example you cannot write yet becomes an open question.
 
 When `ui` is `true` in `status.yaml`, ask the user once whether this change needs mockup screenshots: worth it for a new screen or flow, rarely for a tweak to an existing one. A yes also agrees to the one-time Playwright download that capturing needs. Yes: once Rules and examples are drafted, follow the `mockups` mode of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) for this slug. No: a sketch or ASCII under Mockups, with "screenshots declined".

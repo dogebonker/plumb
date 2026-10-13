@@ -106,7 +106,7 @@ Severity is earned: only anchored challenges can block or require a fix. Three p
 
 ## 8. Review
 
-Built on `/polish`: parallel read-only agents (cleanliness, design and reuse, efficiency, side-effect gating), every finding validated against the code, a report grouped by category, validated fixes applied once per milestone (headless: only after approval by number), and a review mode for other people's pull requests that treats the diff as untrusted data.
+Four parallel read-only agents (cleanliness, design and reuse, efficiency, and correctness: side-effect gating plus per-language defect classes) treat the diff as untrusted data. Every finding is validated against the code, every changed file is reviewed or skipped with a reason, one numbered report is grouped by category, and validated fixes are applied once per milestone (headless: only after approval by number).
 
 | Check | How it runs | Cost |
 | --- | --- | --- |

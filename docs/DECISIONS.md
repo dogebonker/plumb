@@ -15,7 +15,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 9 | APoSD as the spine of Interface Design | Accepted |
 | 10 | A fair challenge panel with calibration | Accepted, amended by 32 |
 | 11 | No design-it-twice step | Accepted |
-| 12 | Review built on `/polish` | Accepted, amended by 27 |
+| 12 | Review built on `/polish` | Superseded by 32 |
 | 13 | A converging multi-round reviewer | Rejected |
 | 14 | Mechanical checks replace two review agents | Accepted |
 | 15 | Money pack only where money moves | Accepted |
@@ -35,7 +35,8 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 29 | A catalog of reference layouts the architecture gate proposes from, with exemplars and pinned checkers | Accepted |
 | 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
 | 31 | A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel | Accepted (planned) |
-| 32 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted, on branch s14-per-project until merged |
+| 32 | Review agents owned by factory-review, with a defect rubric and file coverage | Accepted |
+| 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted, on branch s14-per-project until merged |
 
 ---
 
@@ -255,7 +256,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 **Decision.** Six changes, measured on the first full change (`tg-mini-app`, standard track, 10 slices, about 9,500 lines with tests):
 
-- **Milestones.** The slices gate groups slices into milestones: slice 01 alone, then two to four slices that end where the user can try something. Each slice keeps its red and green proof and its mechanical checks (`checks.md`); `/polish`, the lens reviewers and the human sign-off run once per milestone. Headless mode keeps one slice per milestone, so the runner is unchanged. The hook opens a green slice's files only when no slice is being built, and a rewind resets every later slice whose code it removes.
+- **Milestones.** The slices gate groups slices into milestones: slice 01 alone, then two to four slices that end where the user can try something. Each slice keeps its red and green proof and its mechanical checks (`checks.md`); the review agents, the lens reviewers and the human sign-off run once per milestone. Headless mode keeps one slice per milestone, so the runner is unchanged. The hook opens a green slice's files only when no slice is being built, and a rewind resets every later slice whose code it removes.
 - **Autopilot.** In interactive mode, build runs a milestone's slices back to back, goes straight on to its review, then to the next milestone and finally to reconcile, all in one session. It stops only to ask the user.
 - **Files a frozen signature breaks.** The slices gate lists implementers, fakes and callers of the signatures a slice changes. When the executor still needs one, a file the adapter's typecheck shows broken by that signature is allowed and logged without asking.
 - **Fixes applied.** Interactive reviews apply every validated finding that is not a note and stays inside the agreed files and contracts, and the sign-off question lists them so the user can undo any. This amends decision 12's approval by number, which headless mode keeps.
@@ -288,7 +289,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 
 **Why.** The `tg-mini-app` retro measured 351M tokens, of which 890k were output: the rest is the main session re-reading its own context on every turn, 8.8M per slice in build and 11.7M per slice in review. Skill text is a small share of that context; packets, diffs, test output and polish's reports are most of it. Decision 27's one-session autopilot would have made every later turn more expensive. A step agent's context dies with its step.
 
-**Cost.** Each step agent re-reads its skill and inputs, which a long session would have cached. A question costs a round trip through the orchestrator. Step agents nest their own sub-agents (the executor, polish's reviewers, and under factory-security's lens its hunters at a third level), which needs a harness that allows that depth: Claude Code does; Codex's default is one level and Cursor allows two (docs/research/harness-adapters.md), which the harness adapters must handle. A question's answer reaches a step agent by continuing it (Claude Code: SendMessage), or by a fresh agent that applies the answer where the skill asked it. The budgets are guesses until a repository has three changes of a track.
+**Cost.** Each step agent re-reads its skill and inputs, which a long session would have cached. A question costs a round trip through the orchestrator. Step agents nest their own sub-agents (the executor, the review agents, and under factory-security's lens its hunters at a third level), which needs a harness that allows that depth: Claude Code does; Codex's default is one level and Cursor allows two (docs/research/harness-adapters.md), which the harness adapters must handle. A question's answer reaches a step agent by continuing it (Claude Code: SendMessage), or by a fresh agent that applies the answer where the skill asked it. The budgets are guesses until a repository has three changes of a track.
 
 ## 31. A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel
 
@@ -305,7 +306,15 @@ This changes decisions 2 (the factory stays skills plus files, now behind adapte
 
 **Cost.** Migrating `.factory/` to `.software-factory/` in repositories that already have one (bitxchange-tg). Docker for evals. Each harness is one more adapter to keep current, and Codex and Cursor need upgrades and trust steps before a first trial.
 
-## 32. S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade
+## 32. Review agents owned by factory-review, with a defect rubric and file coverage
+
+**Decision.** factory-review carries its own review agents in `review-agents.md` instead of calling an installed review skill. This supersedes decision 12. Four agents: cleanliness, design and reuse, efficiency, and correctness. Correctness keeps side-effect gating and adds defect classes per language (`defects.md`: general, Go, Python, React and TypeScript, Rust), found with precision over recall. Every agent accounts for every reviewable file as reviewed or skipped with a reason, and the report and `review.md` carry that coverage line. Findings are numbered across the report and tagged `review/<category>`. The pull-request review mode is gone: the factory reviews only its own milestones.
+
+**Why.** The installed skill was the one part of review outside the factory's pins: packs are pinned by hash, it was not, so an update to it changed review behavior unseen, and every machine and eval image had to install it. Its correctness agent left business-logic defects out of scope, so a defect no test pinned down had no reviewer. Agents on large diffs review some files and skip others without saying so; a coverage list makes a skipped file visible.
+
+**Cost.** The factory now maintains the review rubric itself. The defect classes are judgment until REV-01 and REV-02 recall and precision measure them. The agent count is unchanged at four, but the correctness agent reads more.
+
+## 33. S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade
 
 **Decision.** The first three phases of S14 (decision 31):
 
@@ -323,7 +332,7 @@ Where the design left a choice open:
 - **D3.** Reconcile counts accept and overrule answers in this repository's changes only. Counting across repositories would let one project's answers rewrite another project's file, which is the coupling decision 31 removes.
 - **D4.** Pond finds the other projects. A rule that is a Principle in two or more of them, or quiet in two or more (never a money or security rule), and a playbook entry active in two repositories, are proposed for the user layer. The user decides each one.
 - **D5.** A lesson that would add a linter rule to a language pack's `linter.propose` is now a proposal for the factory repository, since projects never edit the cache.
-- **D6.** Packets copy the merged Principles of the three layers under Rules in scope. Review pastes the merged Quiet rules into its message to `/polish`, rather than a link.
+- **D6.** Packets copy the merged Principles of the three layers under Rules in scope. Review gives its review agents the merged Quiet rules (decision 32), rather than a link.
 - **D7.** The rule that money and security rules never go quiet moves into gates.md's Paths, so it holds in every layer. It no longer depends on a sentence inside one `principles.md`.
 - **D8.** Triage asks "committed or ignored" only while `.software-factory/changes/` holds no change, since the folder now exists from init on. Triage commits `factory.lock` and `principles.md` with the change when they exist.
 - **D9.** Retro still never writes principles. Its lessons reach them through reconcile, which now writes the project's file.
@@ -334,3 +343,5 @@ Where the design left a choice open:
 **Calibration against decision 10.** Kept: the challenge card, counting accept and overrule answers per `<lens>/<rule>`, the threshold of three, and money and security rules never going quiet. Lost: answers no longer pool across repositories, so a new project needs three answers of its own before a rule is promoted or quieted, and it starts from the framework defaults plus the user layer. Cross-project taste reaches the user layer only through proposals the user approves. Since P3, `kit/principles.md` holds no one's taste; the author's moves to the user layer only when init's offer is accepted. Gained: a project's answers no longer change other projects, and a project can un-quiet a rule a lower layer quiets.
 
 **Cost.** Every existing project needs `/factory-init` once, and every branch with `.factory/` a migration commit. Every machine and runner host keeps a cache folder per commit in use, and a runner host runs one linked framework at a time. Pins are per project, but packs are still installed once per machine: two projects pinned to different hashes of one pack cannot both load it until a cache per hash exists. A rule now takes longer to calibrate in a new repository.
+
+**Merge.** Main's 4dfc306 (runtime.py, the runner's managed harness and recovery clone, the benchmark, the UI render checks) and 5d18ad5 (the review agents of decision 32) were brought into the S14 layout when main was merged into this branch: their paths moved under `.software-factory/` and `<kit>`.

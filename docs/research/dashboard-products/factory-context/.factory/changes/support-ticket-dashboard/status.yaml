@@ -1,0 +1,46 @@
+feature: support-ticket-dashboard
+task: "Complete the seeded support-ticket dashboard: search, filters, details editing, ticket creation, local-storage persistence, accessible dialogs, responsive to 360px"
+track: standard
+track_proposed: standard
+factory_dir: committed
+branch: factory/support-ticket-dashboard
+change_base_commit: 1942efc8cd19284bad0708aa09e87fd96fc22788
+factory_commit: unknown
+test_command: "/private/tmp/fb-neamoi0s/browser-check/browser-check"
+test_file_command: "node {file}"
+check_command: ""
+baseline_failures: []
+gates:
+  product:      { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T01:10:00Z, doc_sha256: f2eb0eb3eeb9a3fa98186346cf085b7db52b1dc77c73cba916de6c349cf93a44 }
+  architecture: { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T01:25:00Z, doc_sha256: aea5af380cbc7ae7cca58d96ecd2d1c4589abd8e71f06060596c35d5dfdb40a2 }
+  interface:    { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T02:00:00Z, doc_sha256: 1beada6addd868a7b96847b6dccfd3c5508387fce307c7baf8b688afc9f04c54 }
+  slices:       { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T02:40:00Z, doc_sha256: c76bed07883e0b17c6c4023b7c1c1832c6a1fc0a9e88e5a4955679e1c770847e }
+slices:
+  - { id: 1, name: tracer-list-and-filters, milestone: 1, state: green, base_commit: 354ee7c6777bb040392372939348bf1a94f0a6db, test_commit: 673e3b7, head_commit: 2649387, red_exempt: ["first visit lists the twelve seeded tickets"] }
+  - { id: 2, name: ticket-details, milestone: 2, state: green, base_commit: f006d08ba785fcdb84fffb2ce0706d09d6cb9973, test_commit: 177e698, head_commit: f3a9160 }
+  - { id: 3, name: new-ticket, milestone: 2, state: building, base_commit: 99e4ac10771114eeb9188b67c6cda896d1308270, test_commit: null, head_commit: null }
+  - { id: 4, name: hierarchy-360-names, milestone: 2, state: pending, base_commit: null, test_commit: null, head_commit: null }
+sent_back: null
+stubbing: false
+ui: true
+reconciled: false
+mode: interactive
+waiting_since: null
+deviations: []
+pond_sessions: []
+notes_for_fresh_session: "Slice 02 green. Next: /factory-build support-ticket-dashboard."
+history:
+  - { at: 2026-10-13T00:55:00Z, step: factory-triage, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:05:00Z, step: factory-product, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:12:00Z, step: factory-architecture, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:40:00Z, step: factory-interface, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:50:00Z, step: factory-interface, event: panel_round, ref: "1", detail: "round 1, 5 cards" }
+  - { at: 2026-10-13T02:05:00Z, step: factory-slices, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T02:20:00Z, step: factory-build, event: step_start, ref: "01", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T02:30:00Z, step: factory-build, event: executor_stop, ref: "01", detail: "test" }
+  - { at: 2026-10-13T02:31:00Z, step: factory-build, event: sent_back, ref: "01", detail: "slices: red test wrong (cross-realm seed in test_store.cjs loadSeed), plus a new test passes against the stub" }
+  - { at: 2026-10-13T02:41:00Z, step: factory-slices, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T02:43:00Z, step: factory-build, event: rewind, ref: "01", detail: "sent_back" }
+  - { at: 2026-10-13T02:45:00Z, step: factory-build, event: step_start, ref: "01", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T03:00:00Z, step: factory-build, event: step_start, ref: "02", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T03:20:00Z, step: factory-build, event: step_start, ref: "03", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }

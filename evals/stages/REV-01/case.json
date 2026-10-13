@@ -14,9 +14,6 @@
   ],
   "timeout_s": 3600,
   "max_turns": 250,
-  "requires": [
-    "the polish skill"
-  ],
   "measures": "Review recall and precision on planted bugs: the review's fix commit fixes B1 and B2 and leaves the decoy D1 alone, and review.md follows the template.",
   "planted": [
     {
@@ -54,7 +51,7 @@
   ],
   "scores": {
     "recall": "share of B1 and B2 whose hidden test passes at HEAD",
-    "precision": "0 when D1's hidden test fails or line 11 changed; otherwise the share of block or fix Polish and lens findings, not dropped, that name B1 or B2",
+    "precision": "0 when D1's hidden test fails or line 11 changed; otherwise the share of block or fix review agent and lens findings, not dropped, that name B1 or B2",
     "public_tests": "every test passing at the feat commit passes at HEAD",
     "review_md": "slices/01/review.md has the template's headings, a Range line and a filled Sign-off",
     "fix_commit": "a commit fix(rev01): milestone 1 review exists",

@@ -1,0 +1,20 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #202124; }
+main { max-width: 1100px; margin: auto; padding: 24px; }
+.filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+label { display: grid; gap: 5px; }
+input, select, textarea, button { font: inherit; max-width: 100%; }
+input, select, textarea { padding: 8px; min-width: 0; }
+button { cursor: pointer; padding: 9px; }
+:focus-visible { outline: 3px solid #245ac5; outline-offset: 2px; }
+#tickets { list-style: none; padding: 0; }
+#tickets li { margin: 12px 0; }
+.ticket { display: grid; gap: 5px; width: 100%; text-align: left; background: white; border: 1px solid #aaa; }
+.ticket strong, .ticket span { overflow-wrap: anywhere; }
+dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: 20px; }
+dialog form { display: grid; gap: 12px; }
+dialog textarea { width: 100%; min-height: 90px; resize: vertical; }
+dialog::backdrop { background: #0006; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.error { color: #a01818; font-size: .9rem; }
+@media (max-width: 600px) { main { padding: 16px; } .filters { display: grid; } }

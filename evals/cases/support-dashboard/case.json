@@ -1,0 +1,11 @@
+{
+  "id": "support-dashboard",
+  "track": "feature",
+  "kind": "browser",
+  "description": "Complete a local support-ticket dashboard with filtering, editable details, persistence, and accessible responsive interactions.",
+  "test_count": 21,
+  "verify": [
+    "node",
+    "test_existing.cjs"
+  ]
+}

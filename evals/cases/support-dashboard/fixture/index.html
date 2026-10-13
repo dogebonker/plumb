@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support tickets</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="tickets.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Support tickets</h1>
+    <div class="filters">
+      <label>Search tickets <input id="search" type="search"></label>
+      <label>Status filter <select id="status-filter" aria-label="Status filter"><option value="">All statuses</option><option>open</option><option>pending</option><option>resolved</option></select></label>
+      <label>Priority filter <select id="priority-filter" aria-label="Priority filter"><option value="">All priorities</option><option>low</option><option>medium</option><option>high</option></select></label>
+      <button id="reset" type="button">Reset filters</button>
+      <button id="new-ticket" type="button">New ticket</button>
+    </div>
+    <p id="result-count" role="status">12 tickets</p>
+    <ul id="tickets"></ul>
+    <p id="empty-state" hidden>No tickets match your filters.</p>
+  </main>
+</body>
+</html>

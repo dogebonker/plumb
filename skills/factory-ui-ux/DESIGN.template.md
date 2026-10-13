@@ -20,6 +20,18 @@ omitted:
 ## Overview
 <Who uses it, in what moment, for what job, in one paragraph, citing product.md and the success metric. Then one specific reference: "a pilot's checklist, not a dashboard".>
 
+## Design intent and evidence
+Existing appearance: <intentional approved brand / disposable starter / unknown; confirmed or inferred; source>
+Desired reference: <specific reference and the qualities to adopt; decision source and status>
+Release quality bar: <prototype or finished product, with concrete rendered acceptance criteria>
+
+| Token / choice | Observed implementation and source | Approved target / proposed target | Decision source | Status |
+| --- | --- | --- | --- | --- |
+
+The frontmatter records the target tokens; existing source values are observations until approved. Proposed values may differ from starter styling.
+
+Representative preview: <primary-job screen, realistic content, narrow/wide screenshot paths, source revision/hash, approval or requested changes>
+
 ## Principles
 ### P1 <X over Y>
 Because: <evidence: a user quote, the metric, a constraint, a decision>
@@ -39,7 +51,8 @@ Earning a place: <what a new element must show to be added; "not now" is the def
 ## Words
 | Say | Not | Source |
 | --- | --- | --- |
-Voice: <one line>
+Voice: <one line; confirmed or inferred; decision source>
+Example: <one real action or failure message demonstrating the voice>
 
 ## Colors
 <Named roles and their scarcity rules, e.g. "the accent appears only on the primary action".>

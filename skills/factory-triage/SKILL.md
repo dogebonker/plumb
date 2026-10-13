@@ -55,7 +55,8 @@ Ask in one message:
 - the three commands, so the user can correct them
 - whether the change touches UI, and whether the design file exists
 - the lens profile with a one-line reason, the modules with language, language pack, BDD state and any dev command and URL, linter rules and check tools the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
-- only when `.software-factory/system/constraints.md` does not exist: the closest domain in `<kit>/nfr-catalog/` and its rows, for the user to keep, drop or tune.
+- when `.software-factory/system/constraints.md` is missing, or this change introduces or changes a capability (for example saved user data, multiple writers, offline work, auth or money): the relevant promises from the closest domain in `<kit>/nfr-catalog/` and its rows, for the user to keep, drop or tune
+- compare those promises with the existing registry instead of offering the entire catalog again. Reuse matching SYS IDs; carry missing or changed promises into the product gate for agreement, even when the registry already exists. For saved user data, use `<kit>/nfr-catalog/stateful-data.md` alongside the domain catalog; storage technology does not decide whether the promise applies
 - whether `.software-factory/` is committed in this repository or ignored, only when nothing has settled it yet: reuse the mode of an existing `status.yaml`, else committed when `git ls-files .software-factory` lists files and ignored when `git check-ignore -q .software-factory/` succeeds, as `/factory-init` left it
 
 - the mode: `interactive` (this chat) or `headless` (the runner drives it through a pull request; who approves is configured on the runner)
@@ -98,6 +99,7 @@ branch: <branch from 5.2>
 change_base_commit: <sha>
 factory_commit: <sha>       # <running> (gates.md, Paths): the factory version this change runs on (gates.md, Load a change)
 test_command: "<full suite>"
+red_test_command: null      # exact isolated RED capability when a fixed browser wrapper is supplied; otherwise omit/null
 test_file_command: "<single file, with a {file} placeholder>"
 check_command: "<lint and type check>"
 baseline_failures: []       # tests failing or flaky at change_base_commit

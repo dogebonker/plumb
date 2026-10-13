@@ -1,0 +1,43 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #202124; background: #f6f7f9; }
+main { max-width: 1100px; margin: auto; padding: 24px; }
+.filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.field { display: grid; gap: 5px; min-width: 0; }
+input, select, textarea, button { font: inherit; max-width: 100%; }
+input, select, textarea { padding: 8px; min-width: 0; }
+input, select, textarea { border: 1px solid #5f6368; border-radius: 6px; background: #fff; color: #202124; }
+button { cursor: pointer; padding: 9px 14px; min-height: 40px; border: 1px solid #5f6368; border-radius: 6px; background: #fff; color: #202124; }
+button:hover { background: #eef1f5; }
+.field label { font-size: .9rem; font-weight: 600; color: #3c4043; }
+h1 { margin: 0 0 16px; font-size: 1.6rem; }
+#result-count { margin: 16px 0 0; color: #3c4043; }
+:focus-visible { outline: 3px solid #245ac5; outline-offset: 2px; }
+#tickets { list-style: none; padding: 0; }
+#tickets li { margin: 12px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.ticket { display: block; min-width: 0; width: 100%; padding: 10px 12px; text-align: left; background: #fff; border: 1px solid #8a8d91; border-radius: 8px; }
+.ticket:hover { background: #f1f5fd; border-color: #245ac5; }
+.ticket span { overflow-wrap: anywhere; }
+.ticket-id, .ticket-title { display: inline; font-weight: 700; color: #202124; }
+.ticket-title { font-size: 1.05rem; }
+.ticket-customer { display: block; margin-top: 4px; font-size: .9rem; font-weight: 400; color: #55585c; }
+.badge { padding: 3px 10px; border-radius: 999px; font-size: .85rem; font-weight: 600; border: 1px solid #767676; background: #f1f3f4; color: #202124; white-space: nowrap; }
+.status-open { background: #dbeafe; color: #1e3a8a; border-color: #1e3a8a; }
+.status-pending { background: #fef3c7; color: #6b2f05; border-color: #6b2f05; }
+.status-resolved { background: #dcfce7; color: #14532d; border-color: #14532d; }
+.priority-low { background: #e8eaed; color: #3c4043; border-color: #3c4043; }
+.priority-medium { background: #ede9fe; color: #4c1d95; border-color: #4c1d95; }
+.priority-high { background: #fee2e2; color: #7f1d1d; border-color: #7f1d1d; }
+#empty-state { padding: 16px; border: 1px dashed #767676; background: #fff; border-radius: 8px; }
+dialog { --dialog-pad: 20px; --actions-height: 76px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: var(--dialog-pad); scroll-padding-bottom: calc(var(--actions-height) + 8px); border: 1px solid #5f6368; border-radius: 10px; background: #fff; color: #202124; }
+dialog form { display: grid; gap: 12px; }
+dialog textarea { width: 100%; min-height: 90px; resize: vertical; }
+dialog::backdrop { background: #0006; }
+dialog h2 { margin: 0; }
+.details { display: grid; gap: 4px; margin: 0; }
+.details dt { font-weight: 700; margin-top: 6px; }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+dialog select { width: 100%; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; position: sticky; bottom: calc(-1 * var(--dialog-pad)); margin: 0 calc(-1 * var(--dialog-pad)) calc(-1 * var(--dialog-pad)); padding: 12px var(--dialog-pad) var(--dialog-pad); min-height: var(--actions-height); background: #fff; border-top: 1px solid #dadce0; }
+.error { margin: 0; color: #a01818; font-size: .9rem; overflow-wrap: anywhere; }
+dialog input { width: 100%; }
+@media (max-width: 600px) { main { padding: 16px; } .filters { display: grid; } #tickets li { grid-template-columns: auto auto 1fr; } .ticket { grid-column: 1 / -1; } }

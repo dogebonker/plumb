@@ -5,7 +5,7 @@ How factory-ui-ux forms, anchors and ranks opinions. Sources: NN/g heuristic eva
 ## Order
 
 1. **Anchors.** The design file (principles, positions, words), the product gate's user, job and success metric, the constraints.
-2. **Mechanical facts.** The pass in SKILL.md step 2. Never re-judge them.
+2. **Mechanical facts.** Verify screenshots/metrics match the reviewed source revision or file hashes and cover baseline, brief minimum and breakpoint-transition widths. Missing/stale required evidence leaves acceptance pending. The pass in SKILL.md step 2. Never re-judge them.
 3. **Walk the primary job** on each rendered screen and viewport. At each step ask: will the user try to do this; will they see the control; will they recognize it as the way; will they know it worked. A "no" is a finding, labeled `predicted`: it is a model's prediction, not a user test.
 4. **Cut test** on every element: a candidate to cut when it has no action or explanation, duplicates another path, shows a status nobody defined, serves no job, has no evidence of demand, sits at a third level of disclosure, or is a screen with no new action.
 5. **Heuristics and WCAG** only for problems steps 3 and 4 did not explain.
@@ -23,7 +23,7 @@ The fix is the cheapest that works, in this order: delete, merge, make it a defa
 
 ## Severity and volume
 
-- `block`: the primary job fails a walkthrough step, a screen misstates the state of the work, a refusal of the design file is broken, or a WCAG A or AA criterion fails.
+- `block`: the primary job fails a walkthrough step, a screen misstates the state of the work, a refusal of the design file is broken, a required visual acceptance criterion fails, or a WCAG A or AA criterion fails. Required visual criteria do not become optional cosmetic follow-ups.
 - `fix`: anchored, costs time or errors on the main path, and has a check.
 - `note`: everything else.
 
@@ -36,3 +36,5 @@ An overruled finding is recorded and not raised again for that change. A rule ov
 ## The user's standing preferences
 
 The rules of [ui-hard-gate](../ui-hard-gate/SKILL.md), H1 to H22, apply everywhere as standing preferences; product-specific rules belong in that product's design file, which wins where it is more specific.
+
+During the walkthrough, inspect long titles and realistic content at breakpoint transitions: narrow text columns, unreadable line wrapping, clipped labels and hidden primary actions are primary-job failures even when there is no horizontal scrollbar. A metric hit is a candidate; confirm it on the rendered screen and record the criterion/evidence.

@@ -27,13 +27,29 @@ playwright:
   version: 1.63.0
   install: "npm i -D @playwright/test@1.63.0 && npx playwright install chromium (in the repository, with the user's agreement)"
   viewports: ["390x844", "768x1024", "1280x800"]
+  adaptive_widths: >-
+    require('$KIT/ui/render-checks.cjs').viewportWidths(concatenatedStylesheets,
+    {minimum: <brief minimum or 320>, baseline: [390,768,1280], rootFontSize: <media em/rem base or 16>});
+    includes each literal px/em/rem media width boundary just below/at/above;
+    inspect unresolved calc/var and container queries manually and add their actual transition widths
+  readability: "page.evaluate(require('$KIT/ui/render-checks.cjs').readabilityMetrics); retain candidates and confirm narrow long text/clipping on screen"
   schemes: [light, dark]
   capture: >-
     one script, kept in the run folder and run from the repository (where @playwright/test resolves), per route and
     viewport: reducedMotion 'reduce', full-page screenshot to $OUT/shots/,
     page.evaluate of $KIT/ui/slop-metrics.js to $OUT/dom-metrics.json, console errors and failed requests;
-    then page.route to force empty, failing (500) and slow responses for the route's data calls, with a
-    screenshot of each state
+    choose injections for the dependency actually used, not an automatic HTTP 500;
+    capture each relevant empty, failed and slow state. Keep screenshot/metrics manifest with source HEAD,
+    dirty diff and source hashes, route/state, viewport/scheme, renderer version and criterion IDs;
+    retain artifacts through review/reconcile and recapture after source changes
+  failure_injection:
+    http: "intercept actual data endpoints: empty payload, rejected/500 response, timeout; do not intercept unrelated assets"
+    browser_storage: >-
+      before application load, inject getItem failure, setItem QuotaExceededError, malformed or partially invalid
+      stored records; test acknowledged save/reload and sequential two-tab creation/update, including a stale
+      open dialog. Verify failed writes keep pending work and honest failure feedback; unreadable records
+      remain recoverable and are not overwritten by seeds. Use the application's actual storage key/schema.
+    other: "identify the persistence/data boundary and inject there; record a bounded gap if it cannot be exercised"
 
 axe:
   version: 4.13.0

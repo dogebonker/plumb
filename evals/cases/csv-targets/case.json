@@ -1,0 +1,6 @@
+{
+  "id": "csv-targets",
+  "track": "bugfix",
+  "description": "Repair deployment target CSV parsing while preserving validation.",
+  "verify": ["python3", "-m", "unittest", "discover", "-s", ".", "-p", "test*.py"]
+}

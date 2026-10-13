@@ -227,7 +227,7 @@ Range: {start}..{head}
 - After review fixes: no fixes
 - Red: each slice's test_commit failed on its new tests. Green: {head} passes test_command.
 
-## Polish
+## Review agents
 No findings.
 
 ## Lens reviewers

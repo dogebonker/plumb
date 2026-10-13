@@ -20,7 +20,7 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
 
 ## 1. Check the gate
 
-- Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Checking out the branch also leaves a detached HEAD from an interrupted red check.
+- Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Legacy detached RED state must be recovered to the recorded deliverable branch without discarding dirty work; new RED verification never detaches that checkout.
 - The milestone in progress is the one holding the first slice not `done`. When every one of its slices that is not `done` is `green`, go to step 7. Otherwise take its first slice that is neither `done` nor `green` and resume by its state:
   - `pending`: step 2, unless the slice's `packet.md` exists and its Written from line matches the current `doc_sha256` of the slices and interface gates; then step 3 with that packet.
   - `rewind`: rewind (below, cause `sent_back`), then step 2.
@@ -60,7 +60,7 @@ Set the slice to `{ state: building, base_commit: <git rev-parse HEAD> }`. Start
 >
 > Stop and report, with the reason, when: a frozen signature cannot work as written, a file outside Allowed files must change, a red-commit test is wrong, a pre-commit hook rejects the red commit, or a commit fails to sign. Never commit unsigned.
 >
-> Report: both commit shas, the tail of the failing run from step 1, the tail of the passing run from step 2, and anything you stopped on.
+> Wait for every child and return its native terminal identity in the step handoff (gates.md). A still-running executor is not a finished build. Report: both commit shas, the tail of the failing run from step 1, the tail of the passing run from step 2, and anything you stopped on.
 
 When the executor stops, append an `executor_stop` event with the reason. To continue the executor after an answer: apply the answer first (the deviation and packet entry, the `--no-verify` permission), then continue it, or dispatch a fresh one that keeps the work in the tree if it is gone. The reasons:
 
@@ -75,9 +75,9 @@ When the executor stops, append an `executor_stop` event with the reason. To con
 ## 4. Prove red
 
 1. Record `test_commit`: the sha of the `test(<slug>): slice NN red` commit. The test files are those listed in the packet's Tests first.
-2. `git checkout --detach <test_commit>`
-3. Run `test_file_command` once per test file (a feature file: the adapter's BDD run command), then `test_command`.
-4. `git checkout <branch>`
+2. When the module's test uses a fixed browser-check capability, require `red_test_command` in the status/packet. First write its fixed request with `python3 <kit>/runtime.py browser-red-request --repo <absolute repo> --commit <test_commit full 40-hex SHA> --checkpoint <slug>-NN-red-<attempt>`; the checkpoint token uses only letters, digits, underscore or hyphen and at most 64 characters. This writes `.software-factory/browser-red.json` with exactly `{"commit": "<SHA>", "checkpoint": "<token>"}` (no commands or paths). Then invoke the prepared `red_test_command` directly as one bare command, once: it runs every cloned `test*.cjs` including existing tests, returning actual exit, bounded summary and raw log path. Do not pass the live browser wrapper to `runtime.py red`: it ignores cwd and can test GREEN instead. A missing isolated browser capability is a bounded verification blocker, not RED proof.
+3. Otherwise keep the deliverable branch and pending edits in place. For each `test_file_command` (BDD: the adapter's feature run) and then `test_command`, invoke `python3 <kit>/runtime.py red --repo <absolute repo> --commit <test_commit> --checkpoint <absolute change>/slices/NN/red-check-<number>.json --timeout <test budget seconds> -- <command and arguments>`. The helper creates an ignored temporary local clone under the repository's `.software-factory/scratch/` (so standard Node dependency lookup reaches the existing root `node_modules`) with no push remote, checks out RED there and records the live GREEN head/branch plus the command and exit code; output is in the adjacent `.log`. No worktree permission is needed. Commands run with that verification clone as cwd; use its relative paths, never absolute source paths into the live checkout.
+4. Read the recorded log and compare each failure with Tests first; a nonzero command alone is not RED proof. For a fixed browser capability, copy the returned checkpoint JSON and its raw log into this slice's directory, record the copied log path alongside the original checkpoint, and return these exact artifact paths. The helper ignores its ephemeral request, scratch and runtime evidence through Git's local exclude file; the copied slice evidence ships with the committed change. Timeout, setup failure or interruption is inconclusive, never an assertion failure. The generic helper removes only its temporary verification clone; the deliverable Git/dirty/untracked state is retained. Rerun from the same test commit when interrupted.
 
 Red means: it builds; every new test fails, on an assertion or an error raised through a stub, except those in `red_exempt` (an undefined or pending step is not red: the red commit defines every step); and every other test passes except those in `baseline_failures`.
 
@@ -111,5 +111,5 @@ When the checks pass, set the slice to `green`.
 
 ## 7. Next
 
-- Headless mode: `git add .software-factory/changes/<slug>`, commit `chore(factory): slice NN built`, push, and stop; the runner starts the review.
+- Headless mode: `git add .software-factory/changes/<slug>`, commit `chore(factory): slice NN built`, push unless `FACTORY_RUNNER_MANAGED=1` (gates.md), and stop; the runner starts the review.
 - Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and report to the orchestrator (gates.md, Milestones and autopilot); with `--one-step`, tell the user the next skill and stop.

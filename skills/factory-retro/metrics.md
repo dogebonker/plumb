@@ -12,10 +12,25 @@ What `/factory-retro` measures for a change, and where each number comes from. N
 | M6 | Review findings per slice by tag and outcome; tags already seen in this repository's earlier changes | `slices/*/review.md` |
 | M7 | Whether the factory hook was installed | `~/.claude/settings.json`, and the repository's `.claude/settings.json` and `.claude/settings.local.json` |
 | M8 | Track proposed against track chosen | `track_proposed`, `track` |
+| M9 | Model calls and input/cache/output classes per stage; rework calls separately from initial work | Deduplicated provider message ids, step reports and benchmark progress; incomplete output is a lower bound |
+| M10 | Actual human review/correction minutes and follow-up rounds, alongside independent issues by severity | Human-recorded measurements and independent review; questions and scripted approvals are proxies, never minutes |
+| M11 | Context tools actually called, raw/returned/retrieved output sizes and additional retrieval turns | Tool-call ids and retained raw logs; enabled hooks alone do not establish compression savings |
 
 ## Token budgets
 
 Retro flags every step over its budget, with what filled it (the largest tool results, the number of turns). Tokens are counted the way the budgets were set: each turn's input, cache read, cache write and output, summed over the step agents' turns and their own sub-agents' turns, from Pond's sub-agent sessions found by the agent ids in `step_tokens` (whose usage totals are a cross-check). The orchestrator's count runs from its first `step_start` to reconcile's. The budgets are guesses from the first measured change, `tg-mini-app`, where build took 8.8M tokens and review 11.7M per slice in the main session, before the thin orchestrator. Once this repository has three changes of a track, the median of each step there replaces its guess.
+
+Normalize provider scope first: sum per-call deltas, difference successive cumulative
+returns of the same agent/session, and exclude children already included in a parent's
+rollup. Unknown classes remain unknown. Cache traffic is repeated model input, not
+unique new context or an invoice; report estimated cost separately when supplied.
+
+For a comparison with a measured baseline, also report the whole-change target and
+actual ratio under the same quality bar. A user's 30–50% premium target means 1.3–1.5
+times that baseline, not permission to skip tests or accept data loss. Diagnose excess
+through rework, call count, repeated reads and unnecessary repeated checks; individual
+stage budgets do not excuse an oversized total. Changes to verification reuse require
+matching trusted evidence, not merely a hash in an executor-writable file.
 
 | Step | Budget |
 | --- | --- |

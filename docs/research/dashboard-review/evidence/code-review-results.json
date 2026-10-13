@@ -1,0 +1,590 @@
+[
+  {
+    "candidate": "candidate-a",
+    "probe": "two-tab create then unrelated edit",
+    "beforeCount": 13,
+    "afterCount": 13,
+    "retainedNewTicket": true,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "two-tab sequential create",
+    "savedTitles": [
+      "First tab saved",
+      "Second tab saved"
+    ],
+    "ids": [
+      "T013",
+      "T014"
+    ],
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "same-ticket other-tab priority edit while dialog open",
+    "before": {
+      "id": "T002",
+      "title": "Export stalls at ninety percent",
+      "customer": "Northwind",
+      "status": "open",
+      "priority": "low",
+      "description": "The monthly CSV export never finishes."
+    },
+    "after": {
+      "id": "T002",
+      "title": "Export stalls at ninety percent",
+      "customer": "Northwind",
+      "status": "resolved",
+      "priority": "high",
+      "description": "The monthly CSV export never finishes."
+    },
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "setItem throws on create",
+    "before": {
+      "visible": 1,
+      "open": 0,
+      "stored": null
+    },
+    "afterCount": 12,
+    "visibleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "setItem throws on edit",
+    "before": "T002\nExport stalls at ninety percent\nNorthwind\nresolved\nlow",
+    "after": "T002\nExport stalls at ninety percent\nNorthwind\nopen\nhigh",
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "one malformed persisted record then unrelated save",
+    "fallbackCount": 12,
+    "beforeCount": 13,
+    "afterCount": 12,
+    "retainedNewTicket": false,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "double click Create at desktop",
+    "openDialogs": [],
+    "savedCount": 13,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "mobile invalid create dialog tab walk",
+    "ids": [
+      "create-title",
+      "create-customer",
+      "create-description",
+      "create-status",
+      "create-priority",
+      "create-submit",
+      "create-cancel"
+    ],
+    "focus": [
+      "create-customer",
+      "create-description",
+      "create-status",
+      "create-priority",
+      "create-submit",
+      "create-cancel",
+      "create-title",
+      "create-customer",
+      "create-description",
+      "create-status",
+      "create-priority",
+      "create-submit",
+      "create-cancel",
+      "create-title"
+    ],
+    "overflow": 0,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-a",
+    "probe": "intermediate widths",
+    "widths": [
+      {
+        "width": 601,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "t-id",
+            "width": 80,
+            "height": 18.1875,
+            "right": 117
+          },
+          {
+            "class": "t-title",
+            "width": 15,
+            "height": 492.59375,
+            "right": 144
+          },
+          {
+            "class": "t-customer",
+            "width": 176,
+            "height": 20.15625,
+            "right": 332
+          },
+          {
+            "class": "badge t-status",
+            "width": 48.328125,
+            "height": 22.1875,
+            "right": 392.328125
+          },
+          {
+            "class": "badge t-priority",
+            "width": 44.140625,
+            "height": 22.1875,
+            "right": 504.140625
+          }
+        ]
+      },
+      {
+        "width": 620,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "t-id",
+            "width": 80,
+            "height": 18.1875,
+            "right": 117
+          },
+          {
+            "class": "t-title",
+            "width": 34,
+            "height": 179.125,
+            "right": 163
+          },
+          {
+            "class": "t-customer",
+            "width": 176,
+            "height": 20.15625,
+            "right": 351
+          },
+          {
+            "class": "badge t-status",
+            "width": 48.328125,
+            "height": 22.1875,
+            "right": 411.328125
+          },
+          {
+            "class": "badge t-priority",
+            "width": 44.140625,
+            "height": 22.1875,
+            "right": 523.140625
+          }
+        ]
+      },
+      {
+        "width": 640,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "t-id",
+            "width": 80,
+            "height": 18.1875,
+            "right": 117
+          },
+          {
+            "class": "t-title",
+            "width": 54,
+            "height": 134.34375,
+            "right": 183
+          },
+          {
+            "class": "t-customer",
+            "width": 176,
+            "height": 20.15625,
+            "right": 371
+          },
+          {
+            "class": "badge t-status",
+            "width": 48.328125,
+            "height": 22.1875,
+            "right": 431.328125
+          },
+          {
+            "class": "badge t-priority",
+            "width": 44.140625,
+            "height": 22.1875,
+            "right": 543.140625
+          }
+        ]
+      },
+      {
+        "width": 768,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "t-id",
+            "width": 80,
+            "height": 18.1875,
+            "right": 117
+          },
+          {
+            "class": "t-title",
+            "width": 182,
+            "height": 44.78125,
+            "right": 311
+          },
+          {
+            "class": "t-customer",
+            "width": 176,
+            "height": 20.15625,
+            "right": 499
+          },
+          {
+            "class": "badge t-status",
+            "width": 48.328125,
+            "height": 22.1875,
+            "right": 559.328125
+          },
+          {
+            "class": "badge t-priority",
+            "width": 44.140625,
+            "height": 22.1875,
+            "right": 671.140625
+          }
+        ]
+      },
+      {
+        "width": 1280,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "t-id",
+            "width": 80,
+            "height": 18.1875,
+            "right": 207
+          },
+          {
+            "class": "t-title",
+            "width": 514,
+            "height": 22.390625,
+            "right": 733
+          },
+          {
+            "class": "t-customer",
+            "width": 176,
+            "height": 20.15625,
+            "right": 921
+          },
+          {
+            "class": "badge t-status",
+            "width": 48.328125,
+            "height": 22.1875,
+            "right": 981.328125
+          },
+          {
+            "class": "badge t-priority",
+            "width": 44.140625,
+            "height": 22.1875,
+            "right": 1093.140625
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "two-tab create then unrelated edit",
+    "beforeCount": 13,
+    "afterCount": 12,
+    "retainedNewTicket": false,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "two-tab sequential create",
+    "savedTitles": [
+      "Second tab saved"
+    ],
+    "ids": [
+      "T013"
+    ],
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "same-ticket other-tab priority edit while dialog open",
+    "before": {
+      "id": "T002",
+      "title": "Export stalls at ninety percent",
+      "customer": "Northwind",
+      "status": "open",
+      "priority": "low",
+      "description": "The monthly CSV export never finishes."
+    },
+    "after": {
+      "id": "T002",
+      "title": "Export stalls at ninety percent",
+      "customer": "Northwind",
+      "status": "resolved",
+      "priority": "high",
+      "description": "The monthly CSV export never finishes."
+    },
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "setItem throws on create",
+    "before": {
+      "visible": 1,
+      "open": 0,
+      "stored": null
+    },
+    "afterCount": 12,
+    "visibleErrors": [],
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "setItem throws on edit",
+    "before": "T002 Export stalls at ninety percent\nNorthwind\nresolved\nlow",
+    "after": "T002 Export stalls at ninety percent\nNorthwind\nopen\nhigh",
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "one malformed persisted record then unrelated save",
+    "fallbackCount": 12,
+    "beforeCount": 13,
+    "afterCount": 12,
+    "retainedNewTicket": false,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "double click Create at desktop",
+    "openDialogs": [],
+    "savedCount": 13,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "mobile invalid create dialog tab walk",
+    "ids": [
+      "new-title",
+      "new-customer",
+      "new-description",
+      "new-status",
+      "new-priority",
+      "",
+      "new-cancel"
+    ],
+    "focus": [
+      "new-customer",
+      "new-description",
+      "new-status",
+      "new-priority",
+      "Create ticket",
+      "new-cancel",
+      "new-title",
+      "new-customer",
+      "new-description",
+      "new-status",
+      "new-priority",
+      "Create ticket",
+      "new-cancel",
+      "new-title"
+    ],
+    "overflow": 0,
+    "pageErrors": []
+  },
+  {
+    "candidate": "candidate-b",
+    "probe": "intermediate widths",
+    "widths": [
+      {
+        "width": 601,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "ticket-id",
+            "width": 38.984375,
+            "height": 18,
+            "right": 75.984375
+          },
+          {
+            "class": "ticket-title",
+            "width": 221.21875,
+            "height": 20,
+            "right": 301.390625
+          },
+          {
+            "class": "ticket-customer",
+            "width": 405.5,
+            "height": 17,
+            "right": 442.5
+          },
+          {
+            "class": "badge status status-open",
+            "width": 54.828125,
+            "height": 24,
+            "right": 518.328125
+          },
+          {
+            "class": "badge priority priority-high",
+            "width": 50.671875,
+            "height": 24,
+            "right": 577
+          }
+        ]
+      },
+      {
+        "width": 620,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "ticket-id",
+            "width": 38.984375,
+            "height": 18,
+            "right": 75.984375
+          },
+          {
+            "class": "ticket-title",
+            "width": 221.21875,
+            "height": 20,
+            "right": 301.390625
+          },
+          {
+            "class": "ticket-customer",
+            "width": 424.5,
+            "height": 17,
+            "right": 461.5
+          },
+          {
+            "class": "badge status status-open",
+            "width": 54.828125,
+            "height": 24,
+            "right": 537.328125
+          },
+          {
+            "class": "badge priority priority-high",
+            "width": 50.671875,
+            "height": 24,
+            "right": 596
+          }
+        ]
+      },
+      {
+        "width": 640,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "ticket-id",
+            "width": 38.984375,
+            "height": 18,
+            "right": 75.984375
+          },
+          {
+            "class": "ticket-title",
+            "width": 221.21875,
+            "height": 20,
+            "right": 301.390625
+          },
+          {
+            "class": "ticket-customer",
+            "width": 444.5,
+            "height": 17,
+            "right": 481.5
+          },
+          {
+            "class": "badge status status-open",
+            "width": 54.828125,
+            "height": 24,
+            "right": 557.328125
+          },
+          {
+            "class": "badge priority priority-high",
+            "width": 50.671875,
+            "height": 24,
+            "right": 616
+          }
+        ]
+      },
+      {
+        "width": 768,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "ticket-id",
+            "width": 38.984375,
+            "height": 18,
+            "right": 75.984375
+          },
+          {
+            "class": "ticket-title",
+            "width": 221.21875,
+            "height": 20,
+            "right": 301.390625
+          },
+          {
+            "class": "ticket-customer",
+            "width": 572.5,
+            "height": 17,
+            "right": 609.5
+          },
+          {
+            "class": "badge status status-open",
+            "width": 54.828125,
+            "height": 24,
+            "right": 685.328125
+          },
+          {
+            "class": "badge priority priority-high",
+            "width": 50.671875,
+            "height": 24,
+            "right": 744
+          }
+        ]
+      },
+      {
+        "width": 1280,
+        "overflow": 0,
+        "spans": [
+          {
+            "class": "ticket-id",
+            "width": 38.984375,
+            "height": 18,
+            "right": 165.984375
+          },
+          {
+            "class": "ticket-title",
+            "width": 221.21875,
+            "height": 20,
+            "right": 391.390625
+          },
+          {
+            "class": "ticket-customer",
+            "width": 904.5,
+            "height": 17,
+            "right": 1031.5
+          },
+          {
+            "class": "badge status status-open",
+            "width": 54.828125,
+            "height": 24,
+            "right": 1107.328125
+          },
+          {
+            "class": "badge priority priority-high",
+            "width": 50.671875,
+            "height": 24,
+            "right": 1166
+          }
+        ]
+      }
+    ],
+    "pageErrors": []
+  }
+]
