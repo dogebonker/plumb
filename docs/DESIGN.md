@@ -15,7 +15,7 @@ The complete specification of the factory. The README explains the why; this doc
 
 | Layer | Where it lives | Shared across projects | How it gets there |
 | --- | --- | --- | --- |
-| Factory skills and kit | `~/.software-factory/framework/<commit>/`: `skills/` and `kit/` of one commit of this repository | Yes | Unpacked once per machine or server per commit; each project pins its commit in `.software-factory/factory.lock` and links the skills |
+| Factory skills and kit | `~/.software-factory/framework/<commit>/`: `skills/`, `kit/`, `hooks/` and `bin/` of one commit of this repository | Yes | Unpacked once per machine or server per commit; each project pins its commit in `.software-factory/factory.lock` and links the skills |
 | User layer | `~/.software-factory/user/`: `principles.md`, and `config.yaml` with `framework_repo` | Yes | Taste across projects; the project's `principles.md` wins over it |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
 | Third-party packs | Installed under `~/.agents/skills/`, pinned by hash in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Bumped deliberately, changelog reviewed |

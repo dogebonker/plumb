@@ -4,7 +4,7 @@ The factory skills land here, built in roadmap order. Each follows the open Agen
 
 ## Install
 
-`/factory-init` links the skills of the project's framework commit into the project and writes its lock. By hand, from the repository root, with that commit installed in the framework cache ([kit/](../kit/README.md)):
+`bin/factory-install <ref>` installs a factory commit into the framework cache, once per machine; `/factory-init` then links that commit's skills into the project, writes its lock and migrates an old `.factory/` with `bin/factory-migrate`. By hand, from the repository root, with that commit installed in the framework cache ([kit/](../kit/README.md)):
 
 ```bash
 [ -L ~/.software-factory ] && rm ~/.software-factory   # the old link to kit/: the cache and the user layer must not write into the factory repository
@@ -15,6 +15,8 @@ x="$(git rev-parse --git-path info/exclude)"; for p in ".claude/skills/factory-*
 { echo "framework: { commit: $c, installed: $(date +%F) }"; sed -n '/^packs:/,$p' $f/kit/packs.lock.yaml; echo "skills_linked: [.claude/skills]"; } > .software-factory/factory.lock
 ```
 
+Self-checks: `python3 bin/test_factory_install.py`, `python3 bin/test_factory_migrate.py`.
+
 The links are machine-specific, so `.claude/skills/factory-*` and `.claude/skills/ui-hard-gate` stay out of git through `.git/info/exclude`, and a project's own skills there are unaffected: review's committed-source check and rewind's `git clean` would otherwise trip over them or delete them. To develop the factory, link from a checkout's `skills/` instead and write `framework: { dev_path: <that checkout> }` (gates.md, Paths).
 
 The skills read the kit as `<kit>`, the framework cache's `kit/` for that commit, and the project's state under `.software-factory/` ([gates.md](factory-shared/gates.md), Paths).
@@ -23,7 +25,7 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
 
 ## Hard gates
 
-`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.software-factory/` and the root `DESIGN.md` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. Add it to `~/.claude/settings.json`:
+`hooks/factory_gate.py` is a Claude Code `PreToolUse` hook. On a branch with an active factory change it blocks edits to files outside `.software-factory/` and the root `DESIGN.md` while a gate is unapproved, after an approved gate document changed, or outside the current slice's Allowed files and logged deviations. It also blocks them while an active change's `factory.lock` is missing or names no framework, and whenever `.factory/changes/` holds a change that is not reconciled, whatever `.software-factory/` already holds: run `/factory-init` to migrate that branch, local or remote. Edits under `.factory/` and `.software-factory/` stay open so init can run. `/factory-init` offers to add it to the project's `.claude/settings.local.json`, run from the locked framework (`<framework>` is `~/.software-factory/framework/<commit>` or the `dev_path`); by hand:
 
 ```json
 {
@@ -31,7 +33,7 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
     "PreToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit|NotebookEdit",
-        "hooks": [{ "type": "command", "command": "python3 <factory repo>/hooks/factory_gate.py" }]
+        "hooks": [{ "type": "command", "command": "python3 <framework>/hooks/factory_gate.py" }]
       }
     ]
   }
@@ -60,7 +62,7 @@ python3 runner/factory_run.py <clone> --approvers alice,bob
 - Gate approvals are also GitHub pull-request approvals: protect the default branch with "dismiss stale approvals" so an early `approve product` cannot merge later code.
 - Approvers come only from `--approvers`. The login `gh` runs as on the server never counts, even when listed, so give the runner its own GitHub account.
 - Gates skipped in the change's first commit stay skipped only when an approver's `start` review covers that commit; any other `skipped` gate is reset to pending.
-- The server needs the framework cache installed for the commit in each change's `.software-factory/factory.lock` (`~/.software-factory/framework/<commit>/`, [kit/](../kit/README.md)), or the checkout its `dev_path` names; the runner skips a change whose lock or cache is missing. Link the skills user-level, into `~/.claude/skills/`, from that cache commit (or `dev_path`): a project's links are untracked, so the throwaway clone has none, and `--setting-sources user` may skip project skills anyway. One server therefore runs one framework commit at a time. It also needs `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
+- The operator installs each framework commit the server may run with `bin/factory-install <commit>` (`~/.software-factory/framework/<commit>/`, [kit/](../kit/README.md)). The lock comes from the change's branch, which the harness can write, so it only selects among installed commits: the runner skips a change whose lock is missing, names a `dev_path`, or names anything but a full 40-hex commit installed on the server. Link the skills user-level, into `~/.claude/skills/`, from that cache commit: a project's links are untracked, so the throwaway clone has none, and `--setting-sources user` may skip project skills anyway. One server therefore runs one framework commit at a time. It also needs `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
 - Interactive triage creates the change and its pull request; the runner takes over from there.
 - The hard-gate hook guards the harness's editing tools only. Headless enforcement rests on the runner resetting what no approval backs.
 
@@ -74,6 +76,8 @@ Self-check: `python3 runner/test_factory_run.py`.
 
 | Skill | Roadmap step | Purpose |
 | --- | --- | --- |
+| `factory-init` | S14 | Sets a repository up: detects the harness, stack and CI, installs and locks a framework commit (or a `dev_path`), migrates `.factory/`, writes `factory.lock` and `principles.md`, links the skills, offers the hard-gate hook and the user layer's principles |
+| `factory-upgrade` | S14 | Moves the lock to another framework commit or `dev_path`: the log and decisions in between, the install, new pins, relinked skills |
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check, mechanical checks per slice, a milestone's slices back to back |
 | `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), `/polish` with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes applied, regression proofs, human sign-off, once per milestone |

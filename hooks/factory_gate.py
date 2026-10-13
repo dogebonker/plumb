@@ -112,9 +112,31 @@ def check(change, status, rel):
 
 def find_changes(start):
     for folder in [start, *start.parents]:
-        if (folder / ".software-factory" / "changes").is_dir():
+        if (folder / ".software-factory" / "changes").is_dir() or (folder / ".factory" / "changes").is_dir():
             return folder
     return None
+
+
+def lock_problem(root):
+    """The skills' Resolve <kit> refusal for a missing or empty lock; the cache itself is not checked per edit."""
+    lock = root / ".software-factory" / "factory.lock"
+    if not lock.is_file():
+        return "no .software-factory/factory.lock. Run /factory-init."
+    lines = re.findall(r"^framework:(.*)$", lock.read_text(errors="replace"), re.MULTILINE)
+    if len(lines) != 1 or not (field(lines[0], "commit") or field(lines[0], "dev_path")):
+        return ".software-factory/factory.lock names no framework commit or dev_path. Run /factory-init."
+    return None
+
+
+def legacy_active(root):
+    """True when .factory/changes holds a change that is not reconciled: the repository still needs /factory-init."""
+    for status_file in (root / ".factory" / "changes").glob("*/status.yaml"):
+        try:
+            if parse_status(status_file.read_text())["scalars"].get("reconciled") != "true":
+                return True
+        except Exception:  # noqa: BLE001 - unreadable legacy state stays closed
+            return True
+    return False
 
 
 def main():
@@ -142,6 +164,12 @@ def main():
         rel = path.resolve().relative_to(root).as_posix()
     except ValueError:
         return 0
+    # Decided before any .software-factory logic: a lock, runs/ or another change there must not open the gate.
+    if legacy_active(root):
+        if rel.startswith((".factory/", ".software-factory/")):
+            return 0
+        print("factory gate: this repository still uses .factory/; run /factory-init to migrate it", file=sys.stderr)
+        return 2
     changes = root / ".software-factory" / "changes"
     if rel.startswith(".software-factory/") or rel == "DESIGN.md" or not changes.is_dir():
         return 0
@@ -153,7 +181,7 @@ def main():
                 continue
             if status["scalars"].get("reconciled") == "true":
                 continue
-            reason = check(status_file.parent, status, rel)
+            reason = lock_problem(root) or check(status_file.parent, status, rel)
         except Exception as e:  # noqa: BLE001 - an active change with unreadable state stays closed
             reason = f"cannot read the change's state ({type(e).__name__}: {e}). Fix {status_file.relative_to(root)}."
         if reason:

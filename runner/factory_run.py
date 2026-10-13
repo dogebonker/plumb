@@ -10,11 +10,14 @@ in a dedicated clone:
     python3 runner/factory_run.py <clone> --approvers alice,bob
 
 Changes are read from .software-factory/changes/*/status.yaml. The harness's clone
-reads the kit and skills from the framework cache, so the runner host must have
-~/.software-factory/framework/<commit>/ (or the lock's dev_path) installed for each
-change's .software-factory/factory.lock, with its skills linked user-level: project
-links are untracked, so the clone has none. The runner does not install it; it skips
-a change whose lock or framework is missing.
+reads the kit and skills from the framework cache, so the operator of a runner host
+runs bin/factory-install <commit> for each commit a change's .software-factory/factory.lock
+names, into ~/.software-factory/framework/<commit>/, and links its skills user-level:
+project links are untracked, so the clone has none. The runner never installs. The lock
+comes from the branch, which the harness controls, so it only selects among the commits
+installed here: the runner skips a change whose lock is missing, names a dev_path, or
+names anything but a full 40-hex commit installed on this host (kit/, skills/ and
+hooks/ present), and reports a branch that still keeps its changes in .factory/.
 
 Approver reviews in state APPROVED, first line:
     start                                          the runner may work on this change
@@ -148,16 +151,33 @@ def missing_framework(repo, ref, change):
     """Why this host cannot run the framework the change's factory.lock names at ref, or None when it can."""
     lock = f"{Path(change).parent.parent}/factory.lock"
     try:
-        line = re.search(r"^framework:(.*)$", run(repo, "git", "show", f"{ref}:{lock}"), re.MULTILINE)
+        lines = re.findall(r"^framework:(.*)$", run(repo, "git", "show", f"{ref}:{lock}"), re.MULTILINE)
     except RuntimeError:
         return f"no {lock}; run /factory-init in the project"
-    commit, dev_path = (field(line.group(1), "commit"), field(line.group(1), "dev_path")) if line else (None, None)
+    if len(lines) > 1:
+        return f"{lock} has {len(lines)} framework lines; expected 1"
+    # The lock comes from the branch, which the harness controls: it only selects among commits installed here.
+    commit, dev_path = (field(lines[0], "commit"), field(lines[0], "dev_path")) if lines else (None, None)
     if dev_path:
-        return None if Path(dev_path).is_dir() else f"dev_path {dev_path} from {lock} is missing on this host"
-    if not commit or not re.fullmatch(r"[0-9a-f]{7,40}", commit):
-        return f"{lock} names no framework commit or dev_path"
-    if not (FRAMEWORK / commit).is_dir():
+        return f"{lock} names a dev_path; headless runs only a pinned framework commit"
+    if not commit or not SHA.fullmatch(commit):
+        return f"{lock} names no full 40-hex framework commit"
+    if not all((FRAMEWORK / commit / part).is_dir() for part in ("kit", "skills", "hooks")):  # as bin/factory-install
         return f"framework {commit[:12]} from {lock} is not installed in {FRAMEWORK}"
+    return None
+
+
+def unmigrated(repo, ref):
+    """True when ref's tree still keeps its changes in .factory/ and has no .software-factory/changes."""
+    def has(path):
+        return run(repo, "git", "ls-tree", ref, "--", path).split()[1:2] == ["tree"]
+    return has(".factory/changes") and not has(".software-factory/changes")
+
+
+def home_problem():
+    home = os.environ.get("HOME", "")
+    if not os.path.isabs(home) or Path(home).resolve() == Path("/"):
+        return f"HOME is {home!r}; the framework cache needs an absolute HOME other than /"
     return None
 
 
@@ -423,6 +443,9 @@ def main():
     parser.add_argument("--timeout", type=int, default=3600, help="seconds per skill run")
     parser.add_argument("--setup", help="command run in the harness's fresh clone first, e.g. 'npm ci'")
     args = parser.parse_args()
+    if home_problem():
+        print(home_problem(), file=sys.stderr)
+        return 1
     repo = args.repo.resolve()
     approvers = {a.strip().lower() for a in args.approvers.split(",") if a.strip()}
     approvers.discard(run(repo, "gh", "api", "user", "--jq", ".login").strip().lower())  # the harness's own login
@@ -440,6 +463,9 @@ def main():
         for ref in refs:
             branch = ref.removeprefix("origin/")
             if not BRANCH.match(branch):
+                continue
+            if unmigrated(repo, ref):
+                print(f"{branch}: still uses .factory/; run /factory-init", file=sys.stderr)
                 continue
             names = run(repo, "git", "ls-tree", "-r", "--name-only", ref, ".software-factory/changes/").split()
             own = [n for n in names if re.fullmatch(r"\.software-factory/changes/[^/]+/status\.yaml", n)

@@ -8,18 +8,13 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ## TL;DR
 
-1. Install a factory commit into the framework cache, link its skills into the repository you want to change, and write its `.software-factory/factory.lock` (details: [kit/README.md](kit/README.md), [skills/README.md](skills/README.md)). From that repository's root:
+1. Once per machine, install a factory commit into the framework cache and link the two setup skills for your user:
    ```bash
-   [ -L ~/.software-factory ] && rm ~/.software-factory   # the old link to kit/
-   c=$(git -C ~/Work/software-factory rev-parse HEAD); f=~/.software-factory/framework/$c
-   mkdir -p $f ~/.software-factory/user .software-factory .claude/skills "$(git rev-parse --git-path info)"
-   git -C ~/Work/software-factory archive $c kit skills | tar -x -C $f
-   ln -s $f/skills/factory-* $f/skills/ui-hard-gate .claude/skills/
-   x="$(git rev-parse --git-path info/exclude)"; for p in ".claude/skills/factory-*" .claude/skills/ui-hard-gate; do grep -qxF "$p" "$x" || echo "$p" >> "$x"; done
-   { echo "framework: { commit: $c, installed: $(date +%F) }"; sed -n '/^packs:/,$p' $f/kit/packs.lock.yaml; echo "skills_linked: [.claude/skills]"; } > .software-factory/factory.lock
+   ~/Work/software-factory/bin/factory-install HEAD
+   ln -sf ~/Work/software-factory/skills/factory-init ~/Work/software-factory/skills/factory-upgrade ~/.claude/skills/
    ```
-   Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill.
-2. In the repository you want to change, start with `/factory-triage <the task in plain words>`.
+   Review also needs the [`polish`](https://github.com/tenequm/skills/tree/main/skills/polish) skill. To set a project up by hand instead, see [kit/README.md](kit/README.md) and [skills/README.md](skills/README.md).
+2. In the repository you want to change, run `/factory-init`: it locks the framework commit, migrates an old `.factory/`, links the skills and offers the hard-gate hook. Then start with `/factory-triage <the task in plain words>`.
 3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`, stopping only for your answers and sign-offs.
 4. You approve every gate and sign off every milestone. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
@@ -290,7 +285,7 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 The factory is moving from one person's kit to a framework that runs per project, on more than one harness, and proves each stage with evals. The order is evals first, so every later change shows whether it kept or lowered each stage's score. Decision 31 in [docs/DECISIONS.md](docs/DECISIONS.md) records the direction; the research behind each step is linked.
 
 - **S13: evals, first cut.** [Harbor](https://github.com/laude-institute/harbor) runs fixture repositories in Docker on Claude Code, Codex and Cursor. Script graders score closed answers: a track, a `Pattern:` id, a finding's file and line. A fake `gh` plays the user through headless mode. The first cases cover the layout checkers, review recall and precision, a real red, acceptance and the research firewall, then two end-to-end features measured with retro's metrics. Research: [docs/research/evals-selection.md](docs/research/evals-selection.md).
-- **S14: one `.software-factory/` per project.** The repository's living documents and changes move under it, beside a lockfile for the framework version and pack pins, the project's config and principles, and its own eval cases. A user layer carries taste across projects, and the project wins. `/factory-init` detects the stack, harness, CI and tools; `/factory-upgrade` makes a version bump deliberate.
+- **S14: one `.software-factory/` per project.** The repository's living documents and changes move under it, beside a lockfile for the framework version and pack pins and the project's principles; there is no project config file, and `evals/` is reserved for the project's own eval cases, with nothing yet creating or reading it. A user layer carries taste across projects, and the project wins. `/factory-init` detects the harness, manifests and CI; `/factory-upgrade` makes a version bump deliberate.
 - **S15: harness adapters.** One adapter each for Claude Code, Codex CLI and Cursor; skills name neutral operations, and the hard gate works per harness with a changed-files check in the runner behind it. Research: [docs/research/harness-adapters.md](docs/research/harness-adapters.md).
 - **S16: a Slack channel.** A Slack app the runner owns mirrors questions into one thread per change, counts only replies from mapped approvers, and wakes the runner on events. Approvals stay on the pull request, the only record of approval tied to a verified person and a commit. Research: [docs/research/chat-channels.md](docs/research/chat-channels.md).
 

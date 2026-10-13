@@ -37,6 +37,8 @@ with tempfile.TemporaryDirectory() as tmp:
     pending_product = [("product", "pending", "null"), *approved[1:]]
     building = "slices:\n  - { id: 1, name: tracer, state: building, base_commit: abc }"
     st = change / "status.yaml"
+    lock = root / ".software-factory" / "factory.lock"
+    lock.write_text("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n")
 
     # Gate documents are always editable; source edits wait for every gate.
     st.write_text(status(pending_product))
@@ -111,5 +113,79 @@ with tempfile.TemporaryDirectory() as tmp:
     assert run(root, "src/z.ts").returncode == 2
     st.write_text(done + "reconciled: true\n")
     assert run(root, "src/z.ts").returncode == 0
+
+    # An active change needs a lock that names a framework, as the skills' Resolve <kit> does.
+    st.write_text(status(approved, slices=building))
+    assert run(root, "src/a.ts").returncode == 0
+    lock.write_text("packs: {}\n")
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and "names no framework commit or dev_path" in r.stderr, r.stderr
+    lock.unlink()
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and "no .software-factory/factory.lock" in r.stderr, r.stderr
+    assert run(root, ".software-factory/factory.lock").returncode == 0
+
+# A repository with an unreconciled change in .factory/ is closed to source edits until /factory-init migrates
+# it, whatever .software-factory/ already holds; .factory/ and .software-factory/ stay editable so init can run.
+LEGACY = "still uses .factory/; run /factory-init"
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    subprocess.run(["git", "init", "-q", "-b", "factory/demo", str(root)], check=True)
+    legacy = root / ".factory" / "changes" / "demo" / "status.yaml"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("branch: factory/demo\nreconciled: false\n")
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and LEGACY in r.stderr, r.stderr
+    assert run(root, ".factory/changes/demo/status.yaml").returncode == 0
+    assert run(root, ".software-factory/factory.lock").returncode == 0
+    sf = root / ".software-factory"
+    states = [("only the lock", sf / "factory.lock", "framework: { commit: " + "a" * 40 + " }\n"),
+              ("only runs/", sf / "runs" / "ui" / "shot.png", "png"),
+              ("another change", sf / "changes" / "other" / "status.yaml",
+               status([(g, "skipped", "null") for g, _ in GATES]))]
+    for name, path, text in states:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+        r = run(root, "src/a.ts")
+        assert r.returncode == 2 and LEGACY in r.stderr, (name, r.stderr)
+    # Every .factory change reconciled: the repository is not blocked for them.
+    legacy.write_text("branch: factory/demo\nreconciled: true\n")
+    assert LEGACY not in run(root, "src/a.ts").stderr
+
+# An ignored run folder left in .factory/ by a checkout does not count as a legacy change: the migrated branch's
+# own change gates as usual.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+
+    def g(*args):
+        subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
+                        "-c", "commit.gpgsign=false", *args], check=True, capture_output=True)
+
+    g("init", "-q", "-b", "main")
+    (root / ".git" / "info" / "exclude").write_text(".factory/ui/\n")
+    (root / ".factory" / "changes" / "demo").mkdir(parents=True)
+    (root / ".factory" / "changes" / "demo" / "status.yaml").write_text("branch: main\n")
+    (root / ".factory" / "ui").mkdir()
+    (root / ".factory" / "ui" / "shot.png").write_text("png")
+    g("add", ".")
+    g("commit", "-qm", "legacy")
+    g("checkout", "-q", "-b", "factory/demo")
+    g("rm", "-rq", ".factory")
+    change = root / ".software-factory" / "changes" / "demo"
+    change.mkdir(parents=True)
+    (change / "status.yaml").write_text(status([("product", "pending", "null")] + [(gate, "pending", "null") for gate, _ in GATES[1:]]))
+    (root / ".software-factory" / "factory.lock").write_text("framework: { commit: " + "a" * 40 + " }\n")
+    g("add", ".")
+    g("commit", "-qm", "migrated")
+    assert (root / ".factory" / "ui" / "shot.png").exists() and not (root / ".factory" / "changes").exists()
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and "product gate" in r.stderr and LEGACY not in r.stderr, r.stderr
+    g("checkout", "-q", "main")  # the legacy branch itself is closed again
+    assert LEGACY in run(root, "src/a.ts").stderr
+
+    # A lock with two framework lines names no single framework.
+    g("checkout", "-q", "factory/demo")
+    (root / ".software-factory" / "factory.lock").write_text("framework: { commit: " + "a" * 40 + " }\nframework: { dev_path: /x }\n")
+    assert "names no framework commit" in run(root, "src/a.ts").stderr
 
 print("factory_gate: all checks passed")

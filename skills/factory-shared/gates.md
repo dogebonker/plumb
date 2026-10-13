@@ -5,7 +5,7 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 ## Paths
 
 - `<project>` is the `.software-factory` folder at the repository root: `system/` (living documents), `changes/` (one folder per change), `runs/ci/`, `runs/ui/`, `runs/security/` and `runs/prune/` (run outputs), `factory.lock`, `principles.md` (the project's principles and quiet rules) and `evals/` (the project's own eval cases).
-- The framework cache is `~/.software-factory/framework/<commit>/`: `kit/` and `skills/` of one factory commit, unpacked once per machine. Projects never edit it.
+- The framework cache is `~/.software-factory/framework/<commit>/`: `kit/`, `skills/`, `hooks/` and `bin/` of one factory commit, unpacked once per machine by `bin/factory-install` in the factory repository. Projects never edit it.
 - `<kit>` is `~/.software-factory/framework/<commit>/kit`, where `<commit>` is `framework.commit` in `<project>/factory.lock`, or `<dev_path>/kit` when the lock names a `dev_path` (Resolve `<kit>`, below).
 - The user layer is `~/.software-factory/user/`: `principles.md`, the user's taste across projects, and `config.yaml`, whose `framework_repo:` is the local clone of the factory repository, used to show the log between two framework commits (Load a change) and by `/factory-packs` to bump the framework's pins.
 - **Principle layers.** Principles and quiet rules load in three layers: `<kit>/principles.md` (framework defaults), then `~/.software-factory/user/principles.md`, then `<project>/principles.md`; a missing file is skipped. A later layer wins on the same `<lens>/<rule>`: a project Principle whose Source is a `<lens>/<rule>` that a lower layer lists under Quiet rules takes that rule out of Quiet rules. Money and security rules never go quiet in any layer: rules from a `fin-*` pack, and rules that guard authentication, authorization, secrets, injection, cross-site attacks or path traversal.
@@ -24,7 +24,7 @@ To develop the factory itself, `framework` may instead be `{ dev_path: <absolute
 
 1. `framework.commit: <sha>`: `<kit>` is `~/.software-factory/framework/<sha>/kit`, the skills folder is `~/.software-factory/framework/<sha>/skills/`, and `<running>` is `<sha>`.
 2. `framework.dev_path: <path>`: `<kit>` is `<path>/kit`, the skills folder is `<path>/skills/`, and `<running>` is `git -C <path> rev-parse HEAD`.
-3. No `factory.lock`, no cache folder for its commit, or no `dev_path` folder: say which, point to `/factory-init`, and stop.
+3. A branch that still has `.factory/` and no `.software-factory/`: say "this branch still uses .factory/; run /factory-init to migrate it", and stop. No `factory.lock`, no cache folder for its commit, or no `dev_path` folder: say which, point to `/factory-init`, and stop.
 4. The `realpath` of this gates.md, as you opened it, must be inside the `realpath` of that skills folder. Otherwise name the commit or path actually running (the folder that holds its `skills/`) and stop: the linked skills are not the locked framework.
 
 ## The chain

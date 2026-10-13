@@ -56,7 +56,7 @@ Ask in one message:
 - whether the change touches UI, and whether the design file exists
 - the lens profile with a one-line reason, the modules with language, language pack, BDD state and any dev command and URL, linter rules and check tools the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - only when `.software-factory/system/constraints.md` does not exist: the closest domain in `<kit>/nfr-catalog/` and its rows, for the user to keep, drop or tune.
-- whether `.software-factory/` is committed in this repository or ignored (only when `.software-factory/changes/` holds no change yet; otherwise reuse the mode of an existing `status.yaml`)
+- whether `.software-factory/` is committed in this repository or ignored, only when nothing has settled it yet: reuse the mode of an existing `status.yaml`, else committed when `git ls-files .software-factory` lists files and ignored when `git check-ignore -q .software-factory/` succeeds, as `/factory-init` left it
 
 - the mode: `interactive` (this chat) or `headless` (the runner drives it through a pull request; who approves is configured on the runner)
 
@@ -66,7 +66,7 @@ Done when the user has answered all of them.
 
 1. The working tree must be clean apart from `.software-factory/`. If it is not, list the changes and ask the user to commit or stash them. When `git config commit.gpgsign` is `true`, check that signing works: `git commit-tree -S -m probe $(git hash-object -t tree /dev/null)`. On failure, ask the user to unlock their signing agent before going on: the executor and the gates commit throughout the change.
 2. Record `change_base_commit` = `git rev-parse HEAD`. On the default branch, create `factory/<slug>`. On any other branch, ask whether to work there or create `factory/<slug>`; a headless change always uses `factory/<slug>`, where the runner finds it.
-3. Ignored mode: append `.software-factory/` to `.git/info/exclude`, so the repository's own files stay untouched.
+3. Ignored mode: append `.software-factory/` to `.git/info/exclude` when `git check-ignore -q .software-factory/` fails, so the repository's own files stay untouched.
 4. Write `.software-factory/system/lenses.yaml` with the confirmed values:
 
 ```yaml

@@ -10,12 +10,14 @@ from factory_run import (
     approver_reviews,
     command,
     created_commits,
+    home_problem,
     missing_framework,
     new_head_trusted,
     only_factory,
     next_skill,
     parse_status,
     triage_skips,
+    unmigrated,
     verify,
 )
 
@@ -261,16 +263,24 @@ with tempfile.TemporaryDirectory() as tmp:
         git("commit", "-qm", path)
         assert not only_factory(repo, before, git("rev-parse", "HEAD")), path
 
-    # The harness runs only when this host has the framework the change's lock names.
+    # The harness runs only when the lock names a full commit installed on this host; the branch, which the
+    # harness controls, never brings its own framework (dev_path) or a short or non-hex commit.
     installed = repo / "framework"
-    (installed / ("a" * 40)).mkdir(parents=True)
+    for part in ("kit", "skills", "hooks"):
+        (installed / ("a" * 40) / part).mkdir(parents=True)
+    (installed / ("c" * 40) / "kit").mkdir(parents=True)  # incomplete: no skills/ or hooks/
     with patch.object(factory_run, "FRAMEWORK", installed):
         for lock, missing in [(None, "no .software-factory/factory.lock"),
+                              ("framework: { commit: " + "c" * 40 + " }\n", "is not installed"),
+                              ("framework: { commit: " + "a" * 40 + " }\nframework: { dev_path: /x }\n",
+                               "has 2 framework lines"),
                               ("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n", None),
                               ("framework: { commit: " + "b" * 40 + ", installed: 2026-10-13 }\n", "is not installed"),
-                              ("framework: { commit: ../.., installed: 2026-10-13 }\n", "names no framework commit"),
-                              (f"framework: {{ dev_path: {repo} }}\n", None),
-                              (f"framework: {{ dev_path: {repo}/gone }}\n", "is missing on this host")]:
+                              ("framework: { commit: ../.., installed: 2026-10-13 }\n", "no full 40-hex"),
+                              ("framework: { commit: aaaaaaa, installed: 2026-10-13 }\n", "no full 40-hex"),
+                              ("framework: { commit: " + "g" * 40 + ", installed: 2026-10-13 }\n", "no full 40-hex"),
+                              (f"framework: {{ dev_path: {repo} }}\n", "names a dev_path"),
+                              (f"framework: {{ dev_path: {repo}/gone }}\n", "names a dev_path")]:
             if lock is None:
                 git("rm", "-q", ".software-factory/factory.lock")
             else:
@@ -279,6 +289,20 @@ with tempfile.TemporaryDirectory() as tmp:
             git("commit", "-qm", "lock", "--allow-empty")
             reason = missing_framework(repo, "HEAD", change)
             assert (reason is None) if missing is None else (missing in (reason or "")), (lock, reason)
+
+    # A branch whose changes are still in .factory/ is reported, not skipped silently.
+    assert not unmigrated(repo, "HEAD")
+    (repo / ".factory/changes/old").mkdir(parents=True)
+    (repo / ".factory/changes/old/status.yaml").write_text("branch: factory/old\n")
+    git("add", ".factory")
+    git("rm", "-rq", "--cached", ".software-factory/changes")
+    git("commit", "-qm", "legacy")
+    assert unmigrated(repo, "HEAD")
+
+# The cache lives under HOME, so HOME must be absolute and not /.
+for home, ok in [("/", False), ("relative", False), ("", False), ("/Users/someone", True)]:
+    with patch.dict("os.environ", {"HOME": home}):
+        assert (home_problem() is None) == ok, home
 
 # Recording approvals must pass the pushed head to the harness and use that head for trust checks.
 with tempfile.TemporaryDirectory() as tmp:
@@ -304,7 +328,8 @@ with tempfile.TemporaryDirectory() as tmp:
     git("add", ".")
     git("commit", "-qm", "triage")
     git("push", "-u", "origin", "factory/demo")
-    (Path(tmp) / "framework" / ("a" * 40)).mkdir(parents=True)
+    for part in ("kit", "skills", "hooks"):
+        (Path(tmp) / "framework" / ("a" * 40) / part).mkdir(parents=True)
     before = git("rev-parse", "HEAD")
     start = {"login": "alice", "state": "APPROVED", "body": "start", "commit": before,
              "at": "2026-10-10T10:00:00Z"}
