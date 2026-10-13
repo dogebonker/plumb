@@ -73,7 +73,7 @@ Prove the signatures compile against the real code, using `<kit>/adapters/<langu
 2. Set `stubbing: true` in `status.yaml`, so the factory hook lets the stubs through. Write every module's signatures as stubs in their real files, in the adapter's stub form, with any `mod` lines or exports they need.
 3. Run the adapter's typecheck. An error in a stub or its imports is a signature problem: fix the draft (with the user when the fix changes a signature's meaning) and repeat. An error from the environment (dependencies not installed, missing toolchain), or a stub file the adapter's typecheck does not cover, leaves the module unchecked: tell the user why.
 4. Fill each module's Cost line by counting in the stubs. A pass-through method forwards to another method with nearly the same signature.
-5. Undo the stubs: `git restore --worktree -- . ':!.software-factory'`, then delete every untracked file that was not in the list from step 1. Set `stubbing: false`.
+5. Undo the stubs: `git restore --worktree -- . ':!.software-factory' ':!.factory'`, then delete every untracked file that was not in the list from step 1. Set `stubbing: false`.
 
 Done when every module type-checks or is reported unchecked with its reason, every Cost line is filled, and `git status --short` matches step 1.
 

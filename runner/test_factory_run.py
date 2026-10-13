@@ -262,6 +262,16 @@ with tempfile.TemporaryDirectory() as tmp:
         git("add", path)
         git("commit", "-qm", path)
         assert not only_factory(repo, before, git("rev-parse", "HEAD")), path
+    # A migration commit deletes .factory/: that is planning state, not source, so a sign-off made before
+    # migrating still covers the slice.
+    (repo / ".factory" / "changes").mkdir(parents=True)
+    (repo / ".factory" / "changes" / "old.md").write_text("legacy planning\n")
+    git("add", ".factory")
+    git("commit", "-qm", "legacy")
+    before = git("rev-parse", "HEAD")
+    git("rm", "-q", "-r", ".factory")
+    git("commit", "-qm", "migrate")
+    assert only_factory(repo, before, git("rev-parse", "HEAD"))
 
     # The harness runs only when the lock names a full commit installed on this host; the branch, which the
     # harness controls, never brings its own framework (dev_path) or a short or non-hex commit.

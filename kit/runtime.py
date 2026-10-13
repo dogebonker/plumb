@@ -44,7 +44,7 @@ def validate_handoff(repo, report, slug, task_id, agent_id, slice_id, expected_s
     if report['state'] == 'completed':
         if any(c['state'] != 'completed' for c in children):
             raise ValueError('completed step has unresolved child questions or blockers')
-        if git(repo, 'status', '--porcelain', '--', '.', ':!.software-factory'):
+        if git(repo, 'status', '--porcelain', '--', '.', ':!.software-factory', ':!.factory'):
             raise ValueError('completed step has dirty or untracked source')
         rows = re.findall(r'^\s*-\s*\{([^}\n]+)\}', text, re.MULTILINE)
         rows = [r for r in rows if re.search(r'\bid:\s*[\"\']?0*' + str(int(slice_id)) + r'\b', r)]
@@ -56,7 +56,7 @@ def validate_handoff(repo, report, slug, task_id, agent_id, slice_id, expected_s
                 if not match:
                     raise ValueError('completed slice lacks a committed RED/GREEN checkpoint')
                 git(repo, 'merge-base', '--is-ancestor', match[1], 'HEAD')
-                if name == 'head_commit' and git(repo, 'diff', '--name-only', match[1], 'HEAD', '--', '.', ':!.software-factory'):
+                if name == 'head_commit' and git(repo, 'diff', '--name-only', match[1], 'HEAD', '--', '.', ':!.software-factory', ':!.factory'):
                     raise ValueError('slice proof does not cover the current committed source')
     artifacts = report.get('artifacts')
     if not isinstance(artifacts, list) or not artifacts:

@@ -262,7 +262,7 @@ def settings(work, paths, arm, out, browser=False, browser_command=None, red_com
                         "excludedCommands": [str(command) for command in [browser_command, red_command] if command],
                         "filesystem": {"allowWrite": [str(work)], "denyWrite": [str(ROOT), str(out),
                                                               *([str(Path(browser_command).parent)] if browser_command else [])],
-                                       "denyRead": [str(path) for path in protected] + [
+                                       "denyRead": [str(path) for path in protected] + [str(Path.home() / ".software-factory"), 
                                                     str(Path.home() / ".agents" / "skills"), str(Path.home() / ".claude" / "skills")]},
                         "network": {"allowedDomains": ["127.0.0.1", "localhost"] if browser else [],
                                     "allowLocalBinding": browser, "strictAllowlist": True}}}

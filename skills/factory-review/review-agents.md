@@ -15,7 +15,7 @@ Phase 2 of [SKILL.md](SKILL.md): four read-only review agents over the milestone
 
 ## 1. Prepare the diff
 
-1. Write `git diff <base>..HEAD -- . ':!.software-factory'` to `<tmp>/diff.patch` and list its files with `git diff --name-only <base>..HEAD -- . ':!.software-factory'`.
+1. Write `git diff <base>..HEAD -- . ':!.software-factory' ':!.factory'` to `<tmp>/diff.patch` and list its files with `git diff --name-only <base>..HEAD -- . ':!.software-factory' ':!.factory'`.
 2. Leave out lockfiles and generated files (`Cargo.lock`, `pnpm-lock.yaml`, `package-lock.json`, `uv.lock`, `*.snap`, generated bindings). Every other listed file is a reviewable file.
 3. Run `check_command`, when it is set. Each failure in a reviewable file is a cleanliness finding.
 4. Read each reviewable file in full.

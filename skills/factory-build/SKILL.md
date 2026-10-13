@@ -30,8 +30,8 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
 
 **Rewind** undoes a slice's code without touching `.software-factory/` or rewriting history, and appends a `rewind` event with its cause (gates.md, History):
 
-1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.software-factory'`, and ask the user to confirm.
-2. `git restore --source=<base_commit> --staged --worktree -- . ':!.software-factory'` then `git clean -fd -- . ':!.software-factory'`.
+1. Show `git log --oneline <base_commit>..HEAD`, `git status --short` and `git clean -nd -- . ':!.software-factory' ':!.factory'`, and ask the user to confirm.
+2. `git restore --source=<base_commit> --staged --worktree -- . ':!.software-factory' ':!.factory'` then `git clean -fd -- . ':!.software-factory' ':!.factory'`.
 3. If anything is staged, commit it as `revert(<slug>): slice NN`.
 4. Set the slice to `{ state: pending, base_commit: null, test_commit: null, head_commit: null }`, and every later slice that is not `done` too: the restore removed their code as well.
 

@@ -6,14 +6,14 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | --- | --- | --- |
 | 1 | Four gates from Dex Horthy's talk, plus a research step | Accepted |
 | 2 | Skills plus files, not a platform | Accepted |
-| 3 | Decisions in files, recall in Pond | Accepted, amended by 32 |
+| 3 | Decisions in files, recall in Pond | Accepted, amended by 33 |
 | 4 | Hard gates tied to a document hash | Accepted |
 | 5 | A constraints registry that must map to enforcement | Accepted |
 | 6 | Tracks that scale process to risk | Accepted |
 | 7 | One handoff packet per slice | Accepted |
 | 8 | Design-book lenses, chosen by profile | Accepted |
 | 9 | APoSD as the spine of Interface Design | Accepted |
-| 10 | A fair challenge panel with calibration | Accepted, amended by 32 |
+| 10 | A fair challenge panel with calibration | Accepted, amended by 33 |
 | 11 | No design-it-twice step | Accepted |
 | 12 | Review built on `/polish` | Superseded by 32 |
 | 13 | A converging multi-round reviewer | Rejected |
@@ -36,7 +36,7 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
 | 31 | A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel | Accepted (planned) |
 | 32 | Review agents owned by factory-review, with a defect rubric and file coverage | Accepted |
-| 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted, on branch s14-per-project until merged |
+| 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted |
 
 ---
 

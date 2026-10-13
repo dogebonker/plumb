@@ -144,7 +144,9 @@ def set_slice_state(text, sid, state):
 
 def only_factory(repo, older, newer):
     changed = run(repo, "git", "diff", "--no-renames", "--name-only", older, newer).split()
-    return all(path.startswith(".software-factory/") and path not in NOT_PLANNING for path in changed)
+    # .factory/ is a pre-migration planning folder: its deletion in a migration commit is not source.
+    return all((path.startswith(".software-factory/") and path not in NOT_PLANNING) or path.startswith(".factory/")
+               for path in changed)
 
 
 def missing_framework(repo, ref, change):
