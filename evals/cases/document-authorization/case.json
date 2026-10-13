@@ -1,0 +1,6 @@
+{
+  "id": "document-authorization",
+  "track": "security-compatibility",
+  "description": "Enforce document ownership without revealing document existence or breaking admin access.",
+  "verify": ["python3", "-m", "unittest", "discover", "-s", ".", "-p", "test*.py"]
+}

@@ -1,0 +1,28 @@
+{
+  "candidate-a": {
+    "arm": "factory-context-finished",
+    "files": {
+      "index.html": "ed85ff630951ab42d05ca595c873397e35cb4ecca9dc1eae1df03013a5d72e86",
+      "styles.css": "5bac587b3c09a64f5b048a3c9ed3cac82a047304cbc798ea15aec578a3afb83b",
+      "test_store.cjs": "42a6ed44e86b08246ec431ec5a46f5e43218e33f29f9220bfe5ea55c77b64afa",
+      "test_dashboard.cjs": "219f473262cf1861d74495ba7c7650071f0165e1cfb3d433150f6d119abaeaa6",
+      "tickets.js": "fdf3a85704a071ad61ae11b2f673d9c9ba77d94a8fcada9d349cade169e1ffa4",
+      "store.js": "8c589b2cf62b16c833e7b6bc7108b725e19abda274c17861f2bf2dfdada8522a",
+      "test_review.cjs": "f9c6935849afceeb8c461ce0a22cf62724d84861a3c2cbe51cfc6453f2a9caa8",
+      "app.js": "e9ebf909d1b64b40753c1e588b98104c428ab7edc752c7cef263c42467c53a0a",
+      "test_existing.cjs": "0c2cb12124f1c90ae7d9e5bc583e2d39ceb53d9fe6e089a386e32ebd8510416e",
+      "test_screens.cjs": "82c6a517cdea290f35e7353edce61442d0adfafa30930ce71fde51005bd742c4"
+    }
+  },
+  "candidate-b": {
+    "arm": "superpowers",
+    "files": {
+      "index.html": "957422cf92820b9d8bf62f99e3061467021853592d11d77a769d46878e841821",
+      "styles.css": "c7e2006d5c1e8763ee871da84084601c54d0fd86b7843c73f9da20368b0d8ffd",
+      "test_dashboard.cjs": "3eed6a9b5e9304f07a94799f071f4375031cf005cb98062be0c7964e0c4e61b4",
+      "tickets.js": "fdf3a85704a071ad61ae11b2f673d9c9ba77d94a8fcada9d349cade169e1ffa4",
+      "app.js": "b8d9e2a7e684588cdc6f104f0a94e0113ce24db59c9f4add9800d4ea3bc45118",
+      "test_existing.cjs": "0c2cb12124f1c90ae7d9e5bc583e2d39ceb53d9fe6e089a386e32ebd8510416e"
+    }
+  }
+}

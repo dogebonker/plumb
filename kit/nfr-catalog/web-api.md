@@ -1,6 +1,6 @@
 # NFR catalog: web API and SaaS backend
 
-Default promises for a service that answers HTTP requests for many users or tenants. Triage offers these rows when a project's registry is created; the user keeps the ones that apply, and they become `SYS-NFR-NN` rows. Budgets are starting points: tune them per project.
+Default promises for a service that answers HTTP requests for many users or tenants. Triage offers relevant rows when a project's registry is created or a capability changes; the user keeps the ones that apply, and they become `SYS-NFR-NN` rows. Budgets are starting points: tune them per project.
 
 | Key | Promise | Default fit criterion | Enforced by | Question to ask |
 | --- | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ Default promises for a service that answers HTTP requests for many users or tena
 | health | The platform can tell a broken instance from a busy one | liveness and readiness endpoints that check real dependencies | test | What should take an instance out of rotation? |
 | capacity | The service holds up at peak | sustains twice the measured peak rps at the latency budget in a load test | human-verified | What is today's peak, and the next year's? |
 | read-your-writes | Users see their own changes immediately | a read after a user's own write returns that write | test | Where do replicas or caches serve reads after writes, and how far can they lag? |
-| durability | An acknowledged write is never lost | writes are acknowledged only after durable commit | test | Which writes are acknowledged before they are durable? |
+| durability | An acknowledged write is never lost | writes are acknowledged only after durable commit; failure, recovery and concurrent-write sequences preserve acknowledged data | test | What counts as acknowledged and durable, what survives a failed write or unreadable data, and can a stale writer lose another writer’s change? See [stateful-data.md](stateful-data.md). |
 | background-jobs | Work queued for later always finishes or is visible as failed | jobs are idempotent, retried with backoff, and land in a dead-letter queue after the last attempt | test | What happens to a job whose worker dies halfway? |
 | deploys | Releasing never interrupts users | zero-downtime deploys; any release rolls back in under 10 minutes | human-verified | How long does a rollback take today, and who can run it? |
 | shutdown | Restarts never drop requests | on SIGTERM the instance stops taking traffic and finishes in-flight requests within the grace period | test | What is the platform's grace period, and the longest request? |

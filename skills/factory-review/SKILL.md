@@ -69,6 +69,9 @@ A frozen-contract difference sends its slice back, as gates.md describes.
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness: each test under a packet's Tests first asserts the outcome its line names, and for an FR the outcome of its Example in Covers; a test that only calls the code, or only checks that it does not throw, is a finding tagged `[factory/example-asserted]`
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
+
+   Before invoking polish, perform one bounded missing-outcome pass over the milestone’s user-visible behavior: at most three reproducible violations of the product Problem, Success metric, agreed persistence decisions or standing promises. Each records the goal/promise quoted, concrete initial state and event sequence, expected and actual user outcome, changed code location, and reproduction evidence. Do not invent a requirement ID. Data loss or a false “saved” message is not downgraded merely because its precise scenario is absent from Covers. Record these separately as `[factory/missing-outcome]` held findings; a scenario already covered by an ID remains an ordinary conformance finding. Within-contract fixes follow the existing Allowed files and regression-test rules. An omitted promise or changed frozen contract is proposed for correction at sign-off and uses the existing send-back path after the user decides; never rewrite approved contracts or Tests first silently.
+
 4. Invoke the `polish` skill with the bare sha `<base>` as its argument. When polish ends, clean or not, go on to step 5.
 
    Headless mode: polish's report is the question. Write its findings and the lens cards to `slices/<last>/proposed.md`, then wait for the user (gates.md), asking for the numbers to fix (`fix 1 3`, or `fix none`). The run that receives the reply applies those fixes from `proposed.md`, continues at step 6, and deletes `proposed.md` once `review.md` is written.
@@ -97,6 +100,9 @@ Range: <base>..<head>
 ## Lens reviewers
 <each card, with its outcome: `fix` or `skip` (the user's answer, a held card included), `auto-fixed`, `auto-skipped` (a note), `undone`, or `stale`; "not run" with the reason when a reviewer did not apply>
 
+## Missing outcomes
+<at most three held `[factory/missing-outcome]` findings with goal/promise, reproduction, evidence and proposed contract correction; none when no violation reproduced>
+
 ## Follow-ups
 <out-of-diff findings>
 
@@ -106,7 +112,7 @@ Range: <base>..<head>
 
 ## 5. Human sign-off
 
-Ask the user to read `git diff <base>..<head> -- . ':!.factory'` and `review.md`. In the same question, list each fix applied without asking, numbered, and each held finding or card with fix or skip. The user may name fixes to undo: undo them, with any test those fixes added, in one commit `fix(<slug>): milestone M undo <numbers>`, record it as the `head_commit` of `<last>`, mark them `undone` in `review.md`, rerun Phase 1 and ask again. A held item the user answers fix sends its slice back when it changes a frozen signature. Otherwise, when it touches a file outside the Allowed files, first log `{ slice, file, reason: "review finding N, user approved" }` in `deviations` and append the file to that slice's packet; then apply it as in step 3. Only after an explicit sign-off in chat: fill the Sign-off line and set every slice of the milestone to `done`.
+Ask the user to read `git diff <base>..<head> -- . ':!.factory'` and `review.md`. In the same question, list each fix applied without asking, numbered, and each held finding or card with fix or skip. The user may name fixes to undo: undo them, with any test those fixes added, in one commit `fix(<slug>): milestone M undo <numbers>`, record it as the `head_commit` of `<last>`, mark them `undone` in `review.md`, rerun Phase 1 and ask again. A held missing-outcome item the user answers fix sends the change back to product when the promise or example was omitted, architecture when the agreed strategy cannot meet it, or interface when a frozen signature must change (track small: slices). Use the existing send-back invalidation and stop; no sign-off while that correction is unresolved. A held item the user answers fix sends its slice back when it changes a frozen signature. Otherwise, when it touches a file outside the Allowed files, first log `{ slice, file, reason: "review finding N, user approved" }` in `deviations` and append the file to that slice's packet; then apply it as in step 3. Only after an explicit sign-off in chat: fill the Sign-off line and set every slice of the milestone to `done`.
 
 Headless mode: commit and push `review.md`, then wait for the user (gates.md) with the comment "Slice NN reviewed: `review.md`. Sign off with a pull-request review whose first line is `sign off slice NN`." The runner records the sign-off.
 

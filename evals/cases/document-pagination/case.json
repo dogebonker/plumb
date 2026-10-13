@@ -1,0 +1,6 @@
+{
+  "id": "document-pagination",
+  "track": "feature",
+  "description": "Add owner-filtered cursor pagination to a document catalog.",
+  "verify": ["python3", "-m", "unittest", "discover", "-s", ".", "-p", "test*.py"]
+}

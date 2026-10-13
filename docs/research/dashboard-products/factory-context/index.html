@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support tickets</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="tickets.js" defer></script>
+  <script src="store.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Support tickets</h1>
+    <div class="filters">
+      <label>Search tickets <input id="search" type="search"></label>
+      <label>Status filter <select id="status-filter" aria-label="Status filter"><option value="">All statuses</option><option>open</option><option>pending</option><option>resolved</option></select></label>
+      <label>Priority filter <select id="priority-filter" aria-label="Priority filter"><option value="">All priorities</option><option>low</option><option>medium</option><option>high</option></select></label>
+      <button id="reset" type="button">Reset filters</button>
+      <button id="new-ticket" type="button">New ticket</button>
+    </div>
+    <p id="result-count" role="status">12 tickets</p>
+    <ul id="tickets"></ul>
+    <p id="empty-state" hidden>No tickets match your filters.</p>
+  </main>
+  <dialog id="details" aria-labelledby="details-heading">
+    <form method="dialog" id="details-form">
+      <h2 id="details-heading">Ticket details</h2>
+      <p id="details-title"></p>
+      <p id="details-customer"></p>
+      <p id="details-description"></p>
+      <label for="details-status">Status</label>
+      <select id="details-status" name="status"><option>open</option><option>pending</option><option>resolved</option></select>
+      <label for="details-priority">Priority</label>
+      <select id="details-priority" name="priority"><option>low</option><option>medium</option><option>high</option></select>
+      <div class="actions">
+        <button type="submit" id="details-save" class="primary">Save changes</button>
+        <button type="button" id="details-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

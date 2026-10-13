@@ -1,0 +1,54 @@
+feature: support-ticket-dashboard
+task: "Complete the seeded support-ticket dashboard: search, filters, details editing, ticket creation, local-storage persistence, accessible dialogs, responsive to 360px"
+track: standard
+track_proposed: standard
+factory_dir: committed
+branch: factory/support-ticket-dashboard
+change_base_commit: 1942efc8cd19284bad0708aa09e87fd96fc22788
+factory_commit: unknown
+test_command: "/private/tmp/fb-neamoi0s/browser-check/browser-check"
+test_file_command: "node {file}"
+check_command: ""
+baseline_failures: []
+gates:
+  product:      { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T01:10:00Z, doc_sha256: f2eb0eb3eeb9a3fa98186346cf085b7db52b1dc77c73cba916de6c349cf93a44 }
+  architecture: { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T01:25:00Z, doc_sha256: aea5af380cbc7ae7cca58d96ecd2d1c4589abd8e71f06060596c35d5dfdb40a2 }
+  interface:    { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T02:00:00Z, doc_sha256: 1beada6addd868a7b96847b6dccfd3c5508387fce307c7baf8b688afc9f04c54 }
+  slices:       { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T02:40:00Z, doc_sha256: c76bed07883e0b17c6c4023b7c1c1832c6a1fc0a9e88e5a4955679e1c770847e }
+slices:
+  - { id: 1, name: tracer-list-and-filters, milestone: 1, state: green, base_commit: 354ee7c6777bb040392372939348bf1a94f0a6db, test_commit: 673e3b7, head_commit: 2649387, red_exempt: ["first visit lists the twelve seeded tickets"] }
+  - { id: 2, name: ticket-details, milestone: 2, state: green, base_commit: f006d08ba785fcdb84fffb2ce0706d09d6cb9973, test_commit: 177e698, head_commit: f3a9160 }
+  - { id: 3, name: new-ticket, milestone: 2, state: green, base_commit: 7f0211614c6f45727e5f41e87cbd05bf89bf83ca, test_commit: 7f0211614c6f45727e5f41e87cbd05bf89bf83ca, head_commit: 4b66b4a52158905395ccf0f73888a22a90332448 }
+  - { id: 4, name: hierarchy-360-names, milestone: 2, state: green, base_commit: 8bc1ee596e055aa3b2188dd717a72c68113e2caa, test_commit: fb34e4c, head_commit: 3cc2f41, red_exempt: ["at 360x740 the page has no horizontal overflow and dialog controls are inside the viewport", "status and priority are shown as words in the row", "every stable name from the task is found by role and name", "no source file contains a remote URL"] }
+sent_back: null
+stubbing: false
+ui: true
+reconciled: false
+mode: interactive
+waiting_since: null
+deviations:
+  - { slice: 4, file: test_review.cjs, reason: "regression test for finding 1 and 2" }
+  - { slice: 4, file: test_screens.cjs, reason: "screenshot script added after green; not in the packet's Allowed files, admitted by the operator's instruction (packet 'Optional screenshots'); writes PNGs to .tmp/shots only and asserts only that files were written" }
+pond_sessions: []
+notes_for_fresh_session: "Milestone 2 reviewed, fix commit 3cc2f41, review.md in slices/04 waiting for human sign-off (slices stay green until signed off). Next: user answers the sign-off question, then slices 2-4 go done and /factory-reconcile support-ticket-dashboard."
+history:
+  - { at: 2026-10-13T00:55:00Z, step: factory-triage, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:05:00Z, step: factory-product, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:12:00Z, step: factory-architecture, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:40:00Z, step: factory-interface, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T01:50:00Z, step: factory-interface, event: panel_round, ref: "1", detail: "round 1, 5 cards" }
+  - { at: 2026-10-13T02:05:00Z, step: factory-slices, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T02:20:00Z, step: factory-build, event: step_start, ref: "01", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T02:30:00Z, step: factory-build, event: executor_stop, ref: "01", detail: "test" }
+  - { at: 2026-10-13T02:31:00Z, step: factory-build, event: sent_back, ref: "01", detail: "slices: red test wrong (cross-realm seed in test_store.cjs loadSeed), plus a new test passes against the stub" }
+  - { at: 2026-10-13T02:41:00Z, step: factory-slices, event: step_start, ref: "-", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, factory unknown" }
+  - { at: 2026-10-13T02:43:00Z, step: factory-build, event: rewind, ref: "01", detail: "sent_back" }
+  - { at: 2026-10-13T02:45:00Z, step: factory-build, event: step_start, ref: "01", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T03:00:00Z, step: factory-build, event: step_start, ref: "02", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T03:20:00Z, step: factory-build, event: step_start, ref: "03", detail: "session 1744be4b-996e-4915-ba2a-ad1fca461d57, step agent, factory unknown" }
+  - { at: 2026-10-13T03:40:00Z, step: factory-build, event: step_start, ref: "03", detail: "session 48337e4d-7bf3-4560-b847-fe449ceaa261, step agent, factory unknown" }
+  - { at: 2026-10-13T03:45:00Z, step: factory-build, event: recovered_verify, ref: "03", detail: "recovered RED 7f02116 fails the 5 create tests (12 pass); head passes 17/17 store and 35/35 browser-check; original commits unavailable, fresh verification" }
+  - { at: 2026-10-13T03:50:00Z, step: factory-build, event: step_start, ref: "04", detail: "session 48337e4d-7bf3-4560-b847-fe449ceaa261, step agent, factory unknown" }
+  - { at: 2026-10-13T04:05:00Z, step: factory-build, event: recovered_verify, ref: "04", detail: "red fb34e4c fails 4 new tests (39 pass); head d661d5c passes 45/45 incl. 17 store; slice 01/02 historical git objects unavailable, not recreated" }
+  - { at: 2026-10-13T04:30:00Z, step: factory-review, event: step_start, ref: "M2", detail: "session 48337e4d-7bf3-4560-b847-fe449ceaa261, step agent, factory unknown" }
+  - { at: 2026-10-13T04:45:00Z, step: factory-review, event: review_fix, ref: "M2", detail: "fix 3cc2f41: focus first invalid field, filter control height; 47/47 green; slice 01/02 git objects unavailable, range starts at recovered 7f02116; awaiting sign-off" }

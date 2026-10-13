@@ -1,0 +1,46 @@
+feature: support-ticket-dashboard
+task: "Complete the seeded support-ticket dashboard: list, search/filters, details edit, new-ticket dialog, localStorage persistence, keyboard and 360px accessibility"
+track: standard
+track_proposed: standard
+factory_dir: committed
+branch: factory/support-ticket-dashboard
+change_base_commit: 34e0d9d1b2b997c8b41cc57aa68e740d14dedc5a
+factory_commit: "unknown (kit snapshot, not a git repo)"
+test_command: "node test_existing.cjs"
+test_file_command: "node {file}"
+check_command: "none"
+baseline_failures: []
+gates:
+  product:      { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T00:05:00Z, doc_sha256: e0aef890815fc0432ca4db87fc80ad235ad6b33d967a19dece62d8b81927da50 }
+  architecture: { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T00:15:00Z, doc_sha256: 1a7f2f1d119b228e1c276ac7f35e1ec0817d44d278021c8e2371cb840fae8431 }
+  interface:    { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T00:35:00Z, doc_sha256: 0ed380ffd64107cc0d2dd2b93c1cb1fe6fc13555ce623b12aadbd009d8716995 }
+  slices:       { state: approved, approved_by: Benchmark, approved_at: 2026-10-13T00:45:00Z, doc_sha256: f66478ef306a0eb9b78e18a69fda9708a8b0acae143023f51d68afd03de450fb }
+slices:
+  - { id: 1, name: tracer-list-from-store, milestone: 1, state: done, base_commit: 1aacda467e4c1597aaf46e5234084c365c233812, test_commit: 29fdf6b, head_commit: db4736139efcc99d5d4c1b8004f14f3a4769c22d, red_exempt: ["the result count reads 12 tickets", "makes no request outside 127.0.0.1", "exposes the frozen STATUSES and PRIORITIES", "the seeded records are the twelve T001..T012 in order (FR-02)"] }
+  - { id: 2, name: find-tickets, milestone: 2, state: green, base_commit: a4ea64fa724b888c323a1b388f3159020f40f5ec, test_commit: eff60bd, head_commit: 282bfc9 }
+  - { id: 3, name: inspect-and-edit, milestone: 2, state: building, base_commit: 282bfc9779f62087aff373eef2ba62ec7c5f11af, test_commit: null, head_commit: null }
+  - { id: 4, name: create-ticket, milestone: 3, state: pending, base_commit: null, test_commit: null, head_commit: null }
+  - { id: 5, name: honest-storage-and-layout, milestone: 3, state: pending, base_commit: null, test_commit: null, head_commit: null }
+sent_back: null
+stubbing: false
+ui: true
+reconciled: false
+mode: interactive
+waiting_since: null
+deviations: []
+pond_sessions: []
+notes_for_fresh_session: "Slice 02 green. Next: /factory-build support-ticket-dashboard. Carry to slices 04/05 from slices/01/review.md Follow-ups: reject a stored empty array (slice 04 or 05) and the DESIGN.md typography (slice 05)."
+history:
+  - { at: 2026-10-12T23:55:00Z, step: factory-triage, event: step_start, ref: "-", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, factory unknown" }
+  - { at: 2026-10-12T23:59:00Z, step: factory-triage, event: baseline_corrected, ref: "-", detail: "browser-check wrapper ran exactly; test_existing.cjs passes, baseline_failures empty" }
+  - { at: 2026-10-13T00:00:00Z, step: factory-product, event: step_start, ref: "-", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, factory unknown (kit not a git repo, version check skipped)" }
+  - { at: 2026-10-13T00:10:00Z, step: factory-architecture, event: step_start, ref: "-", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, factory unknown" }
+  - { at: 2026-10-13T00:20:00Z, step: factory-interface, event: step_start, ref: "-", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, factory unknown" }
+  - { at: 2026-10-13T00:25:00Z, step: factory-interface, event: panel_round, ref: "-", detail: "round 1, 5 cards" }
+  - { at: 2026-10-13T00:40:00Z, step: factory-slices, event: step_start, ref: "-", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, factory unknown" }
+  - { at: 2026-10-13T00:50:00Z, step: factory-build, event: step_start, ref: "01", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, step agent, factory unknown" }
+  - { at: 2026-10-13T00:58:00Z, step: factory-build, event: executor_stop, ref: "01", detail: "passes-on-stub: 4 new tests pass against the stub (2 test_dashboard, 2 test_store); waiting for user to keep or rewrite" }
+  - { at: 2026-10-13T01:10:00Z, step: factory-build, event: step_tokens, ref: "01", detail: "agents a978558943f4a604d, usage 150109" }
+  - { at: 2026-10-13T01:15:00Z, step: factory-review, event: step_start, ref: "M1", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, step agent, factory unknown" }
+  - { at: 2026-10-13T01:40:00Z, step: factory-build, event: step_start, ref: "02", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, step agent, factory unknown" }
+  - { at: 2026-10-13T02:00:00Z, step: factory-build, event: step_start, ref: "03", detail: "session 9a9a0f22-27f1-4ecc-85df-df1ed8f8dced, step agent, factory unknown" }

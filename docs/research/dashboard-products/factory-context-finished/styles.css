@@ -1,0 +1,64 @@
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #202124; background: white; line-height: 1.4; }
+main { max-width: 1100px; margin: auto; padding: 24px; }
+h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+.muted { color: #5b6068; }
+input, select, textarea, button { font: inherit; max-width: 100%; }
+input, select, textarea { padding: 8px; min-width: 0; border: 1px solid #6b7280; border-radius: 4px; background: white; color: inherit; }
+button { cursor: pointer; min-height: 40px; padding: 8px 14px; background: white; color: inherit; border: 1px solid #6b7280; border-radius: 4px; }
+button:hover { background: #f3f5f8; }
+.primary { background: #245ac5; color: white; border-color: #245ac5; font-weight: 600; }
+.primary:hover { background: #1d4aa2; }
+:focus-visible { outline: 3px solid #245ac5; outline-offset: 2px; }
+[aria-invalid="true"] { border-color: #a01818; }
+
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: end; }
+.filters label { display: grid; gap: 4px; font-size: .875rem; color: #5b6068; }
+.filters input, .filters select { width: 100%; height: 2.5rem; font-size: 1rem; color: #202124; }
+#result-count { margin: 14px 0 8px; font-size: .875rem; }
+
+.columns, .ticket { display: grid; grid-template-columns: 5rem minmax(0, 1fr) 11rem 6.5rem 6.5rem; column-gap: 12px; align-items: center; }
+.columns { padding: 6px 12px; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: #5b6068; background: #f3f5f8; border: 1px solid #c4c7cc; border-radius: 6px 6px 0 0; }
+#tickets { list-style: none; margin: 0; padding: 0; border: 1px solid #c4c7cc; border-top: 0; border-radius: 0 0 6px 6px; overflow: hidden; }
+#tickets li + li { border-top: 1px solid #e1e3e6; }
+.ticket { width: 100%; min-height: 0; padding: 8px 12px; text-align: left; border: 0; border-radius: 0; background: white; }
+.ticket:hover { background: #f3f5f8; }
+.ticket:focus-visible { outline-offset: -3px; }
+.ticket span { overflow-wrap: anywhere; }
+.t-id, .id { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .8125rem; color: #5b6068; }
+.t-title { font-size: 1rem; font-weight: 600; }
+.t-customer { font-size: .9rem; font-weight: 400; }
+.badge { justify-self: start; padding: 1px 8px; font-size: .8125rem; font-weight: 400; border: 1px solid #9aa0a6; border-radius: 4px; background: #f3f5f8; }
+#empty-state { margin: 0; padding: 24px; text-align: center; color: #5b6068; border: 1px dashed #9aa0a6; border-radius: 6px; }
+
+dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: 20px; border: 1px solid #6b7280; border-radius: 8px; color: inherit; }
+dialog::backdrop { background: #0006; }
+dialog form { display: grid; gap: 8px; }
+dialog h2 { margin: 0 0 4px; font-size: 1.25rem; }
+dialog p { margin: 0; overflow-wrap: anywhere; }
+dialog label { font-size: .875rem; font-weight: 600; margin-top: 4px; }
+dialog input, dialog select, dialog textarea { width: 100%; }
+dialog textarea { min-height: 90px; resize: vertical; }
+.badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+dl { display: grid; gap: 2px; margin: 4px 0 8px; }
+dt { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: #5b6068; margin-top: 8px; }
+dd { margin: 0; overflow-wrap: anywhere; }
+#details-title { font-weight: 600; }
+.error { margin: 0; color: #a01818; font-size: .875rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+@media (max-width: 600px) {
+  main { padding: 16px; }
+  .columns { display: none; }
+  .filters { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .filters label:first-child, .filters button { grid-column: 1 / -1; }
+  #tickets { border-top: 1px solid #c4c7cc; border-radius: 6px; }
+  .ticket { grid-template-columns: 4.5rem minmax(0, 1fr) auto auto; row-gap: 4px; }
+  .t-id { grid-row: 1; grid-column: 1; }
+  .t-title { grid-row: 1; grid-column: 2 / -1; }
+  .t-customer { grid-row: 2; grid-column: 1 / 3; }
+  .t-status { grid-row: 2; grid-column: 3; }
+  .t-priority { grid-row: 2; grid-column: 4; }
+}

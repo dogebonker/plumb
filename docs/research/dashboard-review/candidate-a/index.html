@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support tickets</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="tickets.js" defer></script>
+  <script src="store.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <div class="page-head">
+      <h1>Support tickets</h1>
+      <button id="new-ticket" type="button" class="primary">New ticket</button>
+    </div>
+    <div class="filters">
+      <label>Search tickets <input id="search" type="search"></label>
+      <label>Status filter <select id="status-filter" aria-label="Status filter"><option value="">All statuses</option><option>open</option><option>pending</option><option>resolved</option></select></label>
+      <label>Priority filter <select id="priority-filter" aria-label="Priority filter"><option value="">All priorities</option><option>low</option><option>medium</option><option>high</option></select></label>
+      <button id="reset" type="button">Reset filters</button>
+    </div>
+    <p id="result-count" class="muted" role="status">12 tickets</p>
+    <div id="columns" class="columns"><span>ID</span><span>Title</span><span>Customer</span><span>Status</span><span>Priority</span></div>
+    <ul id="tickets"></ul>
+    <p id="empty-state" hidden>No tickets match your filters.</p>
+  </main>
+  <dialog id="details" aria-labelledby="details-heading">
+    <form method="dialog" id="details-form">
+      <h2 id="details-heading">Ticket details</h2>
+      <p class="badges"><span id="details-id" class="id"></span> <span id="details-status-badge" class="badge"></span> <span id="details-priority-badge" class="badge"></span></p>
+      <dl>
+        <dt>Title</dt><dd id="details-title"></dd>
+        <dt>Customer</dt><dd id="details-customer"></dd>
+        <dt>Description</dt><dd id="details-description"></dd>
+      </dl>
+      <label for="details-status">Status</label>
+      <select id="details-status" name="status"><option>open</option><option>pending</option><option>resolved</option></select>
+      <label for="details-priority">Priority</label>
+      <select id="details-priority" name="priority"><option>low</option><option>medium</option><option>high</option></select>
+      <div class="actions">
+        <button type="submit" id="details-save" class="primary">Save changes</button>
+        <button type="button" id="details-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="create" aria-labelledby="create-heading">
+    <form method="dialog" id="create-form" novalidate>
+      <h2 id="create-heading">New ticket</h2>
+      <label for="create-title">Title</label>
+      <input id="create-title" name="title" type="text" aria-describedby="create-title-error">
+      <p id="create-title-error" class="error" hidden></p>
+      <label for="create-customer">Customer</label>
+      <input id="create-customer" name="customer" type="text" aria-describedby="create-customer-error">
+      <p id="create-customer-error" class="error" hidden></p>
+      <label for="create-description">Description</label>
+      <textarea id="create-description" name="description" aria-describedby="create-description-error"></textarea>
+      <p id="create-description-error" class="error" hidden></p>
+      <label for="create-status">Status</label>
+      <select id="create-status" name="status"><option>open</option><option>pending</option><option>resolved</option></select>
+      <label for="create-priority">Priority</label>
+      <select id="create-priority" name="priority"><option>low</option><option selected>medium</option><option>high</option></select>
+      <div class="actions">
+        <button type="submit" id="create-submit" class="primary">Create ticket</button>
+        <button type="button" id="create-cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

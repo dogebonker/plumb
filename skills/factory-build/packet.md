@@ -38,6 +38,7 @@ Existing step definitions, to reuse before writing new ones:
 - `<path:line>` <step text>
 
 ## Verify
+Commands run from the repository root and must also work in an isolated checkout; do not hardcode the live checkout path. RED proof uses `~/.software-factory/runtime.py red` and retains its checkpoint/log under the slice. For fixed browser capabilities copy `red_test_command` from status verbatim, write `.factory/browser-red.json` via `runtime.py browser-red-request` (full recorded test commit SHA and safe checkpoint token), and run it directly once for all tests; the live browser wrapper cannot prove RED.
 - `<command>`
 
 ## Rules in scope

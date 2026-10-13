@@ -236,11 +236,15 @@ def triage_skips(repo, ref, status_path, starts):
 
 def run_harness(cmd, cwd, timeout):
     """Run the harness in its own process group, so a timeout stops its tools too."""
-    proc = subprocess.Popen(cmd, cwd=cwd, start_new_session=True)
+    proc = subprocess.Popen(cmd, cwd=cwd, start_new_session=True,
+                            env={**os.environ, "FACTORY_RUNNER_MANAGED": "1"})
     try:
         return proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        os.killpg(proc.pid, signal.SIGKILL)
+    except BaseException:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
         proc.wait()
         raise
 
@@ -269,20 +273,47 @@ def new_head_trusted(repo, before, after, created):
 def harness_pass(repo, branch, head, cmd, setup, timeout):
     """Run the harness in a throwaway clone of the trusted head. Returns its exit code and created commits."""
     url = run(repo, "git", "remote", "get-url", "origin").strip()
-    work = Path(tempfile.mkdtemp(prefix="factory-harness-"))
+    root = Path(tempfile.mkdtemp(prefix="factory-harness-"))
+    work = root / "work"
+    work.mkdir()
+    code = None
+    outcome = "setup-or-clone-failure"
     try:
         run(work, "git", "clone", "-q", "--branch", branch, url, ".")
         if run(work, "git", "rev-parse", "HEAD").strip() != head:
             raise RuntimeError("the branch moved after its head was checked; the next pass looks again")
+        # Harness skills commit locally; only a successful runner publishes their trusted commits.
+        run(work, "git", "config", "remote.origin.pushurl", str(root / "publication-disabled"))
         try:
-            if setup:
-                run_harness(shlex.split(setup), work, timeout)
-            code = run_harness(cmd, work, timeout)
+            code = run_harness(shlex.split(setup), work, timeout) if setup else 0
+            if code == 0:
+                code = run_harness(cmd, work, timeout)
         except subprocess.TimeoutExpired:
             code = None
+        if code == 0:
+            if run(work, "git", "status", "--porcelain").strip():
+                raise RuntimeError("successful harness left uncommitted work; retained for recovery")
+            after = run(work, "git", "rev-parse", "HEAD").strip()
+            run(repo, "git", "fetch", "--no-tags", str(work), after)
+            if not new_head_trusted(repo, head, after, created_commits(work)):
+                raise RuntimeError("harness head contains untrusted commits; retained without publishing")
+            if after != head:
+                run(repo, "git", "push", f"--force-with-lease=refs/heads/{branch}:{head}", "origin",
+                    f"{after}:refs/heads/{branch}")
+        outcome = "success" if code == 0 else "timeout" if code is None else "nonzero"
         return code, created_commits(work)
     finally:
-        shutil.rmtree(work, ignore_errors=True)
+        if outcome == "success":
+            shutil.rmtree(root, ignore_errors=True)
+        else:
+            # Preserve the whole clone: commits, index, dirty and untracked files, including detached RED.
+            (root / "checkpoint.json").write_text(json.dumps(
+                {"branch": branch, "trusted_head": head, "outcome": outcome, "exit_code": code}, indent=2) + "\n")
+            recovery = repo / ".git" / "factory-recovery"
+            recovery.mkdir(parents=True, exist_ok=True)
+            destination = recovery / root.name
+            shutil.move(str(root), destination)
+            print(f"factory harness evidence retained at {destination}", file=sys.stderr)
 
 
 def pull_request(repo, branch):
@@ -367,6 +398,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     if skill is None or not trusted:
         return
     message = prompt.format(skill=skill, slug=slug)
+    message += "\nFACTORY_RUNNER_MANAGED=1: commit the step locally; do not push. The runner publishes only successful clean work."
     if replies:
         body = "\n\n".join(f"{r['login']} ({r['at']}):\n{r['body']}" for r in sorted(replies, key=lambda r: r["at"]))
         body = body.encode()[-MAX_REPLY_BYTES:].decode(errors="ignore")

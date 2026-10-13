@@ -1,0 +1,75 @@
+{
+  "accepted": true,
+  "tests": 15,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "expected_tests": 15,
+  "checks": [
+    {
+      "name": "twelve_seeded_tickets_and_visible_metadata",
+      "passed": true
+    },
+    {
+      "name": "case_insensitive_title_and_customer_search",
+      "passed": true
+    },
+    {
+      "name": "search_status_and_priority_combine",
+      "passed": true
+    },
+    {
+      "name": "result_count_and_reset",
+      "passed": true
+    },
+    {
+      "name": "clear_empty_state",
+      "passed": true
+    },
+    {
+      "name": "detail_fields_match_ticket",
+      "passed": true
+    },
+    {
+      "name": "cancel_does_not_save_changes",
+      "passed": true
+    },
+    {
+      "name": "saved_edits_persist_and_filter_correctly",
+      "passed": true
+    },
+    {
+      "name": "required_trimmed_fields_have_accessible_errors",
+      "passed": true
+    },
+    {
+      "name": "new_ticket_trimmed_unique_and_persistent",
+      "passed": true
+    },
+    {
+      "name": "escape_detail_restores_focus_without_saving",
+      "passed": true
+    },
+    {
+      "name": "escape_new_restores_focus_without_creating",
+      "passed": true
+    },
+    {
+      "name": "keyboard_open_submit_and_visible_focus",
+      "passed": true
+    },
+    {
+      "name": "mobile_page_and_dialog_do_not_overflow",
+      "passed": true
+    },
+    {
+      "name": "desktop_mobile_screenshots_and_local_assets_only",
+      "passed": true
+    }
+  ],
+  "screenshots": {
+    "desktop": "/private/tmp/factory-dashboard-extension-20261013/grade-recovered-green/desktop.png",
+    "mobile": "/private/tmp/factory-dashboard-extension-20261013/grade-recovered-green/mobile.png"
+  },
+  "returncode": 0
+}

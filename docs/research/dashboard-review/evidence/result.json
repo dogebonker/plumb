@@ -1,0 +1,119 @@
+{
+  "original_run": "/private/tmp/factory-comparison-dashboard-20261012-r4",
+  "original_session_id": "1744be4b-996e-4915-ba2a-ad1fca461d57",
+  "session_id": "48337e4d-7bf3-4560-b847-fe449ceaa261",
+  "fresh_metered_session": true,
+  "time_cap_seconds": 900,
+  "extension_budget_usd": 5,
+  "recovery_red_commit": "7f0211614c6f45727e5f41e87cbd05bf89bf83ca",
+  "recovery_green_commit": "4b66b4a52158905395ccf0f73888a22a90332448",
+  "original_red_commit": "2acf68a",
+  "original_green_commit": "03c6d91",
+  "recovery_actions_sha256": "ee3c631b3497fb431303f6092a445a2ba1759ef8cf66ffa110156b5356d7367c",
+  "questions": [],
+  "invocations": [
+    {
+      "returncode": -9,
+      "timeout": true,
+      "seconds": 900.0767692090012,
+      "invalid_lines": 0
+    }
+  ],
+  "status": "incomplete",
+  "original_git_unavailable": true,
+  "context_isolation": {
+    "source": "/private/tmp/factory-comparison-dashboard-20261012-r4/snapshots/context-mode",
+    "runtime_dependencies": {
+      "@clack/prompts": "^1.0.1",
+      "@mixmark-io/domino": "^2.2.0",
+      "@modelcontextprotocol/sdk": "^1.26.0",
+      "better-sqlite3": "^12.6.2",
+      "picocolors": "^1.1.1",
+      "turndown": "^7.2.0",
+      "turndown-plugin-gfm": "^1.0.2",
+      "zod": "^3.25.0"
+    },
+    "node": "/Users/dan/.nvm/versions/node/v22.15.0/bin/node",
+    "installed_versions": {
+      "@clack/prompts": "1.8.1",
+      "@mixmark-io/domino": "2.2.0",
+      "@modelcontextprotocol/sdk": "1.32.1",
+      "better-sqlite3": "12.11.1",
+      "picocolors": "1.1.1",
+      "turndown": "7.2.4",
+      "turndown-plugin-gfm": "1.0.2",
+      "zod": "3.25.76"
+    },
+    "sqlite_backend": "better-sqlite3",
+    "browser_runtime": {
+      "module": "/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/@playwright/cli/node_modules/playwright",
+      "core": "/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/@playwright/cli/node_modules/playwright-core",
+      "cache": "/Users/dan/Library/Caches/ms-playwright",
+      "version": "1.60.0-alpha-1775061447000",
+      "executable": "/Users/dan/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+    },
+    "temporary_path_adaptations": [
+      "server.bundle.mjs",
+      "hooks/core/mcp-ready.mjs"
+    ],
+    "sandbox_profile": "/private/tmp/fb-neamoi0s/context-plugin/.benchmark-shadow/sandbox.sb",
+    "shadow_config": "/private/tmp/fb-neamoi0s/context-plugin/.benchmark-shadow/config",
+    "shadow_data": "/private/tmp/fb-neamoi0s/context-plugin/.benchmark-shadow/data",
+    "wrapped_hooks": 14,
+    "protected_reads": [
+      "/Users/dan/Work/software-factory/evals/cases",
+      "/private/tmp/factory-comparison-dashboard-20261012-r4",
+      "/private/tmp/factory-dashboard-extension-20261013",
+      "/private/tmp/factory-comparison-dashboard-20261012-r4/snapshots/superpowers"
+    ]
+  },
+  "browser_verification": {
+    "command": "/private/tmp/fb-neamoi0s/browser-check/browser-check",
+    "profile": "/private/tmp/fb-neamoi0s/browser-check/sandbox.sb",
+    "runtimeproof": {
+      "module": "/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/@playwright/cli/node_modules/playwright",
+      "core": "/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/@playwright/cli/node_modules/playwright-core",
+      "cache": "/Users/dan/Library/Caches/ms-playwright",
+      "version": "1.60.0-alpha-1775061447000",
+      "executable": "/Users/dan/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
+    },
+    "sha256": {
+      "command": "a7a50c4a15d2bbdbd736882397727d898f9ba666e7bd8db2f6b7e6f5899b449e",
+      "profile": "c7d6a881fb63ae9762a5e7a61134b73a168320cfeeeef1f4432b036002451cca"
+    }
+  },
+  "stop_reason": "extension timeout/error",
+  "extension_model_wall_seconds": 900.0776901250065,
+  "models": [],
+  "model_usage": null,
+  "token_classes": {
+    "inputTokens": null,
+    "outputTokens": null,
+    "cacheReadInputTokens": null,
+    "cacheCreationInputTokens": null
+  },
+  "tokens": null,
+  "cost_usd": null,
+  "accounting_scope": "unknown",
+  "workflow_complete": false,
+  "evidence": [
+    {
+      "status": ".factory/changes/support-ticket-dashboard/status.yaml",
+      "reconciled": false,
+      "gates_complete": true
+    }
+  ],
+  "unverified_paths": [
+    "gate approval provenance and document hashes require manual review"
+  ],
+  "source_sha256": "e4a65a75159d9b59e12befe9110700323b5a615d910de0995b239b641d0cccba",
+  "observed_additional_token_classes": {
+    "input_tokens": 174,
+    "output_tokens": 4607,
+    "cache_read_input_tokens": 3764492,
+    "cache_creation_input_tokens": 348564
+  },
+  "additional_tokens_lower_bound": 4117837,
+  "accounting_limit": "Raw output counters undercount; no terminal root result. Additional tokens are a lower bound, cost unknown.",
+  "recovery_setup_seconds": 3.617704391479492
+}

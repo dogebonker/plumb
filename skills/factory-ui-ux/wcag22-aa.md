@@ -10,7 +10,7 @@ The criteria a code and screen review can check, written in-house because most d
 | 1.4.1 Use of color | A | color is never the only way to tell state, errors or links apart |
 | 1.4.3 Contrast (minimum) | AA | text 4.5:1; large text 3:1, where large is 24px regular or 18.66px bold (18pt and 14pt), not 18px (axe; over gradients, glass and images axe reports incomplete: check those by eye) |
 | 1.4.4 Resize text | AA | content works at 200% zoom |
-| 1.4.10 Reflow | AA | no horizontal scrolling at 320 CSS pixels wide, except content that needs a two-dimensional layout (tables, maps, diagrams) |
+| 1.4.10 Reflow | AA | check 320 CSS pixels, the brief minimum and responsive breakpoint transitions; readable text and usable controls must survive reflow, not merely absence of horizontal scrolling, except content that needs a two-dimensional layout (tables, maps, diagrams) |
 | 1.4.11 Non-text contrast | AA | control boundaries, focus indicators and meaningful icons 3:1 against neighbors |
 | 1.4.12 Text spacing | AA | nothing clips when line height is 1.5, paragraph spacing 2x, letter spacing 0.12em, word spacing 0.16em |
 | 1.4.13 Content on hover or focus | AA | tooltips and popovers can be dismissed, can be hovered, and stay until dismissed or until hover or focus leaves |
