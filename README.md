@@ -4,7 +4,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
 
 ![The factory loop](assets/loop.svg)
 
-**Status:** roadmap S1 to S12 built; not yet run end to end on a real feature.
+**Status:** roadmap S1 to S12 built and used on real changes; S13 evals in progress.
 
 ## TL;DR
 

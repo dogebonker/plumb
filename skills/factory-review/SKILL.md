@@ -20,7 +20,8 @@ Interactive mode, not started as a factory step agent, and without `--one-step` 
 
 - Load the change as gates.md describes: the work is the first milestone with a slice not `done`, and every one of its slices that is not `done` must be `green`. Otherwise point to `/factory-build <slug>` and stop.
 - Read each of its slices' `packet.md` and `checks.md`.
-- When `slices/<last>/review.md` exists with an empty Sign-off and its Range ends at `<last>`'s `head_commit`, the review already ran: go to step 5.
+- Review only committed source. Require `git diff --quiet HEAD -- . ':!.factory'` and `git diff --cached --quiet HEAD -- . ':!.factory'` to succeed, and `git ls-files --others --exclude-standard -- . ':!.factory'` to print nothing. Dirty source: if step 8 was interrupted, first run `git restore -s HEAD -SW -- <its files>`. Otherwise show `git status --short -- . ':!.factory'` and ask the user to commit it to `<last>` (then set its `head_commit` to HEAD) or to discard it, and wait for the answer. Never review around uncommitted source.
+- When `slices/<last>/review.md` exists with an empty Sign-off and its Range ends at `<last>`'s `head_commit`, resume at step 5 only when both `git diff --quiet <head> -- . ':!.factory'` and `git diff --cached --quiet <head> -- . ':!.factory'` succeed. Planning-only commits may pass. Otherwise set `<head>` and `<last>`'s `head_commit` to the current committed HEAD and rerun from step 2, replacing the old review and its Range before asking for sign-off.
 
 ## 2. Phase 1: mechanical checks
 
