@@ -14,9 +14,10 @@ reads the kit and skills from the framework cache, so the operator of a runner h
 runs bin/factory-install <commit> for each commit a change's .software-factory/factory.lock
 names, into ~/.software-factory/framework/<commit>/, and links its skills user-level:
 project links are untracked, so the clone has none. The operator also runs that commit's
-bin/factory-packs-fetch <checkout> on a checkout of each change's branch, so the packs its
-lock pins are in ~/.software-factory/packs/<name>@<hash>/; skills run without a pack missing
-there. The runner never installs or fetches. The lock
+bin/factory-packs-fetch on its own kit/packs.lock.yaml, so the packs it pins are in
+~/.software-factory/packs/<name>@<hash>/; never on a branch's lock, which the harness can
+write. The runner skips a change whose lock pins packs other than its framework's
+kit/packs.lock.yaml. The runner never installs or fetches. The lock
 comes from the branch, which the harness controls, so it only selects among the commits
 installed here: the runner skips a change whose lock is missing, names a dev_path, or
 names anything but a full 40-hex commit installed on this host (kit/, skills/ and
@@ -169,7 +170,29 @@ def missing_framework(repo, ref, change):
         return f"{lock} names no full 40-hex framework commit"
     if not all((FRAMEWORK / commit / part).is_dir() for part in ("kit", "skills", "hooks")):  # as bin/factory-install
         return f"framework {commit[:12]} from {lock} is not installed in {FRAMEWORK}"
+    # Pack pins steer what agents read as rules, so the branch may not choose them: they must equal the
+    # approved pins of the installed framework, which the operator fetched from that framework's own lock.
+    pinned = pack_pins(run(repo, "git", "show", f"{ref}:{lock}"))
+    approved_file = FRAMEWORK / commit / "kit" / "packs.lock.yaml"
+    approved = pack_pins(approved_file.read_text()) if approved_file.is_file() else {}
+    if pinned != approved:
+        return f"{lock} pins packs other than framework {commit[:12]}'s kit/packs.lock.yaml; run /factory-upgrade"
     return None
+
+
+def pack_pins(text):
+    """{name: (source, path, hash)} from a lock's block-style packs: section; pinned_at is not content."""
+    pins, inside = {}, False
+    for line in text.splitlines():
+        if re.match(r"^packs:", line):
+            inside = True
+            continue
+        if inside and line and not line[0].isspace():
+            break
+        entry = re.match(r"^\s+([A-Za-z0-9_.-]+):\s*\{(.*)\}", line) if inside else None
+        if entry:
+            pins[entry[1]] = tuple(field(entry[2], key) for key in ("source", "path", "hash"))
+    return pins
 
 
 def unmigrated(repo, ref):

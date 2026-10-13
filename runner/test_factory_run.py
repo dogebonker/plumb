@@ -278,13 +278,21 @@ with tempfile.TemporaryDirectory() as tmp:
     installed = repo / "framework"
     for part in ("kit", "skills", "hooks"):
         (installed / ("a" * 40) / part).mkdir(parents=True)
+    pin = "  demo: { source: o/r, path: demo, hash: " + "d" * 40 + ", pinned_at: 2026-10-13 }\n"
+    (installed / ("a" * 40) / "kit" / "packs.lock.yaml").write_text("packs:\n" + pin)
     (installed / ("c" * 40) / "kit").mkdir(parents=True)  # incomplete: no skills/ or hooks/
     with patch.object(factory_run, "FRAMEWORK", installed):
         for lock, missing in [(None, "no .software-factory/factory.lock"),
                               ("framework: { commit: " + "c" * 40 + " }\n", "is not installed"),
                               ("framework: { commit: " + "a" * 40 + " }\nframework: { dev_path: /x }\n",
                                "has 2 framework lines"),
-                              ("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n", None),
+                              ("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\npacks:\n" + pin, None),
+                              # The branch may not choose packs: they must equal the framework's approved pins.
+                              ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin.replace("o/r", "evil/r"),
+                               "pins packs other than"),
+                              ("framework: { commit: " + "a" * 40 + " }\npacks:\n" + pin + pin.replace("demo", "extra"),
+                               "pins packs other than"),
+                              ("framework: { commit: " + "a" * 40 + " }\n", "pins packs other than"),
                               ("framework: { commit: " + "b" * 40 + ", installed: 2026-10-13 }\n", "is not installed"),
                               ("framework: { commit: ../.., installed: 2026-10-13 }\n", "no full 40-hex"),
                               ("framework: { commit: aaaaaaa, installed: 2026-10-13 }\n", "no full 40-hex"),

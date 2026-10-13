@@ -353,4 +353,6 @@ Where the design left a choice open:
 
 **Why.** The framework is per project: like Angular in three apps that each pin their own version, two projects may pin different hashes of one pack. With one install per machine, only one of them could load it (decision 33, Cost). A content hash names exactly what a pin approved, so a shared folder per hash serves every project that pins it.
 
+**Headless trust.** A branch's lock is harness-writable, so on a runner host the branch never chooses packs: the runner skips a change whose pins differ from its framework commit's `kit/packs.lock.yaml`, and the operator fetches only from that file.
+
 **Cost.** The first fetch of each source needs the network, and a host without it runs without the packs it lacks. Disk grows by one folder per pack and hash in use, and the mirrors keep every commit and tree of their sources; nothing prunes either yet. A pin the skills CLI recorded for a pack at a repository's root names a commit, not a tree (`rust-skills`); the fetch accepts it and loads that commit's tree, and the next bump writes a tree hash.
