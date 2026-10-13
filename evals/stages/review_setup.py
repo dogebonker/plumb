@@ -1,6 +1,6 @@
 """Setup shared by REV-01 and REV-02: track small, slices approved, slice 01 green and waiting for its review."""
 
-from stagelib import LADDER, TEST_COMMAND, approve, build_slice, change_dir, commit, event, git, new_repo, save, \
+from stagelib import LADDER, TEST_COMMAND, approve, pack_dir, build_slice, change_dir, commit, event, git, new_repo, save, \
     triage, write
 
 TASK = "Show how many pages the notes fill, the latest note with a tag, and the archived share"
@@ -96,9 +96,8 @@ Each fails in the red commit, before any implementation exists.
 
 ## Rules in scope
 Read these before writing code, and apply them inside the frozen contract.
-- `~/.agents/skills/clean-code/clean-code.nano.md`
+- `{pack_dir('clean-code')}/clean-code.nano.md`
 - {LADDER}
-- Language pack: `~/.agents/skills/modern-python/SKILL.md`. Read only the one or two rules this slice needs, apply them to the code this slice writes, leave what the linter enforces to the linter, and skip rules that need a newer Python than 3.10.
 
 ## Stop and report
 - a frozen signature cannot work as written

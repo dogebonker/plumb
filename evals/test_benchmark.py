@@ -196,7 +196,12 @@ class SnapshotTests(unittest.TestCase):
             original.write_text("Original gate rules.\n")
             kit = repository / "kit"
             kit.mkdir()
-            (kit / "packs.lock.yaml").write_text("packs:\n")
+            (kit / "packs.lock.yaml").write_text("packs:\n  lens: { source: o/r, path: lens, hash: " + "a" * 40 + " }\n"
+                                                 "  gone: { source: o/r, path: gone, hash: " + "b" * 40 + " }\n")
+            (shared / "packs.md").write_text("Load `~/.software-factory/packs/<name>@<hash>/`.\n")
+            cached = root / "home" / ".software-factory" / "packs" / ("lens@" + "a" * 40)
+            cached.mkdir(parents=True)
+            (cached / "SKILL.md").write_text("lens rules\n")
             superpowers = root / "superpowers"
             (superpowers / ".claude-plugin").mkdir(parents=True)
             (superpowers / ".claude-plugin" / "plugin.json").write_text('{"name":"superpowers"}')
@@ -213,6 +218,13 @@ class SnapshotTests(unittest.TestCase):
             self.assertIn("SIMULATED USER ANSWER", copied)
             self.assertIn("including in fresh step agents", copied)
             self.assertIn("Stop at every unanswered question", copied)
+            # Pinned packs come from the operator's pack cache into the snapshot, and the skills point there.
+            snapshot_pack = paths["factory"] / "packs" / ("lens@" + "a" * 40)
+            self.assertEqual((snapshot_pack / "SKILL.md").read_text(), "lens rules\n")
+            self.assertEqual(provenance["installed_packs"]["lens"]["pin"], "a" * 40)
+            self.assertEqual(provenance["skipped_packs"], [{"pack": "gone", "reason": "not in pack cache"}])
+            self.assertIn(str(paths["factory"] / "packs") + "/<name>@<hash>/",
+                          (paths["factory"] / "skills" / "factory-shared" / "packs.md").read_text())
             marker = "skills/factory-shared/gates.md: synthetic-operator exception"
             self.assertIn(marker, provenance["adaptations"]["files"])
             self.assertIn(marker, json.loads((output / "provenance.json").read_text())["adaptations"]["files"])

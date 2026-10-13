@@ -13,7 +13,10 @@ Changes are read from .software-factory/changes/*/status.yaml. The harness's clo
 reads the kit and skills from the framework cache, so the operator of a runner host
 runs bin/factory-install <commit> for each commit a change's .software-factory/factory.lock
 names, into ~/.software-factory/framework/<commit>/, and links its skills user-level:
-project links are untracked, so the clone has none. The runner never installs. The lock
+project links are untracked, so the clone has none. The operator also runs that commit's
+bin/factory-packs-fetch <checkout> on a checkout of each change's branch, so the packs its
+lock pins are in ~/.software-factory/packs/<name>@<hash>/; skills run without a pack missing
+there. The runner never installs or fetches. The lock
 comes from the branch, which the harness controls, so it only selects among the commits
 installed here: the runner skips a change whose lock is missing, names a dev_path, or
 names anything but a full 40-hex commit installed on this host (kit/, skills/ and

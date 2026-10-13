@@ -1,5 +1,5 @@
 # Python modules: pyproject.toml.
-# Install trailofbits/skills (modern-python) and wshobson/agents (python-development skills), then read before pinning (factory-shared/packs.md).
+# Packs from trailofbits/skills (modern-python) and wshobson/agents (python-development skills), unpinned until /factory-packs reads and pins them (factory-shared/packs.md).
 index: modern-python                   # tooling: uv, ruff, type checker
 rules: [python-type-safety, python-error-handling, python-design-patterns]
 linter:

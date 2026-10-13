@@ -23,7 +23,7 @@ Never copy a secret value into any file, report or message: cite file:line, rule
 
 ## 1. Prepare (audit)
 
-- Load the `security-audit` skill (Cloudflare) in full audit mode with the profile. Invoking `/factory-security audit` is the user's choice of `.software-factory/runs/security/<YYYY-MM-DD-HHMM>/` as its output folder.
+- Read `security-audit` (Cloudflare) from its cache folder after the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), in full audit mode with the profile. Invoking `/factory-security audit` is the user's choice of `.software-factory/runs/security/<YYYY-MM-DD-HHMM>/` as its output folder.
 - That folder must be ignored by git: `git check-ignore -q .software-factory/runs/security/x` must succeed; otherwise append `.software-factory/runs/security/` to the file `git rev-parse --git-path info/exclude` names.
 - Check each tool in `tools.yaml` against its pinned version. A missing or older tool is skipped, with its install line in the report.
 
@@ -41,7 +41,7 @@ Pick from `index.yaml`, for each component of the threat model (lens mode: only 
 - knowledge: the matching `own` checklist, plus the first pack entry in index order whose `when` tags match and whose pack passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md)
 - verifiers also load the `role: verifier` entries; `role: after-confirmed` entries run in step 6
 
-Load only the part `read` names, ignore what `skip` lists, apply what `add` lists, never run anything under a pack's `scripts/`. Verdicts, severity and the evidence bar come only from `security-audit`. Write `routing.md` in the run folder (lens mode: a routing line in the reply): every entry loaded and why, every entry skipped and why.
+Load only the part `read` names, from the pack's cache folder (packs.md, Load), ignore what `skip` lists, apply what `add` lists, never run anything under a pack's `scripts/`. Verdicts, severity and the evidence bar come only from `security-audit`. Write `routing.md` in the run folder (lens mode: a routing line in the reply): every entry loaded and why, every entry skipped and why.
 
 ## 4. Scan (audit)
 
@@ -53,7 +53,7 @@ Follow `security-audit`'s hunting and verification for the profile, one hunter p
 
 Each candidate ends `confirmed`, `needs_validation` (with the exact blocker and the plan that would settle it) or `rejected`, under `security-audit`'s evidence bar. Exploitability that needs a running system is proven only inside an isolated sandbox; without one the candidate stays `needs_validation`.
 
-Audit mode: write `findings.json` and the coverage ledger in the run folder as `security-audit` specifies, and run its validators on them (`node <security-audit folder>/validate-findings.cjs <run>/findings.json`, and `validate-coverage-ledger.cjs` on the ledger). Lens mode: return confirmed findings as cards anchored to a threat ID of the threat model.
+Audit mode: write `findings.json` and the coverage ledger in the run folder as `security-audit` specifies, and run its validators on them (`node <pack>/validate-findings.cjs <run>/findings.json`, where `<pack>` is `security-audit`'s cache folder ([../factory-shared/packs.md](../factory-shared/packs.md)), and `validate-coverage-ledger.cjs` on the ledger). Lens mode: return confirmed findings as cards anchored to a threat ID of the threat model.
 
 ## 6. Rank and propose (audit)
 

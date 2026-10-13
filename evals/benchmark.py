@@ -163,24 +163,20 @@ def snapshots(args):
     write_json(factory / ".claude-plugin" / "plugin.json", {"name": "factory", "version": "0.0.0", "description": "Pinned local Factory benchmark snapshot"})
     shutil.copytree(ROOT / "skills", factory / "skills", ignore=IGNORED)
     shutil.copytree(ROOT / "kit", factory / "kit", ignore=IGNORED)
-    installed = factory / "installed"
-    (installed / "skills").mkdir(parents=True)
-    lock_path = Path.home() / ".agents" / ".skill-lock.json"
-    lock = json.loads(lock_path.read_text()) if lock_path.exists() else {"skills": {}}
-    write_json(installed / ".skill-lock.json", lock)
+    packs = factory / "packs"  # the pinned packs from the operator's pack cache, which trials may not read
+    packs.mkdir()
     skipped = []
     pack_hashes = re.findall(r"^  ([\w-]+):.*?hash: ([\w]+)", (factory / "kit" / "packs.lock.yaml").read_text(), re.MULTILINE)
     pack_provenance = {}
     for name, expected in pack_hashes:
-        source = Path.home() / ".agents" / "skills" / name
-        if not source.is_dir() or lock.get("skills", {}).get(name, {}).get("skillFolderHash") != expected:
-            skipped.append({"pack": name, "reason": "missing or installed pin differs"})
+        source = Path.home() / ".software-factory" / "packs" / f"{name}@{expected}"
+        if not source.is_dir():
+            skipped.append({"pack": name, "reason": "not in pack cache"})
             continue
-        shutil.copytree(source, installed / "skills" / name, ignore=IGNORED)
-        pack_provenance[name] = {"path": str(source), "sha256": tree_hash(source), "installed_pin": expected}
+        shutil.copytree(source, packs / source.name, ignore=IGNORED, symlinks=True)
+        pack_provenance[name] = {"path": str(source), "sha256": tree_hash(source), "pin": expected}
     (factory / "user").mkdir()  # an empty user layer: the trial never reads the operator's ~/.software-factory/user/
-    replacements = {"~/.software-factory/user/": str(factory / "user") + "/", "~/.agents/skills/": str(installed / "skills") + "/",
-                    "~/.agents/.skill-lock.json": str(installed / ".skill-lock.json")}
+    replacements = {"~/.software-factory/user/": str(factory / "user") + "/", "~/.software-factory/packs/": str(packs) + "/"}
     adapted = []
     gates = factory / "skills" / "factory-shared" / "gates.md"
     gates.write_text(gates.read_text() + "\n## Synthetic benchmark operator\n\n"

@@ -4,8 +4,9 @@
 #   method, candidate gate and result contract, one ATTACK-CLASSES.md block and its component file below.
 # lens 2 (knowledge): per agent, the matching `own` checklist plus at most one pack entry: the first pack
 #   entry in this order whose `when` tags match and whose pack is pinned.
-# An entry whose pack is not installed and pinned (kit/packs.lock.yaml) is skipped with a notice; `own`
-# entries are factory-security's own files. `read` names the part to load (mukul975 entries: SKILL.md,
+# An entry whose pack is not pinned in the project's factory.lock or not in the pack cache is skipped with a
+# notice (factory-shared/packs.md); `own` entries are factory-security's own files. `read` names the part to
+# load, under the pack's cache folder (mukul975 entries: SKILL.md,
 # never scripts/); `skip` lists known errors to ignore; `add` lists what the source misses.
 # `role: verifier` entries go to verifiers; `role: after-confirmed` entries run once a finding is confirmed.
 #
@@ -54,7 +55,7 @@ knowledge:
   - {id: openai-django, pack: security-best-practices, read: "Django reference, matching rule sections", when: [django]}
   - {id: openai-flask, pack: security-best-practices, read: "Flask reference, matching rule sections", when: [flask]}
 
-  # Trail of Bits (CC-BY-SA-4.0): installed and pinned unmodified; never copy its text into factory files.
+  # Trail of Bits (CC-BY-SA-4.0): fetched and pinned unmodified; never copy its text into factory files.
   - {id: tob-insecure-defaults, pack: insecure-defaults, read: "the one category file the agent hunts", when: [auth, iac, container, web-api]}
   - {id: tob-sharp-edges-go, pack: sharp-edges, read: lang-go.md, when: [go]}
   - {id: tob-sharp-edges-rust, pack: sharp-edges, read: lang-rust.md, when: [rust]}

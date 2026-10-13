@@ -28,4 +28,4 @@ Then link its skills into the project and write its `factory.lock` ([skills/READ
 | `security/index.yaml` | Routing for `factory-security`: the method file per component and the approved knowledge sources, with known errors to skip |
 | `security/tools.yaml`, `security/gitleaks.toml` | The pinned scanners and how they run |
 | `ci/ci_runs.py`, `ci/tools.yaml`, `ci/catalog.md` | factory-ci's measurement script (with its self-check), its tools, and the catalog of fixes with their guards |
-| `packs.lock.yaml` | The framework's pinned hash of every pack the factory loads, bumped by `/factory-packs`; init and upgrade copy them into a project's `factory.lock` |
+| `packs.lock.yaml` | The framework's pin of every pack the factory loads: its source, its folder there (`path`) and the git tree hash of that folder, bumped by `/factory-packs`. Init and upgrade copy them into a project's `factory.lock` and fetch each into `~/.software-factory/packs/<name>@<hash>/` with `bin/factory-packs-fetch` |

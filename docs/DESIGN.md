@@ -18,7 +18,7 @@ The complete specification of the factory. The README explains the why; this doc
 | Factory skills and kit | `~/.software-factory/framework/<commit>/`: `skills/`, `kit/`, `hooks/` and `bin/` of one commit of this repository | Yes | Unpacked once per machine or server per commit; each project pins its commit in `.software-factory/factory.lock` and links the skills |
 | User layer | `~/.software-factory/user/`: `principles.md`, and `config.yaml` with `framework_repo` | Yes | Taste across projects; the project's `principles.md` wins over it |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
-| Third-party packs | Installed under `~/.agents/skills/`, pinned by hash in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Bumped deliberately, changelog reviewed |
+| Third-party packs | `~/.software-factory/packs/<name>@<hash>/`, one folder per pinned hash, pinned in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Fetched by `bin/factory-packs-fetch` at init and upgrade, each project loading its own pins; bumped deliberately, changelog reviewed |
 | Project state | `<repo>/.software-factory/` | No | Created by `/factory-init`; triage adds each change |
 | Stack specifics | `<kit>/adapters/<stack>.md` | Yes | Written once per stack |
 
@@ -191,6 +191,7 @@ Never simplified away: frozen interfaces, code enforcing a constraint ID, money 
   profiles/
   adapters/<stack>.md      typecheck stubs, tests at a commit, import graph, dead code, BDD runner
 ~/.software-factory/user/principles.md       the user layer
+~/.software-factory/packs/<name>@<hash>/     one pinned pack, shared by every project that pins that hash
 
 <repo>/.software-factory/
   factory.lock             framework commit and pack pins

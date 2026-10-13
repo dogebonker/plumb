@@ -4,7 +4,7 @@ The factory skills land here, built in roadmap order. Each follows the open Agen
 
 ## Install
 
-`bin/factory-install <ref>` installs a factory commit into the framework cache, once per machine; `/factory-init` then links that commit's skills into the project, writes its lock and migrates an old `.factory/` with `bin/factory-migrate`. By hand, from the repository root, with that commit installed in the framework cache ([kit/](../kit/README.md)):
+`bin/factory-install <ref>` installs a factory commit into the framework cache, once per machine; `/factory-init` then links that commit's skills into the project, writes its lock, fetches the packs it pins with `bin/factory-packs-fetch` and migrates an old `.factory/` with `bin/factory-migrate`. By hand, from the repository root, with that commit installed in the framework cache ([kit/](../kit/README.md)):
 
 ```bash
 [ -L ~/.software-factory ] && rm ~/.software-factory   # the old link to kit/: the cache and the user layer must not write into the factory repository
@@ -13,9 +13,10 @@ mkdir -p .software-factory .claude/skills "$(git rev-parse --git-path info)"
 ln -s $f/skills/factory-* $f/skills/ui-hard-gate .claude/skills/
 x="$(git rev-parse --git-path info/exclude)"; for p in ".claude/skills/factory-*" .claude/skills/ui-hard-gate; do grep -qxF "$p" "$x" || echo "$p" >> "$x"; done
 { echo "framework: { commit: $c, installed: $(date +%F) }"; sed -n '/^packs:/,$p' $f/kit/packs.lock.yaml; echo "skills_linked: [.claude/skills]"; } > .software-factory/factory.lock
+$f/bin/factory-packs-fetch .   # each pin into ~/.software-factory/packs/<name>@<hash>/
 ```
 
-Self-checks: `python3 bin/test_factory_install.py`, `python3 bin/test_factory_migrate.py`.
+Self-checks: `python3 bin/test_factory_install.py`, `python3 bin/test_factory_migrate.py`, `python3 bin/test_factory_packs_fetch.py`.
 
 The links are machine-specific, so `.claude/skills/factory-*` and `.claude/skills/ui-hard-gate` stay out of git through `.git/info/exclude`, and a project's own skills there are unaffected: review's committed-source check and rewind's `git clean` would otherwise trip over them or delete them. To develop the factory, link from a checkout's `skills/` instead and write `framework: { dev_path: <that checkout> }` (gates.md, Paths).
 
@@ -62,7 +63,7 @@ python3 runner/factory_run.py <clone> --approvers alice,bob
 - Gate approvals are also GitHub pull-request approvals: protect the default branch with "dismiss stale approvals" so an early `approve product` cannot merge later code.
 - Approvers come only from `--approvers`. The login `gh` runs as on the server never counts, even when listed, so give the runner its own GitHub account.
 - Gates skipped in the change's first commit stay skipped only when an approver's `start` review covers that commit; any other `skipped` gate is reset to pending.
-- The operator installs each framework commit the server may run with `bin/factory-install <commit>` (`~/.software-factory/framework/<commit>/`, [kit/](../kit/README.md)). The lock comes from the change's branch, which the harness can write, so it only selects among installed commits: the runner skips a change whose lock is missing, names a `dev_path`, or names anything but a full 40-hex commit installed on the server. Link the skills user-level, into `~/.claude/skills/`, from that cache commit: a project's links are untracked, so the throwaway clone has none, and `--setting-sources user` may skip project skills anyway. One server therefore runs one framework commit at a time. It also needs `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
+- The operator installs each framework commit the server may run with `bin/factory-install <commit>` (`~/.software-factory/framework/<commit>/`, [kit/](../kit/README.md)). The lock comes from the change's branch, which the harness can write, so it only selects among installed commits: the runner skips a change whose lock is missing, names a `dev_path`, or names anything but a full 40-hex commit installed on the server. Link the skills user-level, into `~/.claude/skills/`, from that cache commit: a project's links are untracked, so the throwaway clone has none, and `--setting-sources user` may skip project skills anyway. One server therefore runs one framework commit at a time. The operator also runs that commit's `bin/factory-packs-fetch` on a checkout of each change's branch, so the packs its lock pins are in the pack cache (`~/.software-factory/packs/<name>@<hash>/`); a skill runs without a pack missing there. It also needs `gh` signed in, `pond init` against the shared store, the runtimes the adapters call, and a harness allowed to edit files and run them unattended.
 - Interactive triage creates the change and its pull request; the runner takes over from there.
 - The hard-gate hook guards the harness's editing tools only. Headless enforcement rests on the runner resetting what no approval backs.
 

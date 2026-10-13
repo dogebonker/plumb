@@ -6,7 +6,7 @@ from pathlib import Path
 CASE = Path(__file__).resolve().parent
 sys.path.insert(0, str(CASE.parent))
 
-from stagelib import LADDER, TEST_COMMAND, approve, change_dir, commit, event, new_repo, pending_gate, save, \
+from stagelib import LADDER, TEST_COMMAND, approve, pack_dir, change_dir, commit, event, new_repo, pending_gate, save, \
     triage, write  # noqa: E402
 
 SLUG = "red01"
@@ -172,9 +172,8 @@ Each fails in the red commit, before any implementation exists.
 
 ## Rules in scope
 Read these before writing code, and apply them inside the frozen contract.
-- `~/.agents/skills/clean-code/clean-code.nano.md`
+- `{pack_dir('clean-code')}/clean-code.nano.md`
 - {LADDER}
-- Language pack: `~/.agents/skills/modern-python/SKILL.md`. Read only the one or two rules this slice needs, apply them to the code this slice writes, leave what the linter enforces to the linter, and skip rules that need a newer Python than 3.10.
 
 ## Stop and report
 - a frozen signature cannot work as written

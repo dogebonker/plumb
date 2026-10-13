@@ -45,11 +45,11 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 ## 3. Phase 2: review agents and lens reviewers
 
 1. Committed mode: `git add .software-factory/changes/<slug> .software-factory/system` and, when anything is staged, commit `chore(factory): milestone M review`, so the review starts from a clean tree. In interactive mode this commit also carries the planning state since the last one (gates.md, Commits).
-2. On tracks standard and critical, start the lens reviewers in the background, one fresh sub-agent each, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes:
+2. On tracks standard and critical, start the lens reviewers in the background, one fresh sub-agent each, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes and read from its cache folder:
    - **APoSD**, when the diff adds a public symbol in a non-test file that is not in any packet's Frozen contract: `a-philosophy-of-software-design.md` (full size) and the module's language pack index.
    - **UI/UX**, when `ui` is `true` and the milestone changed UI files: a sub-agent follows the `lens` mode of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) for the routes the milestone touches, and writes its findings as cards anchored to the design file or WCAG.
    - **Security**, when `.software-factory/system/threat-model.md` exists and the milestone changed a file it lists under Trust boundaries or Entry points: a sub-agent follows the `lens` mode of [../factory-security/SKILL.md](../factory-security/SKILL.md) on the milestone diff, and writes its confirmed findings as cards.
-   - **Money**, on track critical when `money` is `true` in `lenses.yaml`: `fin-verification/SKILL.md` with the one domain skill that fits the milestone (`fin-ledger`, `fin-payments`, `fin-onchain` or `fin-exchange-integration`), or with `fin-money-core` when none fits. `fin-money-core` joins a domain skill only when the risk is arithmetic or idempotency itself. Each pack is read through its `SKILL.md`.
+   - **Money**, on track critical when `money` is `true` in `lenses.yaml`: `fin-verification/SKILL.md` with the one domain skill that fits the milestone (`fin-ledger`, `fin-payments`, `fin-onchain` or `fin-exchange-integration`), or with `fin-money-core` when none fits. `fin-money-core` joins a domain skill only when the risk is arithmetic or idempotency itself. Each pack is read through `SKILL.md` in its cache folder.
 
    Each receives:
 
@@ -61,7 +61,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this milestone
    - track small: the small-diff fast path, whatever the diff size
    - findings from a rule under the merged Quiet rules of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths), money and security rules excepted, are recommended as skip
-   - rubric for the agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes:
+   - rubric for the agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes and read from its cache folder:
      - design and reuse: `refactoring-guru.mini.md` and the simplification ladder from packs.md
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness: each test under a packet's Tests first asserts the outcome its line names, and for an FR the outcome of its Example in Covers; a test that only calls the code, or only checks that it does not throw, is a finding tagged `[factory/example-asserted]`

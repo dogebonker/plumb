@@ -14,7 +14,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
    ln -sf ~/Work/software-factory/skills/factory-init ~/Work/software-factory/skills/factory-upgrade ~/.claude/skills/
    ```
    To set a project up by hand instead, see [kit/README.md](kit/README.md) and [skills/README.md](skills/README.md).
-2. In the repository you want to change, run `/factory-init`: it locks the framework commit, migrates an old `.factory/`, links the skills and offers the hard-gate hook. Then start with `/factory-triage <the task in plain words>`.
+2. In the repository you want to change, run `/factory-init`: it locks the framework commit, fetches the packs it pins, migrates an old `.factory/`, links the skills and offers the hard-gate hook. Then start with `/factory-triage <the task in plain words>`.
 3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`, stopping only for your answers and sign-offs.
 4. You approve every gate and sign off every milestone. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
@@ -295,4 +295,4 @@ The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer
 
 ## License
 
-[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are installed per machine and pinned by hash, not vendored into this repository.
+[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are fetched into a cache per pinned hash on each machine, not vendored into this repository.

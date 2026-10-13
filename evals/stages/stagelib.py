@@ -51,6 +51,15 @@ def factory_lock():
     return f"framework: {{ commit: {factory_commit()}, installed: 2026-10-01 }}\npacks:\n{pins}\nskills_linked: []\n"
 
 
+def pack_dir(name):
+    """The pack cache folder of the kit's pin for name at this repository's HEAD (factory-shared/packs.md)."""
+    pins = git_ok(FACTORY, "show", "HEAD:kit/packs.lock.yaml") or ""
+    found = re.search(rf"^  {re.escape(name)}:.*\bhash: ([0-9a-f]{{40}})", pins, re.MULTILINE)
+    if not found:
+        raise SystemExit(f"kit/packs.lock.yaml at HEAD pins no {name}")
+    return f"~/.software-factory/packs/{name}@{found.group(1)}"
+
+
 def new_repo(target, case_dir, exclude=()):
     """Copy the case's fixture into an empty target, minus `exclude`, and start a git repository on main."""
     target = Path(target)

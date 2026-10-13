@@ -36,7 +36,8 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 30 | A thin orchestrator for the autopilot, and token budgets per step | Accepted |
 | 31 | A framework on top of harnesses: evals first, one `.software-factory/` per project, harness adapters, a Slack channel | Accepted (planned) |
 | 32 | Review agents owned by factory-review, with a defect rubric and file coverage | Accepted |
-| 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted |
+| 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted, amended by 34 |
+| 34 | Packs per project, in a cache per pinned hash | Accepted |
 
 ---
 
@@ -345,3 +346,11 @@ Where the design left a choice open:
 **Cost.** Every existing project needs `/factory-init` once, and every branch with `.factory/` a migration commit. Every machine and runner host keeps a cache folder per commit in use, and a runner host runs one linked framework at a time. Pins are per project, but packs are still installed once per machine: two projects pinned to different hashes of one pack cannot both load it until a cache per hash exists. A rule now takes longer to calibrate in a new repository.
 
 **Merge.** Main's 4dfc306 (runtime.py, the runner's managed harness and recovery clone, the benchmark, the UI render checks) and 5d18ad5 (the review agents of decision 32) were brought into the S14 layout when main was merged into this branch: their paths moved under `.software-factory/` and `<kit>`.
+
+## 34. Packs per project, in a cache per pinned hash
+
+**Decision.** A pack loads from `~/.software-factory/packs/<name>@<hash>/`, the folder for the hash the project's `factory.lock` pins, and from nowhere else. `bin/factory-packs-fetch` fills it from a bare mirror of each source (`packs/.mirrors/<owner>__<repo>.git`, cloned without blobs), with `git archive` of the pinned tree into a temporary folder, a tree hash recomputed from the unpacked files, and a rename. The load is byte-exact: the mirror's `info/attributes` switches off every attribute that rewrites content (eol, filters, ident, export-ignore, export-subst), and archive and verification run without global or system git config. A symlink that is absolute or resolves outside the pack fails the pin, and clones and fetches check objects (`transfer.fsckObjects`). Sources are always `https://github.com/<source>.git`: there is no source override in production, and tests rewrite the URL through git's own `url.<base>.insteadOf`. `/factory-init` and `/factory-upgrade` run it after writing the lock, and a skill that finds a pack missing runs it once more, then continues without the pack; a headless runner host's operator fetches each change's lock instead. Each pin gains `path`, the pack's folder in its source, so `/factory-packs` reads upstream from the mirror (the tree at the default branch, its changelog and its log) instead of `~/.agents/.skill-lock.json` and `npx skills`.
+
+**Why.** The framework is per project: like Angular in three apps that each pin their own version, two projects may pin different hashes of one pack. With one install per machine, only one of them could load it (decision 33, Cost). A content hash names exactly what a pin approved, so a shared folder per hash serves every project that pins it.
+
+**Cost.** The first fetch of each source needs the network, and a host without it runs without the packs it lacks. Disk grows by one folder per pack and hash in use, and the mirrors keep every commit and tree of their sources; nothing prunes either yet. A pin the skills CLI recorded for a pack at a repository's root names a commit, not a tree (`rust-skills`); the fetch accepts it and loads that commit's tree, and the next bump writes a tree hash.

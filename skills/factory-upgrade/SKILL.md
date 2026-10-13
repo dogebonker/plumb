@@ -1,6 +1,6 @@
 ---
 name: factory-upgrade
-description: Move a factory project to another framework commit or dev_path - show what changed, install it, bump factory.lock and the pack pins, relink the skills.
+description: Move a factory project to another framework commit or dev_path - show what changed, install it, bump factory.lock and the pack pins, fetch the packs, relink the skills.
 disable-model-invocation: true
 argument-hint: "[commit, tag or dev_path]"
 ---
@@ -34,6 +34,7 @@ When `<new>` is older than `<old>` (`git merge-base --is-ancestor <new> <old>`),
 1. A commit: `<framework>` is `~/.software-factory/framework/<sha>`. When it lacks `kit/`, `skills/` or `hooks/`, run `<framework_repo>/bin/factory-install <sha>`, after the link check of `/factory-init` step 2. A `dev_path`: `<framework>` is that path.
 2. Rewrite `.software-factory/factory.lock`: the framework line (`{ commit: <sha>, installed: <today> }` or `{ dev_path: <absolute path> }`), the `packs:` block copied anew from `<framework>/kit/packs.lock.yaml`, and `skills_linked` as it was.
 3. Show the pins that changed, were added or were dropped.
+4. Run `<bin>/factory-packs-fetch` from the repository root, when that script exists, to fetch the new pins into the pack cache ([../factory-shared/packs.md](../factory-shared/packs.md)). Show each failed pack with its reason and go on: a skill continues without a pack it cannot load.
 
 ## 4. Relink
 

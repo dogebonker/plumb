@@ -11,7 +11,7 @@ Framework: $ARGUMENTS (empty: ask in step 2)
 
 Init makes a repository a factory project: `.software-factory/` with its `factory.lock` and `principles.md`, and the locked framework's skills linked into it ([../factory-shared/gates.md](../factory-shared/gates.md), Paths). It runs before a lock exists, so it does not resolve `<kit>`. `<framework_repo>` is `framework_repo` in `~/.software-factory/user/config.yaml`; when it is missing, ask for the path to the factory checkout. To change the framework of a project that has a lock, use `/factory-upgrade`.
 
-Run it again on a new machine or in a fresh clone: with a lock already committed, it keeps the lock, installs what it names (step 2), links the skills (step 5) and makes the offers of steps 6 and 7 that are not done yet. A committed lock whose `dev_path` folder is missing on this machine came from someone developing the factory: say so, point to `/factory-upgrade` to pick a commit, and stop.
+Run it again on a new machine or in a fresh clone: with a lock already committed, it keeps the lock, installs what it names (step 2), fetches its packs (step 4), links the skills (step 5) and makes the offers of steps 6 and 7 that are not done yet. A committed lock whose `dev_path` folder is missing on this machine came from someone developing the factory: say so, point to `/factory-upgrade` to pick a commit, and stop.
 
 `<bin>` is `<framework>/bin` once step 2 has a framework that holds `bin/`, otherwise `<framework_repo>/bin`: the scripts run from the locked commit, not from whatever the checkout holds now.
 
@@ -80,6 +80,8 @@ Keep its lists of other local branches, remote branches and branches checked out
   <!-- example: - clean-code/small functions: overruled 3 times, last in checkout-retry -->
   ```
 
+- The packs: run `<bin>/factory-packs-fetch` from the repository root, whether the lock was written now or already existed, when that script exists. It fetches each pin of the lock into the pack cache (`~/.software-factory/packs/<name>@<hash>/`, [../factory-shared/packs.md](../factory-shared/packs.md)). Show each failed pack with its reason and go on: a skill continues without a pack it cannot load.
+
 ## 5. Link the skills
 
 1. `mkdir -p .claude/skills`, remove the links there named `factory-*` or `ui-hard-gate` (links only, never a real folder), then `ln -s <framework>/skills/factory-* <framework>/skills/ui-hard-gate .claude/skills/`.
@@ -124,4 +126,4 @@ Return to the starting point at the end and after any failure: the branch, or `g
 
 ## 9. Hand off
 
-Name what ran: the commit or `dev_path`, the links, the hook, the user layer. The next skill is `/factory-triage <task>`, or, when a change on this branch has `reconciled: false`, the skill its `notes_for_fresh_session` names.
+Name what ran: the commit or `dev_path`, the packs fetched and any that failed, the links, the hook, the user layer. The next skill is `/factory-triage <task>`, or, when a change on this branch has `reconciled: false`, the skill its `notes_for_fresh_session` names.

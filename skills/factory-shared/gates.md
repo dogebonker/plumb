@@ -6,6 +6,7 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 
 - `<project>` is the `.software-factory` folder at the repository root: `system/` (living documents), `changes/` (one folder per change), `runs/ci/`, `runs/ui/`, `runs/security/` and `runs/prune/` (run outputs), `factory.lock`, `principles.md` (the project's principles and quiet rules) and `evals/` (the project's own eval cases).
 - The framework cache is `~/.software-factory/framework/<commit>/`: `kit/`, `skills/`, `hooks/` and `bin/` of one factory commit, unpacked once per machine by `bin/factory-install` in the factory repository. Projects never edit it.
+- The pack cache is `~/.software-factory/packs/<name>@<hash>/`: one folder per pinned pack and hash, shared by every project on the machine that pins that hash, filled by `bin/factory-packs-fetch` from bare mirrors in `~/.software-factory/packs/.mirrors/` ([packs.md](packs.md)). Projects never edit it.
 - `<kit>` is `~/.software-factory/framework/<commit>/kit`, where `<commit>` is `framework.commit` in `<project>/factory.lock`, or `<dev_path>/kit` when the lock names a `dev_path` (Resolve `<kit>`, below).
 - The user layer is `~/.software-factory/user/`: `principles.md`, the user's taste across projects, and `config.yaml`, whose `framework_repo:` is the local clone of the factory repository, used to show the log between two framework commits (Load a change) and by `/factory-packs` to bump the framework's pins.
 - **Principle layers.** Principles and quiet rules load in three layers: `<kit>/principles.md` (framework defaults), then `~/.software-factory/user/principles.md`, then `<project>/principles.md`; a missing file is skipped. A later layer wins on the same `<lens>/<rule>`: a project Principle whose Source is a `<lens>/<rule>` that a lower layer lists under Quiet rules takes that rule out of Quiet rules. Money and security rules never go quiet in any layer: rules from a `fin-*` pack, and rules that guard authentication, authorization, secrets, injection, cross-site attacks or path traversal.
@@ -14,8 +15,9 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 
 ```yaml
 framework: { commit: <sha>, installed: <ISO date> }
-packs: { <name>: { source: ..., hash: ..., pinned_at: ... } }   # copied from <kit>/packs.lock.yaml at init or upgrade
-skills_linked: [.claude/skills]                                  # where /factory-init linked the skills
+packs:                                                                # copied from <kit>/packs.lock.yaml at init or upgrade
+  <name>: { source: ..., path: ..., hash: ..., pinned_at: ... }       # one line per pack; `packs: {}` when there is none
+skills_linked: [.claude/skills]                                       # where /factory-init linked the skills
 ```
 
 To develop the factory itself, `framework` may instead be `{ dev_path: <absolute path to a factory checkout> }`.

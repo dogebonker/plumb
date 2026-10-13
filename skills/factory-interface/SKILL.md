@@ -83,7 +83,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
 
 1. The panel, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes or reported skipped:
 
-   | Lens | When | File under `~/.agents/skills/<name>/` |
+   | Lens | When | File under `<pack>`, `~/.software-factory/packs/<name>@<hash>/` (packs.md) |
    | --- | --- | --- |
    | `a-philosophy-of-software-design` | always; it also gets each module's language pack index | `<name>.md` (full size) |
    | the profile's `challenge` lenses | always | `<name>.mini.md` |
