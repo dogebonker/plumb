@@ -189,3 +189,229 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "names no framework commit" in run(root, "src/a.ts").stderr
 
 print("factory_gate: all checks passed")
+
+# Autonomous corrections use frozen original slices, never their mutable packets.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+
+    def g(*args):
+        r = subprocess.run(['git', '-C', str(root), '-c', 'user.name=t', '-c', 'user.email=t@t',
+                            '-c', 'commit.gpgsign=false', *args], capture_output=True, text=True, check=True)
+        return r.stdout.strip()
+
+    def digest(path):
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    def cli(checkpoint='edit'):
+        return subprocess.run([sys.executable, HOOK, 'repair-check', '--repo', str(root), '--change', 'demo',
+                               '--slice', '03', '--checkpoint', checkpoint], capture_output=True, text=True, check=False)
+
+    g('init', '-q', '-b', 'factory/demo')
+    change = root / '.software-factory/changes/demo'
+    correction = change / 'slices/03'
+    correction.mkdir(parents=True)
+    (root / '.software-factory/factory.lock').write_text('framework: { commit: ' + 'a' * 40 + ' }\n')
+    (root / 'src').mkdir()
+    (root / 'src/a.py').write_text('a = 1\n')
+    (root / 'src/b.py').write_text('b = 1\n')
+    route = 'app/tickets/[id]/page.tsx'
+    (root / route).parent.mkdir(parents=True)
+    (root / route).write_text('export default function Page() {}\n')
+    (root / 'config.txt').write_text('effective input\n')
+    (change / '04-slices.md').write_text(
+        '# Slices\n## Development\nMode: autonomous-local\nRepairs: approved-slice-files\n'
+        '## Requirements\n- FR-01: promised one\n  Example: return one\n- FR-02: promised two\n  Example: return two\n## Slices\n'
+        '### 01 A\nCovers: FR-01\nAllowed files: src/a.py, app/tickets/[id]/page.tsx\n'
+        '### 02 B\nCovers: FR-02\nAllowed files: src/b.py\n')
+    h = digest(change / '04-slices.md')
+    g('add', '.')
+    g('commit', '-qm', 'original source and approved plan')
+    start = g('rev-parse', 'HEAD')
+    st = change / 'status.yaml'
+    rows = ('slices:\n  - { id: 1, state: done, head_commit: ' + start + ' }\n'
+            '  - { id: 2, state: done, head_commit: ' + start + ' }\n'
+            '  - { id: 3, state: building, head_commit: ' + start + ', base_commit: ' + start + ' }')
+    st.write_text(status([(x, 'skipped', 'null') for x, _ in GATES[:3]] + [('slices', 'approved', h)], rows)
+                  + 'mode: interactive\ntrack: small\n')
+    (correction / 'packet.md').write_text('## Allowed files\n- src/a.py\n- app/tickets/[id]/page.tsx\n')
+    failure = change / 'acceptance/failure.md'
+    failure.parent.mkdir()
+    failure.write_text('FR-01 fails independently\n')
+    inputs = correction / 'inputs.json'
+    inputs.write_text(json.dumps({'criteria': [{'id': 'FR-01', 'text': 'return one'}],
+                                 'files': [{'path': 'config.txt', 'sha256': digest(root / 'config.txt')}],
+                                 'commands': ['python test.py'], 'environment': 'python fixture'}))
+    record = {'id': 3, 'branch': 'factory/demo', 'parents': [{'id': 1, 'head_commit': start}],
+              'criteria': ['FR-01'], 'approved_docs': {'product': None, 'architecture': None, 'interface': None, 'slices': h},
+              'start_commit': start, 'paths': ['src/a.py', route],
+              'failure': {'path': 'acceptance/failure.md', 'sha256': digest(failure), 'source_commit': start, 'criteria': ['FR-01']},
+              'proof_inputs': {'path': 'slices/03/inputs.json', 'sha256': digest(inputs)}}
+
+    def save():
+        (correction / 'repair.json').write_text(json.dumps(record))
+
+    save()
+    # Creation stages the exact candidate packet and pending row before validation/dispatch.
+    building_status = st.read_text()
+    pending_status = building_status.replace(
+        'id: 3, state: building, head_commit: ' + start + ', base_commit: ' + start,
+        'id: 3, state: pending, head_commit: null, test_commit: null, base_commit: ' + start)
+    parent_rows = [line for line in building_status.splitlines() if 'state: done' in line]
+    approved_bytes = (change / '04-slices.md').read_bytes()
+    gate_rows = [line for line in building_status.splitlines() if 'doc_sha256:' in line]
+    st.write_text(pending_status)
+    assert cli().returncode == 0 and 'repair scope valid' in cli().stdout, cli().stderr
+    for path in ('src/a.py', route, 'src/b.py'):
+        denied = run(root, path)
+        assert denied.returncode == 2 and 'no slice is being built' in denied.stderr, denied.stderr
+    st.write_text(pending_status.replace('id: 3, state: pending', 'id: 3, state: building'))
+    assert cli().returncode == 0, cli().stderr
+    assert run(root, 'src/a.py').returncode == 0 and run(root, route).returncode == 0
+    assert run(root, 'src/b.py').returncode == 2
+    assert [line for line in st.read_text().splitlines() if 'state: done' in line] == parent_rows
+    assert [line for line in st.read_text().splitlines() if 'doc_sha256:' in line] == gate_rows
+    assert (change / '04-slices.md').read_bytes() == approved_bytes
+    st.write_text(building_status)
+    before = {path: path.read_bytes() for path in root.rglob('*') if path.is_file()}
+    assert cli().returncode == 0 and 'repair scope valid' in cli().stdout, cli().stderr
+    after = {path: path.read_bytes() for path in root.rglob('*') if path.is_file()}
+    assert before == after, 'validator must not mutate Git/config/status/source'
+    assert cli('complete').returncode == 0, cli('complete').stderr
+    assert run(root, 'src/a.py').returncode == 0
+    assert run(root, route).returncode == 0
+    assert cli().returncode == 0 and cli('complete').returncode == 0
+    assert run(root, 'src/b.py').returncode == 2
+    (correction / 'packet.md').write_text('## Allowed files\n- src/a.py\n')
+    assert cli().returncode == 2 and run(root, route).returncode == 2
+    (correction / 'packet.md').write_text('## Allowed files\n- src/a.py\n- src/b.py\n')
+    assert run(root, 'src/b.py').returncode == 2
+    (correction / 'packet.md').write_text('## Allowed files\n- src/a.py\n- app/tickets/[id]/page.tsx\n')
+    (correction / 'repair.json').unlink()
+    assert run(root, 'src/a.py').returncode == 2
+    save()
+    (root / 'src/a.py').write_text('a = 2\n')
+    assert cli().returncode == 0, cli().stderr
+    assert cli('complete').returncode == 2
+    (root / 'src/b.py').write_text('b = 2\n')
+    assert cli().returncode == 2
+    g('checkout', '--', 'src/a.py', 'src/b.py')
+    for key, value in [('approval', True), ('criteria', ['FR-99']), ('paths', ['src/b.py'])]:
+        old = record.get(key)
+        record[key] = value
+        save()
+        assert cli().returncode == 2, key
+        if old is None:
+            del record[key]
+        else:
+            record[key] = old
+    save()
+    (root / 'config.txt').write_text('changed\n')
+    assert cli().returncode == 2
+    g('checkout', '--', 'config.txt')
+    # Strict receipt schemas and provenance reject forged authority and stale inputs.
+    baseline = json.loads(json.dumps(record))
+    mutations = [
+        ('boolean ID', lambda r: r.update(id=True)),
+        ('duplicate parents', lambda r: r['parents'].append(dict(r['parents'][0]))),
+        ('repair as parent', lambda r: r['parents'][0].update(id=3)),
+        ('duplicate paths', lambda r: r['paths'].append(r['paths'][0])),
+        ('traversal', lambda r: r.update(paths=['src/../src/a.py'])),
+        ('star pattern', lambda r: r.update(paths=['app/tickets/*/page.tsx'])),
+        ('question pattern', lambda r: r.update(paths=['app/tickets/?/page.tsx'])),
+        ('control source', lambda r: r.update(paths=['.git/config'])),
+        ('foreign branch', lambda r: r.update(branch='factory/other')),
+        ('false skipped approval', lambda r: r['approved_docs'].update(product='a' * 64)),
+        ('null approved slices', lambda r: r['approved_docs'].update(slices=None)),
+        ('stale document', lambda r: r['approved_docs'].update(slices='a' * 64)),
+        ('unknown failure criterion', lambda r: r['failure'].update(criteria=['FR-02'])),
+        ('missing evidence', lambda r: r['failure'].update(path='acceptance/missing.md')),
+        ('escaping evidence', lambda r: r['failure'].update(path='../failure.md')),
+        ('missing receipt', lambda r: r['proof_inputs'].update(path='slices/03/missing.json')),
+        ('unknown receipt field', lambda r: r['proof_inputs'].update(review='approved')),
+        ('unknown commit', lambda r: r.update(start_commit='a' * 40)),
+    ]
+    for name, mutate in mutations:
+        record = json.loads(json.dumps(baseline))
+        mutate(record)
+        save()
+        assert cli().returncode == 2 and run(root, 'src/a.py').returncode == 2, name
+    record = json.loads(json.dumps(baseline))
+    save()
+    repair_path = correction / 'repair.json'
+    repair_path.write_text(repair_path.read_text().replace('"id": 3', '"id": 3, "id": 3', 1))
+    assert cli().returncode == 2 and 'duplicate' in cli().stderr
+    save()
+    original_inputs = inputs.read_text()
+    for key, value in [('review', 'approved'), ('commands', []), ('environment', True),
+                       ('criteria', [{'id': 'FR-01', 'text': 'forged promise'}]),
+                       ('files', [{'path': 'src/a.py', 'sha256': digest(root / 'src/a.py')}])]:
+        mutated = json.loads(original_inputs)
+        mutated[key] = value
+        inputs.write_text(json.dumps(mutated))
+        record['proof_inputs']['sha256'] = digest(inputs)
+        save()
+        assert cli().returncode == 2, key
+    inputs.write_text(original_inputs)
+    record = json.loads(json.dumps(baseline))
+    save()
+    original_status = st.read_text()
+    for text in [original_status.replace('mode: interactive', 'mode: headless'),
+                 original_status.replace('base_commit: ' + start, 'base_commit: ' + 'a' * 40),
+                 original_status.replace(', base_commit: ' + start, ''),
+                 original_status.replace('state: skipped', 'state: pending', 1),
+                 original_status.replace('id: 2', 'id: 1'),
+                 original_status.replace('id: 1, state: done', 'id: 1, state: building')]:
+        st.write_text(text)
+        assert cli().returncode == 2 and run(root, 'src/a.py').returncode == 2
+    st.write_text(original_status)
+    for path in (failure, inputs, change / '04-slices.md', root / 'config.txt', root / 'src/a.py'):
+        contents = path.read_bytes()
+        outside = root.parent / (root.name + '-outside')
+        outside.write_bytes(contents)
+        path.unlink()
+        path.symlink_to(outside)
+        assert cli().returncode == 2, path
+        path.unlink()
+        path.write_bytes(contents)
+        outside.unlink()
+    (root / 'src/untracked.py').write_text('unowned\n')
+    assert cli().returncode == 2
+    (root / 'src/untracked.py').unlink()
+    (root / 'src/a.py').write_text('owned staged\n')
+    g('add', 'src/a.py')
+    assert cli().returncode == 0 and cli('complete').returncode == 2
+    g('reset', '-q', 'HEAD', '--', 'src/a.py')
+    g('checkout', '--', 'src/a.py')
+    g('checkout', '-q', '--detach')
+    assert cli().returncode == 2
+    g('checkout', '-q', 'factory/demo')
+    # Valid owned committed changes need a current completion head receipt.
+    (root / 'src/a.py').write_text('a = 2\n')
+    g('add', 'src/a.py')
+    g('commit', '-qm', 'owned correction')
+    fixed_head = g('rev-parse', 'HEAD')
+    assert cli().returncode == 0 and cli('complete').returncode == 2
+    st.write_text(original_status.replace('id: 3, state: building, head_commit: ' + start,
+                                          'id: 3, state: building, head_commit: ' + fixed_head))
+    assert cli('complete').returncode == 0
+    # Resetting start to corrected source cannot reuse old failure source evidence.
+    record['start_commit'] = fixed_head
+    save()
+    assert cli().returncode == 2
+    record = json.loads(json.dumps(baseline))
+    save()
+    (root / 'src/b.py').write_text('b = 2\n')
+    g('add', 'src/b.py')
+    g('commit', '-qm', 'forbidden')
+    g('revert', '--no-edit', 'HEAD')
+    assert cli().returncode == 2, 'reverted forbidden source edit must remain denied'
+    g('reset', '--hard', fixed_head)
+    g('checkout', '-q', '-b', 'side', start)
+    (root / 'src/b.py').write_text('b = 3\n')
+    g('add', 'src/b.py')
+    g('commit', '-qm', 'foreign merge source')
+    g('checkout', '-q', 'factory/demo')
+    g('merge', '--no-edit', 'side')
+    assert cli().returncode == 2, 'each merge parent diff must stay within scope'
+
+print('factory_gate: correction checks passed')

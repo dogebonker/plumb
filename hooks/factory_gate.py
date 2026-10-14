@@ -23,12 +23,12 @@ EDITING = {"building", "red", "green"}
 DESIGN_STAMP = "factory:design-schema"  # marks a design file the factory made, not any DESIGN.md
 
 
-def git(cwd, *args):
+def git(cwd, *args, raw=False):
     try:
-        r = subprocess.run(["git", "-C", str(cwd), *args], capture_output=True, text=True, check=False)
+        r = subprocess.run(["git", "--no-optional-locks", "-C", str(cwd), *args], capture_output=True, text=True, check=False)
     except OSError:
         return None
-    return r.stdout.strip() if r.returncode == 0 else None
+    return (r.stdout if raw else r.stdout.strip()) if r.returncode == 0 else None
 
 
 def field(text, key):
@@ -57,7 +57,8 @@ def parse_status(text):
         item = re.match(r"^\s*-\s*\{(.*)\}", line)
         if section == "slices" and item:
             status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state"),
-                                     "head_commit": field(item.group(1), "head_commit")})
+                                     "head_commit": field(item.group(1), "head_commit"),
+                                     "base_commit": field(item.group(1), "base_commit")})
     return status
 
 
@@ -71,6 +72,310 @@ def allowed_files(packet):
                 if part.split():
                     files.add(part.split()[0].strip("`"))
     return files
+
+
+def strict_json(path):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError(f'duplicate JSON key: {key}')
+            result[key] = value
+        return result
+    return json.loads(path.read_text(), object_pairs_hook=pairs)
+
+
+def exact(value, keys):
+    if not isinstance(value, dict) or set(value) != set(keys.split()):
+        raise ValueError(f'expected exactly {keys}')
+
+
+def strings(value):
+    if not isinstance(value, list) or not value or any(not isinstance(x, str) or not x.strip() for x in value):
+        raise ValueError('expected nonempty string array')
+    if len(set(value)) != len(value):
+        raise ValueError('duplicate values')
+    return value
+
+
+def source_path(path):
+    return not (path == 'DESIGN.md' or path.split('/')[0] in {'.git', '.factory', '.software-factory'})
+
+
+def safe_path(root, value, source=False, existing=False):
+    """Literal paths only: brackets are route names, never expanded as patterns."""
+    if (not isinstance(value, str) or not value or any(c in value for c in '\\*?\x00\r\n')
+            or any(ord(c) < 32 or ord(c) == 127 for c in value)
+            or any(part in {'', '.', '..'} for part in value.split('/')) or value.startswith('/')):
+        raise ValueError(f'unsafe path: {value!r}')
+    if source and not source_path(value):
+        raise ValueError(f'control path is not source: {value}')
+    path = root
+    for part in value.split('/'):
+        path = path / part
+        if path.is_symlink():
+            raise ValueError(f'symlink path: {value}')
+    if not path.resolve().is_relative_to(root.resolve()) or (existing and not path.is_file()):
+        raise ValueError(f'missing or escaped file: {value}')
+    return path
+
+
+def hash_file(root, entry, source=False):
+    exact(entry, 'path sha256')
+    if not isinstance(entry['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', entry['sha256']):
+        raise ValueError('invalid SHA-256')
+    path = safe_path(root, entry['path'], source=source, existing=True)
+    if hashlib.sha256(path.read_bytes()).hexdigest() != entry['sha256']:
+        raise ValueError(f'changed evidence/input: {entry["path"]}')
+    return path
+
+
+def original_slices(text):
+    result = {}
+    headings = list(re.finditer(r'^### (\d+)\s+[^\n]+$', text, re.MULTILINE))
+    for i, heading in enumerate(headings):
+        ident = int(heading[1])
+        if ident < 1 or ident in result:
+            raise ValueError('duplicate or malformed original slice ID')
+        block = text[heading.end():headings[i + 1].start() if i + 1 < len(headings) else len(text)]
+        covers = re.search(r'^Covers:\s*(.+)$', block, re.MULTILINE)
+        paths = re.search(r'^Allowed files:\s*(.+)$', block, re.MULTILINE)
+        if not covers or not paths:
+            raise ValueError('original slice lacks Covers or Allowed files')
+        result[ident] = (strings([x.strip().strip('`') for x in covers[1].split(',')]),
+                         strings([x.strip().strip('`') for x in paths[1].split(',')]))
+    if not result:
+        raise ValueError('cannot read original slice headings')
+    return result
+
+
+def mandate(text):
+    section = re.search(r'^## Development\s*\n(.*?)(?=^## |\Z)', text, re.MULTILINE | re.DOTALL)
+    return bool(section and re.search(r'^Mode: autonomous-local\s*$', section[1], re.MULTILINE)
+                and re.search(r'^Repairs: approved-slice-files\s*$', section[1], re.MULTILINE))
+
+
+def criterion_texts(change, status):
+    paths = [change / '04-slices.md'] if status['scalars'].get('track') == 'small' else [change / '01-product.md', change / '02-architecture.md']
+    standing = change.parent.parent / 'system/constraints.md'
+    if standing.is_file():
+        paths.append(standing)
+    result = {}
+    for path in paths:
+        root = change.parent.parent.parent
+        text = safe_path(root, path.relative_to(root).as_posix(), existing=True).read_text()
+        header, current_fr = None, None
+        for line in text.splitlines():
+            if line.startswith('|'):
+                cells = [x.strip() for x in line.strip('|').split('|')]
+                if 'ID' in cells and any(x in cells for x in ('Fit criterion', 'Budget')):
+                    header = cells
+                elif header and len(cells) == len(header):
+                    ident = cells[header.index('ID')].strip('`')
+                    column = 'Fit criterion' if 'Fit criterion' in header else 'Budget'
+                    if re.fullmatch(r'(?:SYS-)?(?:FR|NFR)-\d+', ident):
+                        result[ident] = cells[header.index(column)]
+            else:
+                match = re.match(r'^- (FR-\d+):\s*(.+)$', line)
+                if match:
+                    current_fr = match[1]
+                example = re.match(r'^\s+Example:\s*(.+)$', line)
+                if example and current_fr:
+                    if current_fr in result:
+                        raise ValueError('ambiguous approved criterion: multiple Examples')
+                    result[current_fr] = example[1]
+                budget = re.match(r'^- (NFR-\d+):\s*.+?\s*->\s*(.+)$', line)
+                if budget:
+                    result[budget[1]] = budget[2]
+    return result
+
+
+def git_paths(root, *args):
+    value = git(root, *args, raw=True)
+    if value is None:
+        raise ValueError('cannot read Git source paths')
+    return [path for path in value.split('\x00') if path]
+
+
+def touched_commits(root, start, head):
+    commits = git(root, 'rev-list', f'{start}..{head}')
+    if commits is None:
+        raise ValueError('cannot read Git commit range')
+    paths = []
+    for commit in commits.splitlines():
+        parents = git(root, 'rev-list', '--parents', '-n', '1', commit)
+        if parents is None:
+            raise ValueError('cannot read Git commit parents')
+        for parent in parents.split()[1:]:
+            paths.extend(git_paths(root, 'diff', '--name-only', '--no-renames', '-z', parent, commit))
+    return paths
+
+
+def repair_check(root, change, status, ident, checkpoint):
+    """Read-only structural/scope validation; receipts do not confer approval or review."""
+    def commit(value):
+        if not isinstance(value, str) or not re.fullmatch('[0-9a-f]{40}', value) or git(root, 'rev-parse', '--verify', value + '^{commit}') != value:
+            raise ValueError('invalid or missing commit')
+        return value
+
+    def ancestor(a, b):
+        if git(root, 'merge-base', '--is-ancestor', a, b) is None:
+            raise ValueError('commit is not an ancestor')
+
+    def ids(value):
+        if type(value) is not int or value < 1:
+            raise ValueError('invalid slice ID')
+        return value
+
+    safe_path(root, change.relative_to(root).as_posix())
+    if status['scalars'].get('mode') != 'interactive':
+        raise ValueError('corrections require explicit interactive mode')
+    doc = safe_path(change, '04-slices.md', existing=True)
+    text = doc.read_text()
+    if not mandate(text):
+        raise ValueError('original approved slices lack Development mandate')
+    originals = original_slices(text)
+    rows = {}
+    for row in status['slices']:
+        if not re.fullmatch(r'[0-9]+', row['id']) or int(row['id']) < 1 or int(row['id']) in rows:
+            raise ValueError('duplicate or malformed status slice ID')
+        rows[int(row['id'])] = row
+    if ident not in rows or ident in originals or ident != max(rows):
+        raise ValueError('correction must be the next unused slice ID')
+    record_path = safe_path(change, f'slices/{ident:02d}/repair.json', existing=True)
+    record = strict_json(record_path)
+    exact(record, 'id branch parents criteria approved_docs start_commit paths failure proof_inputs')
+    if ids(record['id']) != ident:
+        raise ValueError('record ID differs from slice')
+    branch = git(root, 'symbolic-ref', '--short', 'HEAD')
+    if not branch or record['branch'] != branch or status['branch'] != branch:
+        raise ValueError('correction branch differs from attached/status branch')
+    exact(record['approved_docs'], 'product architecture interface slices')
+    for gate, filename in GATES:
+        state = status['gates'].get(gate, {})
+        claimed = record['approved_docs'][gate]
+        if state.get('state') == 'skipped' and gate != 'slices' and status['scalars'].get('track') == 'small':
+            if claimed is not None or state.get('doc_sha256') != 'null':
+                raise ValueError('skipped gate requires null digest')
+        elif state.get('state') == 'approved' and state.get('approved_at') not in {None, 'null'}:
+            hash_file(change, {'path': filename, 'sha256': claimed})
+            if claimed != state.get('doc_sha256'):
+                raise ValueError('approved document digest differs from status')
+        else:
+            raise ValueError(f'{gate} gate is not genuinely approved or legitimately skipped')
+    start = commit(record['start_commit'])
+    if rows[ident]['base_commit'] != start:
+        raise ValueError('correction base_commit differs from immutable repair start')
+    head = commit(git(root, 'rev-parse', 'HEAD'))
+    ancestor(start, head)
+    if not isinstance(record['parents'], list) or not record['parents']:
+        raise ValueError('missing original parents')
+    parents, covers, allowed = set(), set(), set()
+    for parent in record['parents']:
+        exact(parent, 'id head_commit')
+        parent_id = ids(parent['id'])
+        if parent_id in parents or parent_id not in originals or parent_id not in rows:
+            raise ValueError('duplicate or unknown original parent')
+        parents.add(parent_id)
+        row = rows[parent_id]
+        fixed = commit(parent['head_commit'])
+        if row['state'] != 'done' or row['head_commit'] != fixed:
+            raise ValueError('original parent must remain done at recorded head')
+        ancestor(fixed, start)
+        covers.update(originals[parent_id][0])
+        allowed.update(originals[parent_id][1])
+    for path in allowed:
+        safe_path(root, path, source=True)
+    criteria = set(strings(record['criteria']))
+    if not criteria <= covers:
+        raise ValueError('unknown or widened repair criteria')
+    paths = set(strings(record['paths']))
+    for path in paths:
+        safe_path(root, path, source=True)
+    if not paths <= allowed:
+        raise ValueError('repair paths widen original approved scope')
+    packet = safe_path(change, f'slices/{ident:02d}/packet.md', existing=True)
+    if allowed_files(packet) != paths:
+        raise ValueError('packet widens or omits repair scope')
+    failure = record['failure']
+    exact(failure, 'path sha256 source_commit criteria')
+    hash_file(change, {'path': failure['path'], 'sha256': failure['sha256']})
+    if set(strings(failure['criteria'])) != criteria:
+        raise ValueError('failure criteria differ')
+    tested = commit(failure['source_commit'])
+    ancestor(tested, start)
+    if any(source_path(p) for p in touched_commits(root, tested, start)):
+        raise ValueError('failure source changed before repair baseline')
+    input_path = hash_file(change, record['proof_inputs'])
+    inputs = strict_json(input_path)
+    exact(inputs, 'criteria files commands environment')
+    strings(inputs['commands'])
+    if not isinstance(inputs['environment'], str) or not inputs['environment'].strip():
+        raise ValueError('missing environment identity')
+    known = criterion_texts(change, status)
+    input_ids = []
+    if not isinstance(inputs['criteria'], list) or not inputs['criteria']:
+        raise ValueError('missing proof criteria')
+    for criterion in inputs['criteria']:
+        exact(criterion, 'id text')
+        if not isinstance(criterion['id'], str) or not isinstance(criterion['text'], str) or not criterion['text'] or known.get(criterion['id']) != criterion['text']:
+            raise ValueError('proof criterion is not verbatim approved criterion')
+        input_ids.append(criterion['id'])
+    if set(strings(input_ids)) != criteria:
+        raise ValueError('proof criteria differ')
+    if not isinstance(inputs['files'], list) or not inputs['files']:
+        raise ValueError('missing effective inputs')
+    input_files = []
+    for entry in inputs['files']:
+        path = hash_file(root, entry)
+        if entry['path'] in paths or path == input_path:
+            raise ValueError('effective inputs include mutable repair source or receipt')
+        input_files.append(entry['path'])
+    strings(input_files)
+    dirty = (git_paths(root, 'diff', '--name-only', '--no-renames', '-z')
+             + git_paths(root, 'diff', '--cached', '--name-only', '--no-renames', '-z')
+             + git_paths(root, 'ls-files', '--others', '--exclude-standard', '-z'))
+    for path in touched_commits(root, start, head) + dirty:
+        if source_path(path):
+            safe_path(root, path, source=True)
+            if path not in paths:
+                raise ValueError(f'source path outside repair scope: {path}')
+    if checkpoint == 'complete':
+        if any(source_path(path) for path in dirty):
+            raise ValueError('completion requires clean source index/worktree')
+        recorded_head = commit(rows[ident]['head_commit'])
+        ancestor(start, recorded_head)
+        ancestor(recorded_head, head)
+        if any(source_path(path) for path in touched_commits(root, recorded_head, head)):
+            raise ValueError('completion head proof is stale')
+    return paths
+
+
+def repair_cli():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--repo', required=True)
+    parser.add_argument('--change', required=True)
+    parser.add_argument('--slice', required=True)
+    parser.add_argument('--checkpoint', choices=['edit', 'complete'], required=True)
+    args = parser.parse_args(sys.argv[2:])
+    try:
+        root = Path(args.repo)
+        if not root.is_absolute() or git(root, 'rev-parse', '--show-toplevel') != str(root.resolve()):
+            raise ValueError('repo must be an absolute Git repository root')
+        if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]*', args.change) or not re.fullmatch(r'\d+', args.slice):
+            raise ValueError('invalid change or slice identifier')
+        change = safe_path(root, f'.software-factory/changes/{args.change}')
+        status_path = safe_path(change, 'status.yaml', existing=True)
+        reason = lock_problem(root) or ('legacy factory change remains active' if legacy_active(root) else None)
+        if reason:
+            raise ValueError(reason)
+        repair_check(root, change, parse_status(status_path.read_text()), int(args.slice), args.checkpoint)
+    except (ValueError, OSError, TypeError, KeyError) as error:
+        print(str(error), file=sys.stderr)
+        return 2
+    print('repair scope valid')
+    return 0
 
 
 def check(change, status, rel):
@@ -87,7 +392,7 @@ def check(change, status, rel):
         return None
     for gate, doc in GATES:
         if gates[gate]["state"] == "approved":
-            path = change / doc
+            path = safe_path(root, (change / doc).relative_to(root).as_posix())
             digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
             if digest != gates[gate]["doc_sha256"]:
                 return f"{doc} changed after the {gate} gate was approved. Run /factory-{gate} to approve it again."
@@ -102,7 +407,25 @@ def check(change, status, rel):
               or [s for s in status["slices"] if s["state"] == "green"])
     if not active:
         return "no slice is being built. Run /factory-build to start the next slice."
+    original = original_slices((change / "04-slices.md").read_text()) if mandate((change / "04-slices.md").read_text()) else None
+    if original is not None:
+        ids = [s["id"] for s in status["slices"]]
+        if any(not re.fullmatch(r"[0-9]+", ident) or int(ident) < 1 for ident in ids) or len({int(ident) for ident in ids}) != len(ids):
+            return "duplicate or malformed status slice ID"
+    repairs = {}
     for s in active:
+        record = change / "slices" / s["id"].zfill(2) / "repair.json"
+        if record.exists() or (original is not None and (not s["id"].isdigit() or int(s["id"]) not in original)):
+            try:
+                repairs[s["id"]] = repair_check(root, change, status, int(s["id"]), "edit")
+            except (ValueError, OSError, TypeError, KeyError) as error:
+                return f"invalid correction: {error}"
+    for s in active:
+        if s["id"] in repairs:
+            if rel in repairs[s["id"]]:
+                safe_path(root, rel, source=True)
+                return None
+            continue
         packet = change / "slices" / s["id"].zfill(2) / "packet.md"
         if packet.exists() and rel in allowed_files(packet):
             return None
@@ -191,4 +514,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(repair_cli() if sys.argv[1:2] == ["repair-check"] else main())

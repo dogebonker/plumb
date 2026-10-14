@@ -6,6 +6,7 @@ Research for the Layout section of the architecture gate ([gates.md, Layout](../
 
 - **Pick by the domain first, then by size.** Thin CRUD logic gets the framework's MVC tree or a plain layered tree. A domain with real business rules gets hexagonal (Clean) layers with DDD's domain, application and infrastructure. Several bounded contexts in one deployable get a modular monolith whose modules are those contexts. CQRS is added inside one context when reads and writes really differ, never across a whole CRUD system. Legacy code keeps the layout it has.
 - **Hexagonal, Onion and Clean are one idea.** Martin presents Clean Architecture as an integration of Hexagonal, Onion, DCI and BCE, with a single rule: source dependencies point inward ([Martin][clean]). The kit should treat them as one pattern with naming variants.
+- **FDA is the strong default for new frontend roots (2026-10-14 update).** Existing conventions still win. Factory uses a lightweight adaptation of Fractal Domain Architecture: colocate business domains, separate browser/server responsibilities, and omit unused layers. This is our selection policy, not upstream's claim that FDA fits every project. Tiny prototypes/static sites/component libraries and explicit FSD/feature-folder preferences are recorded exceptions (pattern 11).
 - **The FSD threshold needs a correction.** FSD's own docs give no screen count and say it fits "projects and teams of any size" ([FSD overview][fsd-overview]). Their test for extracting code out of a page is reuse across pages ([FSD layers][fsd-layers]). Keep "an entity or user action that two or more screens use", drop "more than five screens" (details under pattern 8).
 - **The kit's ordered `layers` list cannot express sibling rules.** FSD slices, modular-monolith modules and vertical slices all forbid imports between siblings on the same level, and CQRS queries may not import the domain. Those rules need a tool (table below). import-linter lists layers highest first, the opposite of `lenses.yaml` ([import-linter layers][il-layers]).
 - **Gaps:** no well-known, maintained exemplar exists for hexagonal or DDD in Rust, for vertical slices in Python, or for a modular monolith in Go, TypeScript or Rust. Rust has no mature layer-direction linter: Cargo's crate graph is the enforcement.
@@ -23,10 +24,11 @@ Inputs: the lens profile from `lenses.yaml` (`kit/profiles/*.yaml`), the size si
 | L5 | domain-core | One bounded context | **Hexagonal / Clean with DDD layers** (patterns 3 and 4) | L6 if a second context appears | DDD layering applies "only if" the service has "significant business rules" ([Microsoft DDD][ms-ddd]) |
 | L6 | domain-core | Two or more bounded contexts in one deployable: the same word means different things to different groups ([Fowler][bc]) | **Modular monolith**, one module per context, each laid out as L5 (pattern 7) | Separate services, out of scope here | Boundaries are hard to get right first time, and are easier to move inside one process ([Fowler][monolith-first]) |
 | L7 | domain-core, on top of L5 or L6 | Inside one context: read shapes differ from the write model, reads far outnumber writes, task-based UI, or concurrent edits | **Add a CQRS split** in that context (pattern 5) | Separate `views` module only ([Cosmic Python][cosmic-cqrs]) | Fowler: use it on "specific portions" (bounded contexts), most systems fit CRUD ([Fowler][cqrs]) |
-| L8 | any | A frontend root where no entity or user action is used by two or more screens | **Small frontend tree** (pattern 9) | L9 | React: don't "spend more than five minutes" choosing, split as it grows ([React FAQ][react-faq]) |
-| L9 | any | A frontend root with an entity or user action that two or more screens use, or a team that is growing | **Feature-Sliced Design** (pattern 8). Next.js: `_app`, `_pages` | Feature folders (pattern 10) | FSD extracts code from pages when it is "reused on several pages" ([FSD layers][fsd-layers]) |
+| L10 | any | New frontend application root without an existing convention | **FDA**, lightweight Factory adaptation (pattern 11) | L8 for a tiny prototype/static site/library; L9 for explicit team preference | Colocate business domains and enforce browser/server contracts; this strong default is Factory policy ([FDA][fda]) |
+| L8 | any | Documented FDA exception: tiny prototype, static site or component library without shared business-domain needs | **Small frontend tree** (pattern 9) | FDA as domain responsibilities emerge | Avoid layers with no present responsibility ([React FAQ][react-faq]) |
+| L9 | any | Documented FDA exception: explicit team preference for FSD or feature folders, with shared entities/actions | **Feature-Sliced Design** (pattern 8). Next.js: `_app`, `_pages` | Feature folders (pattern 10) | FSD extracts code from pages when it is reused on several pages ([FSD layers][fsd-layers]); reuse alone no longer overrides FDA |
 
-Profile to rows: `domain-core` (rich domain model) maps to L5, L6, L7. `crud-service` (transaction scripts) maps to L2, L3, L4. `legacy` maps to L1. A frontend root picks L8 or L9 under any profile.
+Profile to rows: `domain-core` (rich domain model) maps to L5, L6, L7. `crud-service` (transaction scripts) maps to L2, L3, L4. `legacy` maps to L1. A new frontend root picks L10 under any profile; L8/L9 require a recorded exception. An existing frontend convention is preserved as `existing`. This changes folder selection, not framework or language selection.
 
 As adopted in `kit/layouts/index.yaml` (decision 29), after review: L6 is evaluated before L5 so two contexts reach the modular monolith first; L4 is crud-service only, with observable signals, and vertical slices became L5's alternative; L1 applies to existing modules only and records `existing`; a no-match fallback gives a crud-service with several business areas a modular monolith with layered modules.
 
@@ -279,7 +281,7 @@ The official [feature-sliced/examples](https://github.com/feature-sliced/example
 
 **Sources.** React's FAQ: group by feature or route, or by file type. Keep nesting to "a maximum of three or four nested folders". Don't "spend more than five minutes" choosing, and split as the app grows ([React FAQ][react-faq]). Next.js is "unopinionated", keeps routing in `app/`, and lists keeping project files outside `app/` as one strategy. Private `_folders` colocate non-route files ([Next.js][next-structure]).
 
-**Fits:** a frontend where no entity or user action is shared by two or more screens. **Does not fit:** past that point (L9).
+**Fits:** a recorded FDA exception for a tiny prototype, static site or component library, or an existing small-tree convention. **Does not fit:** a new domain-oriented app merely because it has few screens; use FDA by default (L10).
 
 | Folder | React (Vite) | React (Next.js App Router) | Holds / may not |
 |---|---|---|---|
@@ -308,6 +310,26 @@ Added because it is popular and distinct: one layer of features between shared c
 
 **Exemplar:** [alan2207/bulletproof-react](https://github.com/alan2207/bulletproof-react), React, 35,967 stars, last push 2026-05-14, MIT, not archived. Look at `apps/react-vite/src/` and `docs/project-structure.md`.
 
+### 11. Fractal Domain Architecture (FDA; new frontend default)
+
+**Sources checked 2026-10-14.** [FDA documentation][fda] and [chord-ts/fda at `29ce5852cf1cf3a5fa487767e493776d0d24aaa4`][fda-source]. Upstream organizes code around business domains and repeats file responsibilities in subdomains. UI uses a controller, which calls transport/RPC, server model operations and repository persistence. Routes remain framework entries. Its README considers FDA excessive for landing pages/prototypes and recommends it for medium-sized, longer-lived products.
+
+**Factory policy, explicitly broader than upstream:** FDA is the strong default for every new frontend application root unless the existing convention wins or a recorded exception fits L8/L9. Use the fewest meaningful files: no empty repository/controller wrappers, speculative subdomains or mandatory RPC when no wire call exists. Do not change an existing project's structure solely to meet this default. Layout selection does not imply React, Python or any framework choice.
+
+**Safety adaptation:** upstream examples/skill wording do not consistently distinguish a universal public barrel from browser-safe exports. Factory's `index.ts` exports only safe types/constants/UI/controllers. Server operations have a separate server entry; browser code never imports or re-exports model/repository/server dependencies, including indirectly through a barrel. The client→server edge is HTTP/RPC, not a TypeScript import. SvelteKit enforces `.server` boundaries; Next needs `server-only` and actual `page.tsx`/`route.ts` conventions, not `page.server.tsx`. SSR state stays per request/component. These rules preserve domain colocation without credential leaks or cross-user state.
+
+**Stack mappings:** [fda.md](../../kit/layouts/fda.md) gives ordered Layout paths and layers for SvelteKit, Next.js and Vite with a separate backend. SvelteKit follows the implemented upstream example. Next/Vite are Factory mappings, confirmed against [Next route conventions](https://nextjs.org/docs/app/getting-started/project-structure), [server/client boundaries](https://nextjs.org/docs/app/getting-started/server-and-client-components), and [SvelteKit state guidance](https://svelte.dev/docs/kit/state-management). Upstream's Next/Nuxt examples are marked in progress. Nested route/domain globs must be expanded for the actual project, not copied as if one-segment globs cover all depths.
+
+**Enforcement:** reuse dependency-cruiser or eslint-plugin-boundaries from `tools.yaml`, enforcing browser→server forbidden edges/re-exports, cross-domain public entries, shared independence and cycles. FSD-specific Steiger rules do not apply. The implementation slice must demonstrate planted forbidden imports, including a leaking barrel, and run the framework build. A checker unable to parse Svelte must report that coverage gap rather than claim complete enforcement.
+
+**Examples and limits:** the implemented [SvelteKit cart example][fda-svelte] and upstream docs are two reference views of one project. We did not verify two mature independent adopter repositories; FDA's default is the user's policy preference, not measured superiority. Do not invent independent exemplars to satisfy a generic two-example prompt.
+
+**Selection examples:**
+- New support desk with tickets/auth domains, even with one screen: `fda`; only create the current domain responsibilities.
+- Existing FSD Next application: `existing`, retain its conventions and baseline existing violations.
+- Disposable one-page static prototype: `frontend-small`, Decision records why FDA responsibilities would be unused.
+- Team explicitly selecting FSD's shared entities and layers: `fsd`, Decision records the tradeoff; no extra approval merely to re-accept an already approved layout.
+
 ## Combinations
 
 **Compose well**
@@ -315,7 +337,7 @@ Added because it is popular and distinct: one layer of features between shared c
 - **CQRS inside one bounded context.** Fowler limits CQRS to specific contexts ([Fowler][cqrs]). Wild Workouts puts `app/command` and `app/query` in each context ([wild-workouts](https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example)).
 - **Modular monolith whose modules are bounded contexts,** each laid out as DDD plus hexagonal: kgrzybek and python-ddd above. Grzybek's modules are business-aligned and built from vertical slices ([Grzybek][grzybek]).
 - **Vertical slices with CQRS,** since every slice is a command or a query ([Bogard][vsa]). Vertical slices inside each module of a modular monolith: fastify-boilerplate.
-- **FSD or the small tree on the frontend, any of these on the backend.** They are separate roots with separate `layers` lists. FSD `entities` are UI-side models with their own `api` segment ([FSD layers][fsd-layers]), not the backend's aggregates. The two share only the wire contract.
+- **FDA by default (or an explicit FSD/small-tree exception) on the frontend, any of these on a separate backend.** They are separate roots with separate `layers` lists. FSD `entities` are UI-side models with their own `api` segment ([FSD layers][fsd-layers]), not the backend's aggregates. The two share only the wire contract.
 
 **Conflict**
 - **Technical layers at the top level of a growing system.** Fowler wants domain modules at the top, layered inside ([Fowler][pdd]). Grzybek wants modules from vertical slices, not technical layers ([Grzybek][grzybek]). `src/controllers/` plus `src/modules/` in one tree has two answers to where code goes.
@@ -381,3 +403,7 @@ Added because it is popular and distinct: one layer of features between shared c
 [cargo-modules]: https://github.com/regexident/cargo-modules
 [cargo-pup]: https://github.com/DataDog/cargo-pup
 [packwerk-repo]: https://github.com/Shopify/packwerk/blob/main/USAGE.md
+
+[fda]: https://fda-docs.vercel.app
+[fda-source]: https://github.com/chord-ts/fda/tree/29ce5852cf1cf3a5fa487767e493776d0d24aaa4
+[fda-svelte]: https://github.com/chord-ts/fda/tree/29ce5852cf1cf3a5fa487767e493776d0d24aaa4/apps/example-sveltekit

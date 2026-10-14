@@ -11,11 +11,30 @@ Pack: $ARGUMENTS (empty: every pin)
 
 A pin approves a pack's content as you read it. Upstream moves on, and nothing loads the new content until you read what changed and bump the pin. This skill maintains the framework's pins, in `kit/packs.lock.yaml` of the factory repository: the clone `framework_repo` names in `~/.software-factory/user/config.yaml` (no `framework_repo`: say so and stop). A pin is `{ source, path, hash, pinned_at, version }`: `path` is the pack's folder in the `source` repository (`.` for its root), `hash` is the git tree of that folder, and `version` is there only when the pack has a changelog. A pin made by the skills CLI for a pack at a repository's root names a commit instead; its tree is `<hash>^{tree}`. A project's own pins are in its `.software-factory/factory.lock` and change only through `/factory-upgrade`, which copies the framework's pins; the framework cache and the pack cache are never edited.
 
-`<mirror>` is the source's bare mirror, `~/.software-factory/packs/.mirrors/<owner>__<repo>.git`. Only `bin/factory-packs-fetch` creates mirrors, never this skill in place: run `<framework_repo>/bin/factory-packs-fetch <framework_repo>/kit/packs.lock.yaml` first, which mirrors every pinned source and caches every pin. `<at>:<path>` is `<at>:` for path `.`.
+`<mirror>` is the source's bare mirror, `~/.software-factory/packs/.mirrors/<owner>__<repo>.git`. Run `<framework_repo>/bin/factory-packs-fetch <framework_repo>/kit/packs.lock.yaml` first to prepare content. Cached or bundled pins need no mirror for normal runs. Upstream maintenance explicitly ensures each selected source mirror using the same helper below; never construct a separate clone/cache. `<at>:<path>` is `<at>:` for path `.`.
 
 ## 1. Compare
 
-For each pin (or the one named), once per source: `git -C <mirror> fetch --quiet origin`. Then:
+For each pin (or the one named), once per source, ensure its mirror before fetching upstream. This maintenance step may use the network; ordinary bundled-book loading stays offline:
+
+```bash
+python3 - "<framework_repo>/bin/factory-packs-fetch" "<source>" <<'PY'
+import fcntl, runpy, sys
+from pathlib import Path
+api = runpy.run_path(sys.argv[1])
+source = sys.argv[2]
+if not api["SOURCE"].fullmatch(source):
+    raise SystemExit("invalid pack source")
+packs = Path.home() / ".software-factory/packs"
+packs.mkdir(parents=True, exist_ok=True)
+with (packs / ".lock").open("w") as held:
+    fcntl.flock(held, fcntl.LOCK_EX)
+    print(api["mirror_for"](packs, source, set(), {}))
+PY
+```
+
+Then `git -C <mirror> fetch --quiet origin` and:
+
 
 - Upstream hash: `git -C <mirror> rev-parse HEAD:<path>`, the tree of the pack's folder at the head of the source's default branch.
 - Equal to the pin's tree: current. The folder is gone upstream: gone. Different: moved.
@@ -46,6 +65,6 @@ For each listed change in this repository, the user chooses: re-review it now as
 
 ## 4. Bump
 
-Only for packs the user approves after reading the summary: set the pin to `{ source, path, hash: <upstream hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. Commit it in the factory repository, staging only `kit/packs.lock.yaml`, and push only when the user asks. Tell the user that each project takes the new pin with `/factory-upgrade`, which fetches it into the pack cache.
+Only for packs the user approves after reading the summary: set the pin to `{ source, path, hash: <upstream hash>, pinned_at: <today>, version: <changelog version, when there is one> }`. For a book from `ciembor/agent-rules-books`, fetch its approved new pin, copy its entire exact cache tree to `kit/packs/<name>@<new hash>/`, and verify it with the fetch helper's `check_bundle(path, hash)` before committing. Keep the upstream license notice outside pinned trees. Stage the changed lock and matching book bundle together; never commit a book-pin bump without its bundle. Other packs stage only `kit/packs.lock.yaml`. Push only when the user asks. Tell the user that each project takes the new pin with `/factory-upgrade`, which fetches it into the pack cache.
 
 A pack the user does not approve keeps its old pin, and projects keep loading the content that pin names.

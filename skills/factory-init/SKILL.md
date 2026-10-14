@@ -80,7 +80,7 @@ Keep its lists of other local branches, remote branches and branches checked out
   <!-- example: - clean-code/small functions: overruled 3 times, last in checkout-retry -->
   ```
 
-- The packs: run `<bin>/factory-packs-fetch` from the repository root, whether the lock was written now or already existed, when that script exists. It fetches each pin of the lock into the pack cache (`~/.software-factory/packs/<name>@<hash>/`, [../factory-shared/packs.md](../factory-shared/packs.md)). Show each failed pack with its reason and go on: a skill continues without a pack it cannot load.
+- The packs: run `<bin>/factory-packs-fetch` from the repository root, whether the lock was written now or already existed, when that script exists. It copies matching verified bundled books offline and fetches other missing pins of the lock into the pack cache (`~/.software-factory/packs/<name>@<hash>/`, [../factory-shared/packs.md](../factory-shared/packs.md)). Show each failed pack with its reason and go on: a skill continues without a pack it cannot load.
 
 ## 5. Link the skills
 

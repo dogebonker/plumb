@@ -61,7 +61,7 @@ mockup_capture:
   version: 1.63.0
   install: "npx playwright@1.63.0 install chromium (downloads the package and the browser; the user's yes to mockups at the product gate is the agreement)"
   viewports: ["390, 844", "1280, 800"]
-  schemes: "light, plus dark when the design file's colors include a dark set"
+  schemes: "the design file's default scheme, plus any scheme a visual acceptance criterion names; lens mode checks the other one"
   run: >-
     cd $NEUTRAL && npx playwright@1.63.0 screenshot --browser chromium --viewport-size "<w>, <h>"
     --color-scheme <scheme> --full-page file://<absolute path of the mockup html> <absolute path of the png>

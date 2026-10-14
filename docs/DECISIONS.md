@@ -38,6 +38,11 @@ Every decision that shaped the factory, in the order it was made. Each one says 
 | 32 | Review agents owned by factory-review, with a defect rubric and file coverage | Accepted |
 | 33 | S14 P1 to P3: `.software-factory/` per project, a framework cache per commit, three principle layers, init and upgrade | Accepted, amended by 34 |
 | 34 | Packs per project, in a cache per pinned hash | Accepted |
+| 35 | FDA as the strong default for new frontend roots | Accepted |
+| 36 | Approved development scope, direct execution and consolidated independent review | Accepted |
+| 37 | Bundle pinned book rubrics with every framework and benchmark snapshot | Accepted |
+| 38 | An autonomous local implementation–review–repair–acceptance loop | Accepted |
+| 39 | Optional feature visual references, adapted to the approved brand | Accepted |
 
 ---
 
@@ -356,3 +361,53 @@ Where the design left a choice open:
 **Headless trust.** A branch's lock is harness-writable, so on a runner host the branch never chooses packs: the runner skips a change whose pins differ from its framework commit's `kit/packs.lock.yaml`, and the operator fetches only from that file.
 
 **Cost.** The first fetch of each source needs the network, and a host without it runs without the packs it lacks. Disk grows by one folder per pack and hash in use, and the mirrors keep every commit and tree of their sources; nothing prunes either yet. A pin the skills CLI recorded for a pack at a repository's root names a commit, not a tree (`rust-skills`); the fetch accepts it and loads that commit's tree, and the next bump writes a tree hash.
+
+
+## 35. FDA as the strong default for new frontend roots
+
+**Decision.** New frontend roots propose Fractal Domain Architecture (`fda`) first, with colocated domains, explicit public entries and browser/server boundaries. Existing conventions win. Tiny prototypes/static sites/libraries and explicit team preferences may choose the small tree, FSD or feature folders with a recorded reason. The layout does not choose a framework or language. Only present responsibilities get files; no mandatory empty layers or repository wrappers.
+
+**Why.** The user requested FDA as a strong default. [FDA research](research/layouts-selection.md) pins upstream and distinguishes its SvelteKit reference from Factory's React/Vite and Next adaptations. Actual framework route filenames and request-scoped SSR state prevail over inconsistent upstream skill examples.
+
+**Cost.** One verified upstream example is not broad adoption evidence. Coarse layers alone do not enforce domain privacy or browser/server separation: the first implementation slice must prove its selected checker catches direct leaks, leaking re-exports and sibling-internal imports, and run the framework build. Decisions 28 and 29 remain valid except their frontend proposal order.
+
+## 36. Approved development scope, direct execution and consolidated independent review
+
+**Decision.** Preserve product, architecture, interface and slices approvals. Slice-plan approval explicitly authorizes bounded local implementation and repairs under unchanged promises. The conductor prepares packets and mechanical evidence and dispatches one executor per slice directly. One fresh independent general reviewer carries correctness, test assertions, design/reuse, cleanliness and hot-path efficiency; UI, security, money and APoSD specialists remain risk-triggered. Interactive milestones complete under the real approved execution scope after fresh review and checks; their Completion record is separate from final Human Sign-off. Headless PR-derived approvals/sign-offs are unchanged.
+
+Correct executable-test mistakes locally when the approved criterion is unambiguous. Retain original history, record deviations, and replay corrected/regression tests against earlier source in an isolated clone before proving GREEN. Keep legitimate already-green negative tests with evidence and independent review. Resume local repairs without whole-source rewind, repeated generic panels or automatic permission questions after an arbitrary retry count. Real contract decisions, missing authority and destructive actions still stop.
+
+**Why.** Repeated general reviews and an extra executor wrapper duplicate context and coordination. Direct execution with consolidated independent review simplifies development while preserving product and architecture discovery. It amends decisions 27, 30 and 32 for interactive development.
+
+**Cost.** Consolidated review may miss issues; complete file coverage, risk specialists and final independent acceptance remain. Completed slices stay edit-protected: an acceptance defect needing a new corrective slice still requires the slices gate when no existing approved repair scope permits it. The 60–90 minute full-task target is unverified until another comparable run; policy edits alone prove no speedup.
+
+
+## 37. Bundle pinned book rubrics with every framework and benchmark snapshot
+
+**Decision.** `kit/packs/<name>@<hash>/` ships all ten currently configured `ciembor/agent-rules-books` packs with their skill entry and full/mini/nano rubrics, preserving exact upstream trees and MIT attribution. The common loader prefers a bundle only when source/path/hash match the project and framework pins. Existing framework archives already include `kit/`. The pack fetcher can verify and atomically copy matching bundles into the shared cache offline; other or older pins keep the existing cache/fetch path. Book-pin bumps ship the matching bundle with the lock.
+
+Benchmark snapshots verify required book bundles before model execution, preserve their bytes during path adaptation, and record bundled provenance. Missing/corrupt required books are preparation errors rather than silent skips. Headless installed-framework/branch pin equality remains required. Profiles load the selected rubrics, not every available book.
+
+**Why.** The user asked for books to be available for any Factory run. Cache-only preparation makes pinned book availability depend on host setup, even when unversioned global skills are installed.
+
+**Cost.** About 303 KiB of pinned rule text plus license/manifest, and matching bundles must accompany book-pin updates. Older immutable framework versions are not rewritten; their cache/fetch behavior remains. This amends decision 34's cache-only lookup without using unversioned global skills or changing current pins. Historical benchmark snapshots/results stay unchanged.
+
+
+## 38. An autonomous local implementation–review–repair–acceptance loop
+
+**Decision.** New interactive slice plans include an explicitly approved local repair mandate. Reproducible acceptance defects against unchanged promises create ordinary corrective slices scoped to selected original slices' exact approved paths and criteria. Original documents, approval hashes and completed parent records stay unchanged. One shared read-only hook/CLI validates strict records, actual branch and commit provenance, evidence/input bytes, packet scope and every touched commit/pending source path, including edit-and-revert history. It does not manufacture authority, review or acceptance.
+
+The conductor routes one validated finding batch to the existing executor and waits for actual native completion. Reviewers stay read-only. Isolated RED/GREEN, relevant mechanical checks, independent general/risk review, affected confirmation and complete independent FR/NFR acceptance determine technical success. Product/architecture/interface discovery remains. Real scope/contract/waiver/publication decisions remain. Older plans and headless PR authority keep their existing route.
+
+**Why.** The user wants development to be an independent loop with the existing quality gates and less execution time. The remaining post-completion repair approval and conductor-written fixes interrupted that loop and repeated frontier work.
+
+**Cost.** Corrective scope cannot grow through packet/deviation edits or use prior corrections as parents; missing planned paths require a real scope decision. Validators check bytes/scope, while actual review, environment applicability and independent acceptance remain conductor responsibilities. Time/price per accepted task is the metric; full-task speed improvement remains unmeasured. This extends decision 36's approved development scope and replaces its post-completion repair limit only for plans carrying the mandate.
+
+
+## 39. Optional feature visual references, adapted to the approved brand
+
+**Decision.** UI discovery offers once an optional 2–3 examples of the specific feature: screenshots, recordings, links or the product's good screens. Reuse supplied references; one useful example suffices. Capture only applicable observations in a change-local reference note, carried into UI design, branded mockups and executor packets. DESIGN.md owns brand/components/tokens/voice/density and approved FR/NFR/accessibility owns behavior. Review judges the actual branded result against approved criteria; external examples do not demand pixel identity or add features.
+
+**Why.** The user finds feature examples much more useful than prompt-only design direction. Concrete visuals can clarify composition and interaction expectations and reduce visual rework. This is a workflow recommendation, not a measured model-quality result.
+
+**Cost.** One small discovery invitation and concise reference capture; no reference quota, extra approval or development re-ask. Missing/declined/private references continue from the approved brief and design system. The previous UI hard gate's no-reference stop is removed; actual required browser, state, accessibility and visual-acceptance evidence remains. Late inspiration does not silently edit approved gate/brand criteria.

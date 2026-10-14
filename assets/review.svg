@@ -30,12 +30,12 @@
 
   <rect class="bg" x="0" y="0" width="760" height="478" rx="14"/>
   <text class="ink" x="24" y="38" font-size="17" font-weight="700">Review: scripts first, agents second, you last</text>
-  <text class="quiet" x="24" y="60" font-size="12.5">Anything a script can check never costs agent tokens; dashed agents run only when armed</text>
+  <text class="quiet" x="24" y="60" font-size="12.5">Reuse valid checks; one general reviewer carries four rubrics; specialists follow actual risk</text>
 
   <!-- Phase 1 -->
   <rect class="group" x="24" y="80" width="212" height="316" rx="10"/>
   <text class="ink" x="40" y="104" font-size="13" font-weight="700">Phase 1: scripts</text>
-  <text class="quiet" x="40" y="121" font-size="11.5">about zero tokens</text>
+  <text class="quiet" x="40" y="121" font-size="11.5">commands and recorded evidence</text>
   <rect class="box" x="40" y="134" width="180" height="44" rx="8"/>
   <text class="ink" x="54" y="153" font-size="12.5" font-weight="700">Lint + type check</text>
   <text class="quiet" x="54" y="169" font-size="11">the repo's own command</text>
@@ -54,8 +54,8 @@
 
   <!-- Phase 3 -->
   <rect class="group" x="268" y="80" width="236" height="368" rx="10"/>
-  <text class="ink" x="284" y="104" font-size="13" font-weight="700">Phase 3: agents in parallel</text>
-  <text class="quiet" x="284" y="121" font-size="11.5">fresh context each, read-only</text>
+  <text class="ink" x="284" y="104" font-size="13" font-weight="700">Phase 2: one general reviewer</text>
+  <text class="quiet" x="284" y="121" font-size="11.5">four rubrics, fresh read-only context</text>
   <rect class="box" x="284" y="134" width="204" height="44" rx="8"/>
   <text class="ink" x="298" y="153" font-size="12.5" font-weight="700">Cleanliness</text>
   <text class="quiet" x="298" y="169" font-size="11">+ Gherkin, if BDD is native</text>
@@ -69,11 +69,11 @@
   <text class="ink" x="298" y="309" font-size="12.5" font-weight="700">Side-effect gating</text>
   <text class="quiet" x="298" y="325" font-size="11">irreversible effects vs checks</text>
   <rect class="opt" x="284" y="342" width="204" height="44" rx="8"/>
-  <text class="ink" x="298" y="361" font-size="12.5" font-weight="700">APoSD</text>
-  <text class="quiet" x="298" y="377" font-size="11">if a frozen interface changed</text>
+  <text class="ink" x="298" y="361" font-size="12.5" font-weight="700">UI / Security</text>
+  <text class="quiet" x="298" y="377" font-size="11">rendering or trust boundaries change</text>
   <rect class="opt" x="284" y="394" width="204" height="44" rx="8"/>
-  <text class="ink" x="298" y="413" font-size="12.5" font-weight="700">Money</text>
-  <text class="quiet" x="298" y="429" font-size="11">money repos, fin-* skills</text>
+  <text class="ink" x="298" y="413" font-size="12.5" font-weight="700">APoSD / Money</text>
+  <text class="quiet" x="298" y="429" font-size="11">new public surface / financial risk</text>
 
   <!-- right chain -->
   <rect class="box" x="544" y="134" width="192" height="44" rx="8"/>
@@ -83,11 +83,11 @@
   <text class="ink" x="558" y="225" font-size="12.5" font-weight="700">Report</text>
   <text class="quiet" x="558" y="241" font-size="11">review.md, by category</text>
   <rect class="you" x="544" y="278" width="192" height="44" rx="8"/>
-  <text class="ink" x="558" y="297" font-size="12.5" font-weight="700">You sign off</text>
-  <text class="ink" x="558" y="313" font-size="11">fixes listed, undo any</text>
+  <text class="ink" x="558" y="297" font-size="12.5" font-weight="700">Repair + confirm</text>
+  <text class="ink" x="558" y="313" font-size="11">bounded fixes, independent check</text>
   <rect class="box" x="544" y="350" width="192" height="44" rx="8"/>
-  <text class="ink" x="558" y="369" font-size="12.5" font-weight="700">Fix</text>
-  <text class="quiet" x="558" y="385" font-size="11">behavior-preserving only</text>
+  <text class="ink" x="558" y="369" font-size="12.5" font-weight="700">Final sign-off</text>
+  <text class="quiet" x="558" y="385" font-size="11">acceptance + held decisions</text>
   <text class="quiet" x="544" y="420" font-size="11">A frozen signature change is not</text>
   <text class="quiet" x="544" y="436" font-size="11">a fix: it goes back to the gate.</text>
 

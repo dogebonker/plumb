@@ -13,8 +13,9 @@ pack at a repository's root; such a pin's path must be `.`). That tree is unpack
 archive into a temporary folder, with every attribute that rewrites content switched off and no
 global or system git config, its tree hash is recomputed from the files and must equal the pin,
 symlinks must stay inside the pack, and the folder is renamed into place: a cache folder is
-complete or absent, and one that exists is left alone. Prints one line per pin: present,
-fetched or failed, and exits 1 on any failure.
+complete or absent, and one that exists is left alone. Exact manifest-matching packs bundled
+under the framework kit/packs load offline before fetching. Prints one line per pin: present,
+bundled, fetched or failed, and exits 1 on any failure.
 """
 import fcntl
 import os
@@ -141,8 +142,55 @@ def escaping_links(mirror, tree, root):
     return bad
 
 
+def check_bundle(path, expected_hash):
+    """Verify a bundled pack's exact Git SHA1 tree and contained symlinks, without rewriting it."""
+    path = Path(path)
+    if path.is_symlink() or not path.is_dir():
+        raise Failed("refused: bundle root must be a directory, not a symlink")
+    if not HASH.fullmatch(expected_hash):
+        raise Failed("refused: bundle hash must be 40 lowercase hex characters")
+    # No inherited Git override, template, filter, fsmonitor or attribute can change the verification.
+    clean_env = {k: v for k, v in LOCAL_ENV.items() if not k.startswith("GIT_")}
+    clean_env.update(GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null", GIT_NO_LAZY_FETCH="1")
+    with tempfile.TemporaryDirectory(prefix="factory-bundle-check-") as temporary:
+        repo = Path(temporary) / "repo.git"
+        git(None, "init", "--quiet", "--bare", "--object-format=sha1", "--template=", str(repo), env=clean_env)
+        (repo / "info").mkdir(exist_ok=True)
+        (repo / "info" / "attributes").write_text(ATTRIBUTES)
+        index = {**clean_env, "GIT_INDEX_FILE": str(Path(temporary) / "index"), "GIT_WORK_TREE": str(path.resolve())}
+        git(repo, "-c", "core.autocrlf=false", "-c", "core.filemode=true", "-c", "core.fsmonitor=false",
+            "-c", "core.attributesFile=/dev/null", "add", "-A", "-f", ":/", env=index)
+        got = git(repo, "write-tree", env=index)
+        if got != expected_hash:
+            raise Failed(f"the bundled files hash to {got}, not {expected_hash}")
+        bad = escaping_links(repo, got, path)
+        if bad:
+            raise Failed(f"refused: symlinks leave the pack: {', '.join(bad)}")
+
+
+def bundled_pin(packs, name, pin, target):
+    """Hydrate only a framework-manifest match; missing bundles leave normal fetching unchanged."""
+    kit = Path(__file__).resolve().parent.parent / "kit"
+    bundle = kit / "packs" / target.name
+    if not bundle.exists() and not bundle.is_symlink():
+        return False
+    manifest = pins(kit / "packs.lock.yaml").get(name, {})
+    if any(pin.get(key) != manifest.get(key) for key in ("source", "path", "hash")):
+        return False
+    if bundle.is_symlink() or not bundle.is_dir():
+        raise Failed("refused: bundle root must be a directory, not a symlink")
+    tmp = Path(tempfile.mkdtemp(prefix=".tmp-", dir=packs))
+    try:
+        shutil.copytree(bundle, tmp / "tree", symlinks=True)
+        check_bundle(tmp / "tree", pin["hash"])
+        (tmp / "tree").rename(target)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return True
+
+
 def fetch_pin(packs, name, pin, fetched, broken):
-    """Returns "present" or "fetched"; raises Failed with the reason."""
+    """Returns "present", "bundled" or "fetched"; raises Failed with the reason."""
     source, sha = pin.get("source", ""), pin.get("hash", "")
     if not NAME.fullmatch(name):
         raise Failed("refused: the name must match [a-z0-9-]+")
@@ -153,6 +201,8 @@ def fetch_pin(packs, name, pin, fetched, broken):
     target = packs / f"{name}@{sha}"
     if target.is_dir():
         return "present"
+    if bundled_pin(packs, name, pin, target):
+        return "bundled"
     mirror = mirror_for(packs, source, fetched, broken)
     kind = object_type(mirror, sha)
     if kind is None and source not in fetched:

@@ -26,6 +26,11 @@ with tempfile.TemporaryDirectory() as tmp:
     for part in ("kit", "skills/factory-triage", "hooks", "bin", "runner"):
         (repo / part).mkdir(parents=True)
         (repo / part / "f.txt").write_text(part + "\n")
+    bundled_book = repo / "kit" / "packs" / ("book@" + "a" * 40)
+    bundled_book.mkdir(parents=True)
+    (bundled_book / "SKILL.md").write_text("pinned book\n")
+    (bundled_book / "run.sh").write_text("#!/bin/sh\n")
+    (bundled_book / "run.sh").chmod(0o755)
     sh(tmp, "git", "init", "-q", "-b", "main", str(repo))
     sh(repo, "git", "add", ".")
     sh(repo, "git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "commit", "-qm", "one")
@@ -60,6 +65,9 @@ with tempfile.TemporaryDirectory() as tmp:
     assert r.stdout.splitlines()[-1] == str(dest), r.stdout
     assert sorted(p.name for p in dest.iterdir()) == ["bin", "hooks", "kit", "skills"]  # runner/ is not part of it
     assert (dest / "skills" / "factory-triage" / "f.txt").read_text() == "skills/factory-triage\n"
+    installed_book = dest / "kit" / "packs" / bundled_book.name
+    assert (installed_book / "SKILL.md").read_bytes() == b"pinned book\n"
+    assert os.access(installed_book / "run.sh", os.X_OK)
     config = home / ".software-factory" / "user" / "config.yaml"
     assert config.read_text() == f'framework_repo: "{repo.resolve()}"\n', config.read_text()
     assert [p.name for p in dest.parent.iterdir()] == [sha], "no temporary folder is left behind"

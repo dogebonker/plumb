@@ -54,6 +54,7 @@ Ask in one message:
 - the slug (kebab-case, at most four words)
 - the three commands, so the user can correct them
 - whether the change touches UI, and whether the design file exists
+- UI: only when no references were supplied and this invitation was not already offered or declined, offer once the optional 2–3 feature examples in [../factory-ui-ux/references.md](../factory-ui-ux/references.md), explaining that concrete visuals can improve layout/interaction quality while DESIGN.md keeps our brand. Reuse any already supplied, record usable examples or `none` in `<change>/visual-references.md` when the change folder exists, and continue without them; no separate approval or repeated development question.
 - the lens profile with a one-line reason, the modules with language, language pack, BDD state and any dev command and URL, linter rules and check tools the user may adopt in a change of their own, the money signals found, and any difference from an existing `lenses.yaml`. `money` becomes `true` only when the user confirms it
 - when `.software-factory/system/constraints.md` is missing, or this change introduces or changes a capability (for example saved user data, multiple writers, offline work, auth or money): the relevant promises from the closest domain in `<kit>/nfr-catalog/` and its rows, for the user to keep, drop or tune
 - compare those promises with the existing registry instead of offering the entire catalog again. Reuse matching SYS IDs; carry missing or changed promises into the product gate for agreement, even when the registry already exists. For saved user data, use `<kit>/nfr-catalog/stateful-data.md` alongside the domain catalog; storage technology does not decide whether the promise applies
@@ -61,7 +62,7 @@ Ask in one message:
 
 - the mode: `interactive` (this chat) or `headless` (the runner drives it through a pull request; who approves is configured on the runner)
 
-Done when the user has answered all of them.
+Done when the required intake decisions are answered. Unanswered optional visual references never delay triage; record `none` and proceed.
 
 ## 5. Create the change
 

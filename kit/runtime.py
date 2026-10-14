@@ -89,16 +89,53 @@ def prepare_browser_red(repo, commit, checkpoint):
     return request
 
 
-def verify_red(repo, commit, command, checkpoint, timeout):
+def verify_red(repo, commit, command, checkpoint, timeout, tests_from=None, test_files=None):
     repo, checkpoint = Path(repo).resolve(), Path(checkpoint).resolve()
     if not checkpoint.is_relative_to(repo / '.software-factory/changes'):
         raise ValueError('checkpoint must live under .software-factory/changes')
     if command and Path(command[0]).name == 'browser-check':
         raise ValueError('fixed live browser wrapper cannot prove RED; run red_test_command directly')
-    git(repo, 'rev-parse', '--verify', f'{commit}^{{commit}}')
+    if (tests_from is None) != (test_files is None) or tests_from == '' or test_files == []:
+        raise ValueError('tests-from and test-file must be supplied together')
+    commit = git(repo, 'rev-parse', '--verify', f'{commit}^{{commit}}')
+    git(repo, 'merge-base', '--is-ancestor', commit, 'HEAD')
+    overlays, file_hashes = {}, {}
+    if tests_from:
+        tests_from = git(repo, 'rev-parse', '--verify', f'{tests_from}^{{commit}}')
+        git(repo, 'merge-base', '--is-ancestor', tests_from, 'HEAD')
+        for name in test_files:
+            if (not isinstance(name, str) or not name or '\\' in name or '\x00' in name or
+                    any(part in ('', '.', '..') or part.casefold() in ('.git', '.software-factory')
+                        for part in name.split('/'))):
+                raise ValueError(f'test file must be an exact repository-relative path: {name}')
+            blobs = []
+            for revision in (commit, tests_from):
+                entry = None
+                parts = name.split('/')
+                for i in range(1, len(parts) + 1):
+                    prefix = '/'.join(parts[:i])
+                    raw = subprocess.check_output(['git', '-C', str(repo), 'ls-tree', '-z', revision,
+                                                   '--', prefix]).decode().rstrip('\x00')
+                    entry = raw.split('\t', 1) if raw else None
+                    if entry and (len(entry) != 2 or entry[1] != prefix):
+                        raise ValueError(f'ambiguous test path: {name}')
+                    mode = entry[0].split()[0] if entry else None
+                    if mode and mode not in (('040000',) if i < len(parts) else ('100644', '100755')):
+                        raise ValueError(f'test path contains a non-regular file or ancestor: {name}')
+                if not entry:
+                    if revision == tests_from:
+                        raise ValueError(f'test file is not committed in tests-from: {name}')
+                    blobs.append(None)
+                else:
+                    blobs.append(subprocess.check_output(['git', '-C', str(repo), 'show', f'{revision}:{name}']))
+            overlays[name] = (blobs[1], mode)
+            file_hashes[name] = {'original_sha256': hashlib.sha256(blobs[0]).hexdigest() if blobs[0] is not None else None,
+                                'corrected_sha256': hashlib.sha256(blobs[1]).hexdigest()}
     record = {'deliverable_head': git(repo, 'rev-parse', 'HEAD'),
               'deliverable_branch': git(repo, 'symbolic-ref', '--short', 'HEAD'),
-              'test_commit': commit, 'command': command, 'state': 'started'}
+              'test_commit': commit, 'base_commit': commit, 'command': command, 'state': 'started', 'exit_code': None}
+    if tests_from:
+        record.update(tests_commit=tests_from, test_files=file_hashes)
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     scratch = repo / '.software-factory/scratch'
     if scratch.resolve() != scratch:
@@ -120,6 +157,11 @@ def verify_red(repo, commit, command, checkpoint, timeout):
                             '--no-checkout', str(repo), str(work)], check=True)
             git(work, 'remote', 'remove', 'origin')
             git(work, 'checkout', '-q', '--detach', commit)
+            for name, (content, mode) in overlays.items():
+                path = work / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+                path.chmod(0o755 if mode == '100755' else 0o644)
             with checkpoint.with_suffix('.log').open('wb') as log:
                 proc = subprocess.Popen(command, cwd=work, stdout=log, stderr=subprocess.STDOUT,
                                         start_new_session=True)
@@ -155,6 +197,8 @@ def main():
     red.add_argument('--commit', required=True)
     red.add_argument('--checkpoint', required=True)
     red.add_argument('--timeout', type=int, default=3600)
+    red.add_argument('--tests-from')
+    red.add_argument('--test-file', action='append')
     red.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     if args.action == 'handoff':
@@ -168,7 +212,8 @@ def main():
         command = args.command[1:] if args.command[:1] == ['--'] else args.command
         if not command:
             parser.error('red requires a command after --')
-        result = verify_red(args.repo, args.commit, command, args.checkpoint, args.timeout)
+        result = verify_red(args.repo, args.commit, command, args.checkpoint, args.timeout,
+                            args.tests_from, args.test_file)
         raise SystemExit(124 if result is None else result)
 
 

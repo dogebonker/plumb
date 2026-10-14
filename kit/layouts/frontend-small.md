@@ -1,8 +1,8 @@
 # Small frontend tree
 
-ID `frontend-small`, row L8. FSD's minimal form (shared, pages, app) under plain names; it grows into `fsd` by renaming `components/` to `shared/ui/`, `lib/` to `shared/api/` and `shared/lib/`, and the entry files to `app/`. Sources: `docs/research/layouts-selection.md`, pattern 9.
+ID `frontend-small`, row L8: an explicit exception to the FDA default. FSD's minimal form (shared, pages, app) under plain names; it grows into `fsd` by renaming `components/` to `shared/ui/`, `lib/` to `shared/api/` and `shared/lib/`, and the entry files to `app/`. Sources: `docs/research/layouts-selection.md`, pattern 9.
 
-**Fits:** a frontend root where no entity or user action is used by two or more screens. **Does not fit:** past that point, or a growing team (`fsd`).
+**Fits:** a tiny prototype, static site or component library without a business domain needing isolation. Record the reason for choosing it over `fda`; preserve it when it is already the repository convention. **Does not fit:** a new domain-oriented application merely because it has few screens (`fda` is the default).
 
 ## Layout lines
 

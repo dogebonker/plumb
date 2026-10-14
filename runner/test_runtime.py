@@ -46,6 +46,116 @@ class RuntimeTests(unittest.TestCase):
     def validate(self):
         return runtime.validate_handoff(self.repo, self.report, 'demo', 'step-4', 'native-9', '4', 'green', self.completion)
 
+    def red_cli(self, commit, checkpoint, *options, command=None):
+        return subprocess.run([sys.executable, str(Path(runtime.__file__)), 'red', '--repo', str(self.repo),
+                               '--commit', commit, '--checkpoint', str(checkpoint), *options, '--',
+                               *(command or [sys.executable, 'test_code.py'])], capture_output=True, text=True, check=False)
+
+    def test_corrected_test_cli_proves_old_bug_without_changing_live_work(self):
+        (self.repo / 'test_code.py').write_text("from pathlib import Path\nassert Path('code').read_text() == 'GREEN'\n")
+        self.git('add', 'test_code.py')
+        self.git('commit', '-qm', 'wrong test')
+        base = self.git('rev-parse', 'HEAD')
+        original = (self.repo / 'test_code.py').read_bytes()
+        (self.repo / 'test_code.py').write_text("from pathlib import Path\nassert Path('code').read_text() == 'FIXED'\n")
+        self.git('commit', '-qam', 'correct test')
+        tests = self.git('rev-parse', 'HEAD')
+        corrected = (self.repo / 'test_code.py').read_bytes()
+        (self.repo / 'code').write_text('FIXED')
+        self.git('commit', '-qam', 'fix source')
+        head = self.git('rev-parse', 'HEAD')
+        (self.repo / 'code').write_text('STAGED')
+        self.git('add', 'code')
+        (self.repo / 'code').write_text('DIRTY')
+        (self.repo / 'untracked').write_text('keep')
+        before = self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.software-factory')
+        index = self.git('show', ':code')
+        for source, expected in ((base, 1), (head, 0)):
+            checkpoint = self.change / f'overlay-{expected}.json'
+            result = self.red_cli(source[:12], checkpoint, '--tests-from', tests[:12], '--test-file', 'test_code.py')
+            self.assertEqual(result.returncode, expected, result.stderr)
+            record = json.loads(checkpoint.read_text())
+            self.assertEqual(record['exit_code'], expected)
+            self.assertEqual(record['base_commit'], source)
+            self.assertEqual(record['tests_commit'], tests)
+            self.assertEqual(record['test_files']['test_code.py'], {
+                'original_sha256': hashlib.sha256(original if source == base else corrected).hexdigest(),
+                'corrected_sha256': hashlib.sha256(corrected).hexdigest()})
+        timeout = self.red_cli(base, self.change / 'overlay-timeout.json', '--tests-from', tests,
+                               '--test-file', 'test_code.py', '--timeout', '1',
+                               command=[sys.executable, '-c', 'import time; time.sleep(5)'])
+        self.assertEqual(timeout.returncode, 124, timeout.stderr)
+        self.assertIsNone(json.loads((self.change / 'overlay-timeout.json').read_text())['exit_code'])
+        self.assertEqual(self.git('rev-parse', 'HEAD'), head)
+        self.assertEqual(self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.software-factory'), before)
+        self.assertEqual(self.git('show', ':code'), index)
+        self.assertEqual((self.repo / 'code').read_text(), 'DIRTY')
+        self.assertEqual((self.repo / 'untracked').read_text(), 'keep')
+
+    def test_overlay_cli_rejects_unsafe_paths_and_unpaired_options_before_command(self):
+        (self.repo / 'tests').mkdir()
+        (self.repo / 'tests/test_ok.py').write_text('assert False\n')
+        (self.repo / 'linked').symlink_to('tests', target_is_directory=True)
+        (self.repo / 'test_link.py').symlink_to('tests/test_ok.py')
+        self.git('add', 'tests', 'linked', 'test_link.py')
+        self.git('commit', '-qm', 'test paths')
+        tests = self.git('rev-parse', 'HEAD')
+        for options in [('--tests-from', tests), ('--tests-from', ''), ('--test-file', 'tests/test_ok.py'), *[
+                ('--tests-from', tests, '--test-file', path) for path in
+                ('../test.py', '/test.py', 'tests/../test.py', './tests/test_ok.py', '.git/config',
+                 '.software-factory/test.py', 'tests', 'test_link.py', 'linked/test_ok.py', 'missing.py')]]:
+            with self.subTest(options=options):
+                result = self.red_cli(self.red, self.change / 'unsafe.json', *options,
+                                      command=[sys.executable, '-c', "raise SystemExit(77)"])
+                self.assertNotIn(result.returncode, (0, 77), result.stderr)
+                self.assertFalse((self.change / 'unsafe.json').exists())
+
+    def test_overlay_absent_original_and_nonancestor_commits(self):
+        (self.repo / 'test_new.py').write_text('assert False\n')
+        self.git('add', 'test_new.py')
+        self.git('commit', '-qm', 'new regression')
+        tests = self.git('rev-parse', 'HEAD')
+        checkpoint = self.change / 'new-test.json'
+        result = self.red_cli(self.red, checkpoint, '--tests-from', tests, '--test-file', 'test_new.py',
+                              command=[sys.executable, 'test_new.py'])
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIsNone(json.loads(checkpoint.read_text())['test_files']['test_new.py']['original_sha256'])
+        self.git('checkout', '-qb', 'unrelated', self.red)
+        (self.repo / 'code').write_text('OTHER')
+        self.git('commit', '-qam', 'other branch')
+        unrelated = self.git('rev-parse', 'HEAD')
+        self.git('checkout', '-q', 'factory/demo')
+        for source, overlay in ((unrelated, tests), (self.red, unrelated)):
+            result = self.red_cli(source, self.change / 'nonancestor.json', '--tests-from', overlay,
+                                  '--test-file', 'test_new.py', command=[sys.executable, '-c', 'raise SystemExit(77)'])
+            self.assertNotIn(result.returncode, (0, 77))
+            self.assertFalse((self.change / 'nonancestor.json').exists())
+
+    def test_overlay_rejects_base_symlink_and_preserves_new_executable_tests(self):
+        (self.repo / 'tests').symlink_to('outside', target_is_directory=True)
+        self.git('add', 'tests')
+        self.git('commit', '-qm', 'base symlink')
+        base = self.git('rev-parse', 'HEAD')
+        (self.repo / 'tests').unlink()
+        (self.repo / 'tests').mkdir()
+        (self.repo / 'tests/test_ok.py').write_text('assert False\n')
+        executable = self.repo / 'test_exec'
+        executable.write_text('#!/bin/sh\nexit 23\n')
+        executable.chmod(0o755)
+        self.git('add', 'tests', 'test_exec')
+        self.git('commit', '-qm', 'regular tests')
+        tests = self.git('rev-parse', 'HEAD')
+        checkpoint = self.change / 'base-symlink.json'
+        rejected = self.red_cli(base, checkpoint, '--tests-from', tests, '--test-file', 'tests/test_ok.py',
+                                command=[sys.executable, '-c', 'raise SystemExit(77)'])
+        self.assertNotIn(rejected.returncode, (0, 77))
+        self.assertFalse(checkpoint.exists())
+        checkpoint = self.change / 'executable.json'
+        result = self.red_cli(self.red, checkpoint, '--tests-from', tests, '--test-file', 'test_exec',
+                              '--test-file', 'tests/test_ok.py', command=['./test_exec'])
+        self.assertEqual(result.returncode, 23, result.stderr)
+        self.assertEqual(set(json.loads(checkpoint.read_text())['test_files']), {'test_exec', 'tests/test_ok.py'})
+
     def test_parent_owned_native_completion_envelope(self):
         # Actual caller combines the observed native return with an identity-free child report.
         self.assertNotIn('agent_id', self.report)

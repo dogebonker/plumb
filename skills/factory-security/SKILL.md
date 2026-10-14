@@ -31,7 +31,7 @@ Never copy a secret value into any file, report or message: cite file:line, rule
 
 Draft `.software-factory/system/threat-model.md` from [threat-model.md](threat-model.md), reading `.software-factory/system/` (product, ADRs, constraints, lenses.yaml) and the code itself: entry points, data stores, outbound calls, secrets, deployment files, CI. Every entry point and every trust boundary gets at least one threat or an explicit "none, because". The Components line uses the tags of `index.yaml`; routing reads it.
 
-Show the draft, and its differences from an existing model, to the user; write it once they confirm, with their corrections. Done when the file is written and confirmed.
+Show the draft, and its differences from an existing model, to the user and ask: "Approve this threat model, or correct it?" Write it once they approve, with their corrections, and, when run for a change, append a `threat_model_approved` event to its `history` with the file's SHA-256 ([../factory-shared/gates.md](../factory-shared/gates.md), History). Ask once per draft: answer a question the user asks, fold in a requirement they add, then ask the approval question once for the revised draft. Done when the file is written and approved.
 
 ## 3. Route
 

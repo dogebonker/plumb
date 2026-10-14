@@ -1,8 +1,8 @@
 # Feature folders (bulletproof-react)
 
-ID `feature-folders`, the alternative in row L9. One layer of features between shared code and the app, without FSD's entities and widgets. Code flows from shared to features to app. Sources: `docs/research/layouts-selection.md`, pattern 10.
+ID `feature-folders`, an explicit alternative in row L9 to the FDA default. One layer of features between shared code and the app, without FSD's entities and widgets. Code flows from shared to features to app. Sources: `docs/research/layouts-selection.md`, pattern 10.
 
-**Fits:** a team that wants feature isolation without FSD's six layers. **Does not fit:** many entities shared across features, which FSD's entities layer exists for.
+**Fits:** an existing feature-folder convention, or a team explicitly choosing feature isolation without FSD's six layers. Record the reason for choosing it over `fda`. **Does not fit:** many entities shared across features, which FSD's entities layer exists for.
 
 ## Layout lines
 

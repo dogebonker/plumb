@@ -33,13 +33,18 @@ Research runs behind a firewall: the agent that answers never sees the task, so 
 
    1. <question>
       Answer: <facts, each with path:line or a Pond session id>, or "not found"
+
+   ## Experiments
+   E1. <NFR or C ID it settles>: <what it checks>
+       Command: <exact command>
+       Output: <the result that settles it>
    ```
 
    One numbered item per question, its answer indented under it. Gaps become new questions, answered the same way. A resumed run keeps the questions already answered.
 5. Read the files the answers point to, and `.software-factory/system/`: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
 6. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules and the Principles of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths).
 
-Done when every question is answered or marked "not found", and every claim in the Research section of `02-architecture.md` cites an answer in `research.md`.
+Done when every question is answered or marked "not found", and every claim in the Research section of `02-architecture.md` cites an answer or experiment in `research.md`, or a documentation URL.
 
 ## 3. Draft `02-architecture.md`
 
@@ -84,8 +89,9 @@ Consequences: <what gets easier, what gets harder>
 
 - Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves them into `.software-factory/system/adr/` once the change's slices are done, before it merges.
 - When `.software-factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
-- Layout gives every module the change creates or adds folders to its lines, one group per root: the backend, and each frontend root (gates.md, Layout). Choose each root's layout as the procedure at the top of `<kit>/layouts/index.yaml` says: an existing convention wins and is recorded as `existing`; otherwise propose rows with their reasons and two exemplars from the pattern file, in the root's stack when it has them. Choosing is a Decision. Copy the pattern's Layout lines for the root's stack, each path prefixed with the root's path relative to the module path (no prefix when they are the same); a `cqrs` addition goes under its host as `<host>+cqrs`. The Decision also appends the pattern's layers for that stack, prefixed the same way, after the module's existing `layers` (approval writes them to `lenses.yaml`), names its sibling rules, and picks a checker from `<kit>/layouts/tools.yaml` for that stack with its config written in full from those layers and sibling rules, or `check: none`. For `existing`, the rules come from the module's current `layers` in `lenses.yaml` and any rule the user names, with a baseline of today's violations in the config; with neither, `check: none`.
+- Layout gives every module the change creates or adds folders to its lines, one group per root: the backend, and each frontend root (gates.md, Layout). Choose each root's layout as the procedure at the top of `<kit>/layouts/index.yaml` says: an existing convention wins and is recorded as `existing`; otherwise propose rows with their reasons and two exemplars from the pattern file, in the root's stack when it has them. FDA currently has one upstream example and two reference views: disclose that limitation rather than invent independent adoption. Choosing is a Decision. Copy the pattern's Layout lines for the root's stack, each path prefixed with the root's path relative to the module path (no prefix when they are the same); a `cqrs` addition goes under its host as `<host>+cqrs`. The Decision also appends the pattern's layers for that stack, prefixed the same way, after the module's existing `layers` (approval writes them to `lenses.yaml`), names its sibling rules, and picks a checker from `<kit>/layouts/tools.yaml` for that stack with its config written in full from those layers and sibling rules, or `check: none`. For `existing`, the rules come from the module's current `layers` in `lenses.yaml` and any rule the user names, with a baseline of today's violations in the config; with neither, `check: none`.
 - For saved user data, Budgets turns each agreed persistence promise into an observable fit criterion and named failure boundary: a failed write, unreadable or invalid existing data, and interleaved writers including an editor opened before another save. Contracts and data identifies the actual persistence dependency and recovery/conflict strategy. Explain the guarantees the chosen storage can provide; do not call browser-local state a durable backup or assume a successful write alone prevents stale overwrite. Any promise the strategy cannot meet is an open question, resolved through the existing gate approval.
+- Cite storage, runtime and platform guarantees from their documentation (its URL) or `research.md`. Run an experiment only when a Budget or failure boundary depends on behavior the documentation leaves unclear: at most three per change, each in a temp directory outside the repository. Record each in `research.md` under `## Experiments` with its command, output and the NFR or C it settles; Research cites those entries like any answer. Every other guarantee becomes a test the slices write.
 - Track critical: Budgets holds at least one NFR budget.
 - When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, and the Layout Decision does not supply them, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
 

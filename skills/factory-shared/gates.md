@@ -5,7 +5,7 @@ Shared rules for every factory skill. The factory skills install as a set, so th
 ## Paths
 
 - `<project>` is the `.software-factory` folder at the repository root: `system/` (living documents), `changes/` (one folder per change), `runs/ci/`, `runs/ui/`, `runs/security/` and `runs/prune/` (run outputs), `factory.lock`, `principles.md` (the project's principles and quiet rules) and `evals/` (the project's own eval cases).
-- The framework cache is `~/.software-factory/framework/<commit>/`: `kit/`, `skills/`, `hooks/` and `bin/` of one factory commit, unpacked once per machine by `bin/factory-install` in the factory repository. Projects never edit it.
+- The framework cache is `~/.software-factory/framework/<commit>/`: `kit/`, `skills/`, `hooks/` and `bin/` of one factory commit, unpacked once per machine by `bin/factory-install` in the factory repository. Projects never edit it. Book rubrics also ship under `<kit>/packs/<name>@<hash>/`; packs.md resolves a matching bundled pin before the shared cache.
 - The pack cache is `~/.software-factory/packs/<name>@<hash>/`: one folder per pinned pack and hash, shared by every project on the machine that pins that hash, filled by `bin/factory-packs-fetch` from bare mirrors in `~/.software-factory/packs/.mirrors/` ([packs.md](packs.md)). Projects never edit it.
 - `<kit>` is `~/.software-factory/framework/<commit>/kit`, where `<commit>` is `framework.commit` in `<project>/factory.lock`, or `<dev_path>/kit` when the lock names a `dev_path` (Resolve `<kit>`, below).
 - The user layer is `~/.software-factory/user/`: `principles.md`, the user's taste across projects, and `config.yaml`, whose `framework_repo:` is the local clone of the factory repository, used to show the log between two framework commits (Load a change) and by `/factory-packs` to bump the framework's pins.
@@ -61,22 +61,21 @@ A change's Layout is the Layout section of `02-architecture.md` together with th
 
 ## Milestones and autopilot
 
-A milestone is a group of slices reviewed and signed off together: the `Milestone` line of each slice in `04-slices.md`, copied as `milestone` into its `status.yaml` entry. A slice without one is its own milestone, and so is every slice in headless mode. A milestone's work is its slices that are not `done`; `M` is its number, or the slice id when the slice has none.
+A milestone is a group of slices reviewed and completed together (with PR sign-off in headless mode): the `Milestone` line of each original slice in `04-slices.md`, copied as `milestone` into its `status.yaml` entry. A validated derived correction has its own next unused milestone in status, without changing that approved document. A slice without one is its own milestone, and so is every slice in headless mode. A milestone's work is its slices that are not `done`; `M` is its number, or the slice id when the slice has none.
 
-In interactive mode `/factory-build` and `/factory-review` start the autopilot, and the session that runs them stays a thin orchestrator: it holds `status.yaml` and the step agents' reports, never code, diffs, packets or test output, so its context stays small however long the change runs.
+In interactive mode the conductor follows build and review directly: prepare one bounded packet, dispatch one executor per slice, perform mechanical checks, and dispatch one fresh independent read-only general reviewer per milestone plus applicable risk specialists. Route all routine source/test fixes to the existing implementation executor as one bounded validated finding batch; the conductor validates scope, commits, artifacts and native outcomes rather than writing code or duplicating the reviewer's whole-file pass. No additional step-agent wrapper is mandatory. Read relevant failure tails and packet inputs; keep complete logs in artifacts rather than repeating broad source reads.
 
-1. Load the change (Load a change, steps 1 and 2). Re-read `status.yaml` from disk before every decision and every write. When a gate is not `approved` or `skipped`, or `sent_back` is set, name that gate's skill and stop. Otherwise the next step is: build the next slice of the milestone in progress ([../factory-build/SKILL.md](../factory-build/SKILL.md)), review a milestone whose open slices are all `green` ([../factory-review/SKILL.md](../factory-review/SKILL.md)), or, when every slice is `done`, reconcile ([../factory-reconcile/SKILL.md](../factory-reconcile/SKILL.md)), which the orchestrator follows itself, with its own `step_start`, before it stops.
-2. For a build or review step, start one fresh step agent in the foreground (Models, below) and give it the absolute path of the step's skill. It receives only:
+1. Load the change, re-reading `status.yaml` before each decision/write. Unapproved gates or `sent_back` stop at the appropriate gate. Build the next open slice, review when all open milestone slices are `green`, then reconcile when all are `done`.
+2. Observe actual native terminal results for every dispatched executor/reviewer and any children before consuming their evidence. A progress message, output file or resumable task is not completion. Validate returned commits, exact artifact paths and current-source proof directly; the conductor alone records its checks/status. Do not synthesize child completion for conductor work or demand that an executor claim conductor-owned `green` status.
+3. Existing genuine step-agent callers retain the native handoff contract below; removing the default wrapper does not waive it for a wrapper that actually ran. Such a child returns an identity-free JSON report under the change: `state: completed|question|blocked`, `children: [{id, state}]` for actual children, `status_sha256` of final status bytes, exact existing `artifacts`, and the entire `question` when stopped. It waits for its children and reports only its own work; it never infers native routing identity.
 
-   > You are a factory step agent. Follow `<skill path>` for `<slug>`, for one step: one slice, or one milestone's review. Read what the skill says to read, from files. Your `step_start` detail is "session <the orchestrator's session id>, step agent, factory <sha>". Wait for every sub-agent you start before you report. A question the skill answers itself is not a question to report. Wherever the skill asks the user something, stop. Return a handoff JSON file under the change with `state: completed|question|blocked`, `children: [{id, state}]` for every child you used, `status_sha256` (SHA-256 of the final status.yaml bytes), `artifacts` (the exact existing paths you wrote, including slice-specific review paths), and `question` when stopped. Also report the outcome and the new state in at most five lines, then the question whole: every file list, output tail and numbered item the user needs to answer it. Save long output to a file under `.software-factory/changes/<slug>/` and name that file in the question.
+   Consume the native task completion or question event for the dispatched agent; a message saying a child is still running is not completion. Wait through the native task API, never a shell sleep/file-existence loop, and do not guess a root `review.md` when the child returned `slices/NN/review.md`. The child must not infer its native agent/task identity. After consuming the actual native return, the parent writes a separate completion envelope with `task_id` (its dispatch token), `agent_id` (the observed native task id), `state: completed` (from the task API), and `children: [{id, state}]` from every actual child task result. Check those native states against the identity-free child report; a running task is not a completed envelope. Child-supplied routing fields are ignored. Validate the report with `python3 <kit>/runtime.py handoff --repo <repo> --report <returned JSON path> --completion <parent completion envelope path> --slug <slug> --task-id <dispatched task id> --agent-id <native agent id> --slice <NN> --expected-state <green for build, done for signed-off review>`. A review awaiting sign-off returns `question`, not `completed`. Failure: resume that exact agent with the validation error; if it is gone, recover from disk through the same skill. Do not advance or invent state to match a report. Task identities and the file hash are routing/snapshot evidence, never approval authority; the existing user approvals and edit hooks still apply.
+4. Real requirement/authority questions are shown whole and actual answers passed verbatim. Resume the same agent for repairable failures. Retry counts are diagnostic; preserve dirty/untracked work and commits. Neither a task identity, hash, status label nor telemetry supplies approval authority.
+5. Append one `step_tokens` event with actual agent ids and normalized usage; do not count nested rollups twice. Continue directly under approved scope, unless `--one-step`, manual pause or a genuine blocker stops execution.
 
-3. Consume the native task completion or question event for the dispatched agent; a message saying a child is still running is not completion. Wait through the native task API, never a shell sleep/file-existence loop, and do not guess a root `review.md` when the child returned `slices/NN/review.md`. The child must not infer its native agent/task identity. After consuming the actual native return, the parent writes a separate completion envelope with `task_id` (its dispatch token), `agent_id` (the observed native task id), `state: completed` (from the task API), and `children: [{id, state}]` from every actual child task result. Check those native states against the identity-free child report; a running task is not a completed envelope. Child-supplied routing fields are ignored. Validate the report with `python3 <kit>/runtime.py handoff --repo <repo> --report <returned JSON path> --completion <parent completion envelope path> --slug <slug> --task-id <dispatched task id> --agent-id <native agent id> --slice <NN> --expected-state <green for build, done for signed-off review>`. A review awaiting sign-off returns `question`, not `completed`. Failure: resume that exact agent with the validation error; if it is gone, recover from disk through the same skill. Do not advance or invent state to match a report. Task identities and the file hash are routing/snapshot evidence, never approval authority; the existing user approvals and edit hooks still apply.
-4. A reported question: show it to the user as reported, without shortening it. Continue the same step agent with the user's answer, word for word and labelled as the user's; the step agent treats it as the user's answer in chat, and the orchestrator never answers for the user. Where the agent cannot be continued, start a fresh one with the question and the answer; it applies the answer where its skill asked it.
-5. When the validated step ends, append one `step_tokens` event (History) with the ids of every step agent the step used and normalized usage from Execution cost and evidence below. Never sum cumulative returns or nested rollups twice. Then go to 1.
+Initial slices approval must explicitly authorize bounded local implementation, executable-test correction under unchanged promises, review repairs and automatic intermediate completion. Existing plans use actual session authorization, never an inferred state flag. Interactive `green -> done` requires that real approval, independent current-source review and passing mechanical proof. Record `Completion under approved scope` with the original approval reference separately from the empty final `Sign-off`; never invent a human signature. One final real decision at reconcile covers acceptance, held review items and document drafts. Headless approval and sign-off derivation remain unchanged.
 
-`--one-step` after the slug (the slug is the arguments without it) runs build or review for exactly one step in this session, with no orchestrator: the skill asks the user directly and stops when the step ends. An eval trial or a user who wants one slice uses it.
-
-The autopilot asks and continues for a rewind, a file a step may not allow on its own, a retry that failed twice, a signing failure, held review items and each milestone's sign-off. It ends at a send-back, at a gate that is not approved, and after reconcile.
+`--one-step` runs exactly one slice or milestone review, then reports the next skill and stops. A user's manual pause is honored. Contract changes, waivers, unrelated scope, destructive actions, credentials, security/money outcome decisions and publication still need the appropriate authority. Completed slices remain edit-locked. An unchanged-criterion acceptance defect uses the authorized derived-correction branch below only when all its conditions hold; other corrections use the existing genuine approval path, never silent rehashing.
 
 ## Commits
 
@@ -97,6 +96,101 @@ The autopilot asks and continues for a rewind, a file a step may not allow on it
 6. A gate skill drafts only when every earlier gate is `approved` or `skipped`. Otherwise name the first gate that is not, and its skill. Stop. Build and review need all four `approved` or `skipped`.
 7. **Playbook.** Read `.software-factory/system/playbook.md` as [playbook.md](playbook.md) says, when it exists.
 
+## Development proof inputs
+
+Before selecting or skipping a build/review slice, compare every non-`done` slice's packet and receipts against the current genuinely approved gate documents and referenced inputs. Record an `Inputs` manifest in the packet/checks/review: exact path and SHA-256 for each non-skipped gate document, plus the source documents/files supplying applicable criteria, SYS promises, budgets, signatures, layout, design, rules, pack pins, adapter and verification commands. Mark skipped gates explicitly. Hash immutable input files in full. For mutable metadata such as `status.yaml` or mixed `lenses.yaml` records, capture exact effective fields/values or hash their canonical projection: commands, baseline exclusions, applicable module/layer/pack settings and verification environment. Exclude history, slice progress/commit checkpoints, completion records and the receipts themselves; source revisions remain separate proof. A progress write must not invalidate evidence, while a changed command, baseline, tool/dependency/environment or effective rule must. Matching Covers IDs or unchanged source alone is insufficient; compare the copied promises and effective rules too.
+
+A missing manifest, changed input hash, or mismatched copied criterion/budget/signature/rule invalidates prior checks and review coverage for that non-done slice. Retain old packets/receipts as historical artifacts and append the invalidation reason to history. Refresh the packet from genuinely approved current inputs and set an affected retained-work slice to `building` (a slice without work stays `pending`) before selection, even if it was `green`. Preserve base/test/head commits and all source; reverify and repair only demonstrated mismatches, rather than rebuilding code automatically. New checks and independent review must record the refreshed input manifest before `green`/`done` or sign-off. Do not reapprove a changed gate or reuse an old receipt by merely updating its hashes.
+
+For retained-work repair, preserve each slice's original `base_commit`, `test_commit`, head and receipts in its packet/check history before updating current status. Record its original owned commit span and each repair's start HEAD and exact correction commit span in packet/checks; this is provenance, never authority. Check the original slice-owned span and new repair spans separately against that slice's Allowed files. Do not treat unrelated later slices between the original base and current HEAD as its edits, add their files as deviations, or erase them. Current contracts, corrected-test expectations and GREEN still apply at current HEAD. The final milestone check uses the complete milestone history against the union of its packets. If ownership cannot be established from recorded commits/receipts, report the gap rather than invent a span.
+
+A `done` slice remains edit-locked. If new approved inputs affect completed work, hold that impact for explicitly authorized corrective scope; never reopen it or treat its old review as proof of the new promises. Headless APPROVED-review derivation is unchanged.
+
+## Autonomous local corrections
+
+New interactive `04-slices.md` plans include this mandate before actual approval:
+
+```markdown
+## Development
+Mode: autonomous-local
+Repairs: approved-slice-files
+```
+
+Actual initial approval of those bytes authorizes within-contract corrections confined to the selected original slices' exact Allowed files, including their planned test paths. It never authorizes changing approved document bytes, weakening criteria/contracts, or reopening completed parents. Legacy/missing-mandate plans and headless PR approvals retain their existing route; explicit manual pauses and `--one-step` still apply. A status/hash/record is provenance, never independent authority.
+
+After independent acceptance reproduces a defect against an unchanged approved criterion, append one ordinary correction at the next unused slice ID and new milestone. Its original parents must remain `done`; preserve their base/test/head receipts and all four approved documents and hashes. Batch related failures in one consolidated change-local failure file. Derive scope only from the original headings, Covers and exact Allowed files in frozen `04-slices.md`, never mutable packets or prior corrections. A correction cannot parent another correction. No new-file, regression-test or typecheck deviation widens this scope: use existing planned test paths or the genuine slice approval path.
+
+### Repair record and proof inputs
+
+Write `<change>/slices/NN/repair.json` with exactly this shape (replace placeholders with actual hashes):
+
+```json
+{
+  "id": 3,
+  "branch": "factory/example",
+  "parents": [{"id": 1, "head_commit": "<40-hex>"}],
+  "criteria": ["FR-01"],
+  "approved_docs": {
+    "product": "<64-hex>",
+    "architecture": "<64-hex>",
+    "interface": "<64-hex>",
+    "slices": "<64-hex>"
+  },
+  "start_commit": "<40-hex>",
+  "paths": ["src/store.py", "tests/test_store.py"],
+  "failure": {
+    "path": "acceptance/failure-01.md",
+    "sha256": "<64-hex>",
+    "source_commit": "<40-hex>",
+    "criteria": ["FR-01"]
+  },
+  "proof_inputs": {"path": "slices/03/inputs.json", "sha256": "<64-hex>"}
+}
+```
+
+Every field is required; reject additional fields and duplicate JSON keys at every level. IDs are positive JSON integers, never booleans; directory names use at least two digits. Commit IDs are lowercase 40-hex and SHA-256 digests lowercase 64-hex. Other strings and arrays are nonempty. IDs and normalized paths are unique. The ID matches the status row/directory and is the next unused ID at creation. Every parent is an original approved heading, remains `done`, and its fixed status head equals the recorded `head_commit`. `criteria` is a unique subset of those parents' Covers; `failure.criteria` equals that set. `paths` is a unique subset of the union of their original exact Allowed files.
+
+`approved_docs` has exactly the four gate keys. Slices is always the digest of genuinely approved status and unchanged mandated `04-slices.md` bytes. Product/architecture/interface each match genuinely approved status and bytes, or are JSON null only for an existing legitimate skipped gate on track small. Pending gates, missing approval evidence and null-for-approved substitutions fail. Criteria text comes from original small-track Requirements/Examples, or original approved FR/NFR and applicable standing criteria on standard/critical tracks.
+
+Status must explicitly record `mode: interactive`; missing mode or headless mode cannot use this branch. `branch` equals both attached Git branch and status branch. Parent heads are ancestors of `start_commit`, which is an ancestor of actual HEAD. Failure source is a committed tested ancestor of start with no intervening source changes (planning-only commits allowed). At creation source/index/untracked source are clean and HEAD equals start. Never reset this baseline on resume.
+
+Evidence references are change-relative POSIX paths to existing regular files inside this exact change. Source/input paths are repository-relative POSIX paths. Reject absolute paths, empty/dot/dot-dot segments, backslashes, globs, NULs, symlinks at any component and resolved escapes; hash bytes without following symlinks. Source paths cannot target `.git`, `.factory`, `.software-factory` or `DESIGN.md`. No receipt path authorizes arbitrary host reads.
+
+The referenced immutable input snapshot has exactly this JSON shape:
+
+```json
+{
+  "criteria": [{"id": "FR-01", "text": "<verbatim approved fit criterion>"}],
+  "files": [{"path": "<repository-relative effective input>", "sha256": "<64-hex>"}],
+  "commands": ["<exact applicable verification command>"],
+  "environment": "<recorded tool/runtime/dependency environment identity>"
+}
+```
+
+All fields are required with exactly these types and keys; apply the same strict duplicate/string/array/digest/path rules. Criterion IDs and file paths are unique; criteria IDs equal repair criteria and text matches original approved criteria. The conductor supplies the complete applicable Development proof inputs inventory: criteria/budgets/signatures/rules, relevant configuration and dependency manifests. Reuse captured manifests and immutable repository/change-local snapshots when bytes and effective contents still match. Needed external rules use a bounded repository-local snapshot, not an external receipt path or a recopied whole book. Exclude the receipt itself and mutable repair source files; actual commit/diff checks bind source revisions. Commands and environment are comparison strings, never executed by the validator. The conductor verifies applicability, current environment and complete coverage: byte hashes do not prove the truth of command/environment claims. A changed/missing effective input requires a new retained receipt, explicit reference update and fresh affected proofs, without changing approved hashes or scope. Missing historical receipts are not current proof.
+
+Paths are literal filenames: framework route names such as `app/tickets/[id]/page.tsx` are allowed as exact paths, never expanded as patterns. `*` and `?` remain forbidden. Source inventory uses tracked and nonignored-untracked Git paths; ordinary ignored build/dependency artifacts do not become repair scope.
+
+### One validator, two checkpoints
+
+Resolve `<factory-root>` from the locked `<kit>`'s parent, containing `hooks/`. Use only the existing shared read-only hook validator:
+
+```sh
+python3 <factory-root>/hooks/factory_gate.py repair-check --repo <absolute-repo> --change <slug> --slice 03 --checkpoint edit
+python3 <factory-root>/hooks/factory_gate.py repair-check --repo <absolute-repo> --change <slug> --slice 03 --checkpoint complete
+```
+
+The fixed repo/change/slice selects the record; do not accept an arbitrary metadata path or add another parser/engine. Checkpoint is exactly `edit|complete`. Success exits 0 with `repair scope valid`; failure exits 2 with a specific stderr reason. Existing stdin PreToolUse behavior stays intact. These checks prove structural scope/provenance, never approval, review or quality/completion.
+
+Both checkpoints validate mandate, gates, strict record/inputs, paths, branch and ancestry. Reject duplicate/malformed original declared slice IDs and unsafe original scope paths; never infer a parent from a corrective status row alone. Inspect every source path touched by every commit reachable in `start_commit..HEAD`, per-parent diffs for merges with rename detection disabled so added/deleted/renamed/copied endpoints all count. A forbidden edit followed by revert fails. Include staged, unstaged and untracked source using NUL-safe Git output; Git read failure fails closed. Metadata exemptions do not widen source scope or bypass the four document hashes. The validator executes no receipt commands and writes no Git/config/status/source.
+
+- `edit`: permits clean state or interrupted owned changes only inside exact record paths; the hook also checks the requested edit path. Unrelated dirty/staged/untracked source blocks: preserve and report it.
+- `complete`: additionally requires clean source index/worktree, no untracked source, and the correction's recorded head equal to HEAD or separated only by planning commits. Existing isolated RED/GREEN, fresh native executor/reviewer completion, independent current-source general/risk review and applicable mechanical/acceptance proofs remain mandatory and conductor-owned. A control-file exemption is not completion proof.
+
+Creation order: establish actual interactive authority and independently reproduced unchanged-criterion failure; capture clean start and immutable failure/input evidence; write only control artifacts first: record, candidate derived packet and pending status with `base_commit: <start_commit>` and null test/head; validate record and packet together via `edit`; then set building and dispatch. Do not require an already validated packet before its initial candidate exists. Invalid staged metadata stays blocked without altering parents or approved docs. Run `edit` on every resume and immediately before edits/dispatch. Run `complete` after review fixes and before recording completion, alongside actual proof checks. For mandate-bearing plans, every undeclared active ID requires valid repair metadata even if no repair flag was written.
+
+Automatically continue validated corrections through build, independent review and independent acceptance until the complete current required matrix passes, honoring manual/one-step preferences. Changed source reruns affected and shared-state criteria; reuse only applicable current-source/current-input evidence. Not-run, timeout and setup error are never passes. Repeated identical failures trigger one bounded evidence-based diagnosis, then an authorized recovery or precise blocker; no retry-count permission handoff, endless full panels, whole-source rewind or deadline quality waiver. Real contract, waiver, security/money outcome, credential, destructive or publication decisions keep their existing gates. Final human reconciliation remains separate from technical success.
+
 ## Draft a gate document
 
 Every gate document ends with an `## Open questions` section, empty before approval. An existing document resumes from its open questions instead of being redrafted.
@@ -111,6 +205,14 @@ Headless mode: commit and push the document, then wait for the user (below) with
 2. `notes_for_fresh_session`: "<gate> approved. Next: <next skill> <slug>."
 3. Committed mode: `git add .software-factory/changes/<slug>` and commit `chore(factory): <gate> <slug>`.
 
+## Run the next skill
+
+Interactive mode only; headless approvals stay with the runner. A session that continues to the next gate skill itself, instead of the user starting it in a fresh session, runs that skill as one fresh step agent on the session's model: the product, architecture, threat model, interface and slices steps each start with an empty context. The agent receives the skill path, the slug and the answers to its own questions, nothing else from this conversation. It loads the change from disk (Load a change) and returns `state: question` with the whole question, or `state: completed` with its document's path.
+
+The session shows each question whole and resumes that agent with the answer word for word, labelled as the user's own words. The agent treats it as the user's answer in chat and records an approval itself, as Approve a gate says. The session never answers a question, never writes `gates.*` and never writes the approval event. When the agent is gone, a fresh one resumes the document from its Open questions.
+
+Before starting the next skill, the session re-reads `status.yaml` and checks that the gate is `approved` and its `doc_sha256` equals `hash(doc)`; after the threat model, that the last `threat_model_approved` event holds the current SHA-256 of `.software-factory/system/threat-model.md`. The agent's report is never approval. Previews, research and reviewers the gate starts are that agent's children.
+
 ## Send back
 
 When build, review or reconcile's acceptance step finds that the approved design cannot hold, pick the target gate:
@@ -118,8 +220,8 @@ When build, review or reconcile's acceptance step finds that the approved design
 - an omitted or incorrect promised user outcome: `product` (track small: `slices`); hold the change for the appropriate human gate approval
 - an approved budget is infeasible, or its storage/durability strategy cannot preserve acknowledged work: `architecture` (track small: `slices`); hold for the appropriate human gate approval
 - a frozen signature cannot work as written: `interface` (track small: `slices`)
-- a red-commit test is wrong, or the user refused a file outside Allowed files: `slices`
-- an example failed in the running product at reconcile's acceptance step: `slices`, with no slice (`slice: null`); the fix comes as a new slice
+- a required change exceeds allowed scope and the user refused it: `slices`; an executable-test mistake under an unchanged promise is corrected locally with a deviation and isolated proof
+- an example failed in the running product at reconcile's acceptance step: use Autonomous local corrections only for the actually authorized, validated unchanged-criterion branch; otherwise `slices`, with no slice (`slice: null`), and genuine corrective-slice approval. This exception never changes approved bytes or completed parents
 
 Then:
 
@@ -131,7 +233,7 @@ Then:
 
 ## Models
 
-Sub-agents run on the session's model, except where a skill says *smaller model*: the harness's mid-size model (in Claude Code, the Agent tool's `model: sonnet`), or the session's model when that is not larger. Only agents whose output a later step checks against files get it: research answers, which cite `path:line` that the architecture gate reads, and retro's candidates, which retro tries to disprove. The executor, the reviewers, the challenge panel and the acceptance agent keep the session's model, because their mistakes cost review time or pass unseen. Step agents run on the session's model; in Claude Code, `subagent_type: general-purpose`, which has the Agent and Skill tools they need.
+Sub-agents run on the session's model, except where a skill says *smaller model*: the harness's mid-size model (in Claude Code, the Agent tool's `model: sonnet`), or the session's model when that is not larger. Only agents whose output a later step checks against files get it: research answers, which cite `path:line` that the architecture gate reads, and retro's candidates, which retro tries to disprove. The executor, the reviewers, the challenge panel and the acceptance agent keep the session's model, because their mistakes cost review time or pass unseen. Optional step agents run on the session's model; in Claude Code, `subagent_type: general-purpose`, which has the Agent and Skill tools they need.
 
 ## History
 
@@ -140,7 +242,7 @@ Sub-agents run on the session's model, except where a skill says *smaller model*
 - Batch independent read-only searches and mechanical commands at the same verification barrier; keep their separate exit codes and complete logs. Do not repeat a passed check until its source, tests, command, dependencies or environment changed, or an unresolved concern requires it. Review's existing Phase 1 reuse rules still apply; an agent-authored receipt alone never grants independent verification or approval.
 - Load only the selected profile's applicable lenses and their specified sizes. Pass packet/artifact paths and a bounded terminal report between agents; keep full logs on disk and retrieve the relevant failure sections. The executor still receives the full frozen contract and the reviewer still inspects the actual diff.
 - When Context Mode tools are available, route large read-only exploration and non-browser command output through `ctx_execute`/`ctx_batch_execute` and `ctx_index`/`ctx_search`; discover deferred tools through the host's tool search when needed. Keep small reads direct and fixed browser capabilities in their required execution surface. Retain full raw evidence and actual exits, and retrieve complete frozen contracts and relevant failures before acting; summaries never replace verification or approval. Record actual tool calls and raw/returned sizes for M11 instead of treating enabled hooks as savings. Existing permissions still apply; do not install another compressor during a change.
-- Before adding Tests first, identify existing tests that already assert unchanged behavior. Map those tests as existing coverage instead of inventing a new RED assertion for the same behavior. A genuinely new test that passes its stub still follows the explicit `red_exempt` decision.
+- Before adding Tests first, identify existing tests that already assert unchanged behavior. Map those tests as existing coverage instead of inventing a new RED assertion for the same behavior. A genuinely new negative test that passes its stub is retained as evidence-backed `red_exempt`, with its unchanged criterion and output independently reviewed; no routine reapproval is needed.
 - Record usage scope with every return: delta, cumulative for this same agent/session, or unknown; record included child ids when the provider reports nested usage. Sum deltas, take differences between cumulative returns, and never count a child twice through both its own total and its parent's rollup. Keep cache-read/cache-write/input/output classes separate; missing usage is unknown, not zero. These ids and counters are telemetry, never approval authority.
 
 `history` in `status.yaml` is append-only: one flow-map line per event, never edited or removed, so `/factory-retro` can count what happened after the fields it summarizes are overwritten.
@@ -152,9 +254,10 @@ history:
 
 - `step_start`: every skill, at Load (triage, when it writes `status.yaml`). The detail holds the session id from the skill's `Session:` line ("unknown" when the harness left it unfilled) and what actually ran: `factory <the first seven characters of <running>>`, followed by `dev <dev_path>` when the lock names a `dev_path`. A step agent writes the `step_start` detail its orchestrator gives it; the orchestrator writes its own `step_start` for reconcile.
 - `gate_reopened` (ref: the gate; detail: `chain`), `sent_back` (ref: the slice, or `-`; detail: target gate and reason).
-- From build: `rewind` (detail: its cause: `red_retry`, `sent_back` or `interrupted`), `red_retry`, `green_retry`, `check_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook`, `signing` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
+- `threat_model_approved` (ref: `-`; detail: "sha256 <hash of .software-factory/system/threat-model.md>"), from `/factory-security threat-model` once the user approves.
+- From legacy build: `rewind` (retain existing history; no default restoration). From build: `red_retry`, `green_retry`, `check_retry`, `executor_stop` (detail: `signature`, `file`, `test`, `hook`, `signing` or `passes-on-stub`). From interface: `panel_round` (detail: round number and card count).
 - `factory_updated` (detail: "<old>..<new>"), from the Factory version check at Load.
-- `step_tokens` (step: `factory-build` or `factory-review`; ref: the slice or milestone; detail: "agents <ids>, scope <delta|cumulative|unknown>, usage <normalized total or unknown>, included children <ids>"), from the autopilot orchestrator when a step ends. Record the separate token classes in the referenced step report when available.
+- `step_tokens` (step: `factory-build` or `factory-review`; ref: the slice or milestone; detail: "agents <ids>, scope <delta|cumulative|unknown>, usage <normalized total or unknown>, included children <ids>"), from the conductor when a step ends. Record the separate token classes in the referenced step report when available.
 - `detail` is one line in double quotes.
 
 ## Headless mode

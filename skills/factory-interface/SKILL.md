@@ -59,8 +59,9 @@ Consequences: <what gets easier, what gets harder>
 ~~~
 
 - Signatures are in the repository's language and style, complete enough to compile, and follow the Principles of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths).
-- Every module the change creates or changes has a section, and so does each frontend root the Layout names: a `Pattern` line with `frontend-small`, `fsd` or `feature-folders` (gates.md, Layout). A frontend's interface is each page, and each export another folder imports: components with their props type, hooks, the API client. Each gets an interface comment saying what it shows or does, and sits in its folder from the Layout (gates.md, Layout). On its Cost line, each exported component or hook counts as a public method and each prop as a parameter.
+- Every module the change creates or changes has a section, and so does each frontend root the Layout names: a `Pattern` line with `fda` (the new-root default), or a recorded `frontend-small`, `fsd` or `feature-folders` exception (gates.md, Layout). A frontend's interface is each page, and each export another folder imports: components with their props type, hooks, the API client. Each gets an interface comment saying what it shows or does, and sits in its folder from the Layout (gates.md, Layout). On its Cost line, each exported component or hook counts as a public method and each prop as a parameter.
 - The Test plan turns every FR example into one test, chosen per module by its `bdd` state in `lenses.yaml`. When `ui` is `true`, it also covers each state the design file's States position names (empty, running, failed, no change, done) for the screens this change touches.
+- UI: carry the selected optional feature-reference patterns and DESIGN.md adaptation into the affected screen/component contract. References do not add behavior or become required acceptance unless explicitly agreed; use the approved design system when none were supplied.
 - For applicable persistence promises, interface comments define saved, failed-write/draft, invalid-data recovery and conflict outcomes in the repository’s existing result/error style. The Test plan maps each applicable NFR and SYS-NFR fit criterion to evidence, including sequences: fail the actual storage write then retry/reload; load invalid existing data then attempt a write without destroying recoverable bytes; interleave two writers and save from an already-open editor. Assert both user-visible success/error and retained data. A happy-path reload or HTTP failure injection cannot substitute for these storage boundaries.
 - In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
 - Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
@@ -83,7 +84,7 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
 
 1. The panel, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes or reported skipped:
 
-   | Lens | When | File under `<pack>`, `~/.software-factory/packs/<name>@<hash>/` (packs.md) |
+   | Lens | When | File under resolved `<pack>` (bundled exact pin or cache; packs.md) |
    | --- | --- | --- |
    | `a-philosophy-of-software-design` | always; it also gets each module's language pack index | `<name>.md` (full size) |
    | the profile's `challenge` lenses | always | `<name>.mini.md` |

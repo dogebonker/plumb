@@ -15,8 +15,8 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
    ```
    To set a project up by hand instead, see [kit/README.md](kit/README.md) and [skills/README.md](skills/README.md).
 2. In the repository you want to change, run `/factory-init`: it locks the framework commit, fetches the packs it pins, migrates an old `.factory/`, links the skills and offers the hard-gate hook. Then start with `/factory-triage <the task in plain words>`.
-3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`, stopping only for your answers and sign-offs.
-4. You approve every gate and sign off every milestone. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
+3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`. Approved local development continues automatically; real scope decisions and final acceptance still need your answer.
+4. You approve the discovery gates and execution scope, then sign off acceptance and reconciliation together. Manual milestone and headless PR sign-offs remain available. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
 ---
 
@@ -54,7 +54,9 @@ flowchart LR
 
 **You own the interface, agents own the implementation.** Think of a wall socket: you decide its shape, its voltage and what happens on overload; the electrician wires the wall however they like but cannot change the socket. Interface design is the gate you spend the most time on. Everything after it is delegated.
 
-**You still read every diff, a milestone at a time.** The point of the early gates is that review turns into "yes, this is what we agreed", not a design argument on a finished pull request. Slices are grouped into milestones that end where you can try something; you read and sign off each milestone, not each slice.
+**Milestones keep the work reviewable.** Each ends where you can try something and retains its diff, independent review and checks. Approved interactive development proceeds to one final acceptance and reconciliation decision; you can request manual milestone pauses.
+
+**Development is an independent loop inside the agreed constraints.** Product and architecture questions stay up front. After approved scope, the executor builds and repairs, independent reviewers inspect the result, and independent acceptance checks the agreed FR/NFR outcomes. Real contract/scope changes return for a decision. Final human reconciliation and publication remain separate.
 
 **Decisions live in files, not chat.** Every gate and every slice compacts into documents. A fresh session, or a server, picks up from the files alone.
 
@@ -78,7 +80,7 @@ flowchart LR
 | Slices | Vertical slices, tracer bullet first; each slice names the requirements it covers and how it is verified | `04-slices.md` |
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
 | Build | Fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |
-| Review | Once per milestone: scripts, then parallel review agents whose validated fixes are applied, then your sign-off | `slices/NN/review.md` |
+| Review | Once per milestone: scripts, one independent general reviewer plus risk specialists, and bounded repairs under the approved scope | `slices/NN/review.md` |
 | Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.software-factory/system/` |
 
 ### Tracks
@@ -130,14 +132,14 @@ Your answers are logged. A rule you overrule three times goes quiet for you; a r
 
 ![Review pipeline](assets/review.svg)
 
-Review runs four parallel read-only agents: cleanliness, design and reuse, efficiency, and correctness (side-effect gating plus per-language defect classes). Every finding is validated against the actual code, every changed file is accounted for as reviewed or skipped with a reason, and one numbered report recommends what to fix. It runs once per milestone. Interactive runs apply every validated fix inside the agreed files and contracts, and the sign-off question lists them so you can undo any; headless runs still wait for the numbers to fix. On top of it:
+Review runs one fresh independent read-only reviewer carrying cleanliness, design/reuse, hot-path efficiency and correctness (side-effect gating plus per-language defects). Every finding is validated against the code and every reviewable file is accounted for. Interactive runs apply bounded fixes under the genuinely approved execution scope, record milestone completion separately from human sign-off, and continue to final acceptance and one consolidated decision. Headless runs retain their PR approval and sign-off protocol. On top of it:
 
 - **Phase 1 grows.** The import graph (Clean Architecture's dependency rule), interface conformance against the frozen stubs, a dead-code tool and the language pack's linter rules all run as scripts.
-- **Books become rubric, not extra agents.** Refactoring.Guru and Ponytail's simplification ladder ride inside the design and reuse agent; the language pack rides inside design and efficiency.
-- **Two agents are conditional.** An APoSD reviewer runs only when a slice adds public surface beyond the frozen interface; a Money reviewer runs only on critical slices in repositories that move money.
+- **Books become rubric, not extra agents.** Applicable compact rules and the simplification ladder ride inside the general reviewer; unavailable packs are reported, never credited as evidence.
+- **Specialists follow risk.** UI/accessibility, security and money reviewers run when the actual diff changes those risks; uncertain risk triggers review. APoSD reviews new public surface beyond the frozen interface.
 - **A frozen signature change is not a fix.** It sends the slice back to Interface Design.
 
-A typical milestone costs four review agents. The worst case, a money milestone that touches an interface, costs six.
+A typical milestone uses one general reviewer. Specialists add coverage for concrete risks. The existing executor implements validated repairs; the conductor coordinates and verifies. Local retries retain work and reuse valid checks, and regressions prove RED in an isolated clone. New interactive plans explicitly authorize corrective slices for unchanged promises inside the original exact file scope. Independent acceptance can then send a defect through build → review → repair → acceptance without reopening approvals or completed parents. Technical completion requires every applicable quality gate to pass; missing proof stays blocked.
 
 ---
 
@@ -153,11 +155,11 @@ A typical milestone costs four review agents. The worst case, a money milestone 
 | Go | [cxuu/golang-skills](https://github.com/cxuu/golang-skills) | `go.mod` |
 | Python | [trailofbits/skills](https://github.com/trailofbits/skills) `modern-python` + [wshobson/agents](https://github.com/wshobson/agents) `python-development` | `pyproject.toml` and friends |
 | Simplification | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) | Packet, review rubric, and the prune job |
-| Reference layouts | `kit/layouts/`, from [docs/research/layouts-selection.md](docs/research/layouts-selection.md): ten patterns with exemplars and checkers | The architecture gate proposes one by profile and size |
+| Reference layouts | `kit/layouts/`, from [docs/research/layouts-selection.md](docs/research/layouts-selection.md): eleven patterns with references and checkers | Existing conventions win; FDA is the strong default for new frontend roots, with explicit small-site/team exceptions |
 | Security | [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill), plus routed packs from OpenAI, Trail of Bits, Sentry and 15 mukul975 skills | `factory-security`; the selection is in [docs/research/security-selection.md](docs/research/security-selection.md) |
 | Memory | [tenequm/pond](https://github.com/tenequm/pond) | Always: every session is recorded; gates, review, reconcile and retro query it |
 
-Every third-party pack is pinned by hash, in the framework's `kit/packs.lock.yaml` and in each project's `.software-factory/factory.lock`, so an upstream change never lands in the middle of a feature.
+Every third-party pack is pinned by hash, in the framework's `kit/packs.lock.yaml` and in each project's `.software-factory/factory.lock`, so an upstream change never lands in the middle of a feature. The ten configured book rubrics are bundled in `kit/packs/`, including their full, mini and nano files. They ship with framework installs and isolated benchmark snapshots, and matching bundles can fill the shared cache offline. Missing or corrupt required books stop benchmark preparation before a model runs. Profiles still select the relevant books; availability does not load them all into context.
 
 ### Lens profiles
 
@@ -257,6 +259,7 @@ Three specialist skills, each with the factory's habits: mechanical evidence bef
 - **De-slop as a mechanical pass.** A catalog of slop patterns (gradient heroes, emoji bullets, interchangeable card grids, centered everything, filler copy, decorative motion) checked from code and from real screenshots before any taste opinion.
 - **Opinions with a cost.** Findings use the challenge card: the current design argued fairly first, then the objection, a concrete alternative and what it costs, anchored to the brief or the success metric. It recommends cutting things, not only restyling them.
 - **Seen, not imagined.** Screens rendered in a real browser at each breakpoint, with accessibility, empty and error states, and React Doctor's runtime scan where it applies.
+- **Optional feature examples.** For a new or redesigned feature, share 2–3 screenshots, recordings or links to comparable features you like. Concrete references can improve hierarchy and interaction flow, reducing what the model has to guess. Factory records what to borrow and adapts it to your DESIGN.md brand kit. One useful example is enough; skipping them never blocks the pipeline or adds another development approval. [Reference workflow](skills/factory-ui-ux/references.md).
 - **Where it plugs in:** mockups in the product gate, UI states in the interface gate, and review of slices that touch UI.
 
 **S10: `factory-ci`, "why is my CI so slow?"** Built: [skills/factory-ci](skills/factory-ci/SKILL.md). What it uses and why: [docs/research/ci-selection.md](docs/research/ci-selection.md). One question, an answer with numbers.
@@ -295,4 +298,4 @@ The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer
 
 ## License
 
-[MIT](LICENSE). Third-party packs linked above keep their own licenses; they are fetched into a cache per pinned hash on each machine, not vendored into this repository.
+[MIT](LICENSE). The bundled book rubrics retain their upstream [MIT notice](kit/packs/LICENSE.agent-rules-books). Other third-party packs keep their own licenses and use the exact-pin cache/fetch path.

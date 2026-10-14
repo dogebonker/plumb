@@ -1,6 +1,6 @@
 # Factory packs
 
-How a factory skill loads a lens or a language pack. `<kit>` and `<project>` are defined in [gates.md](gates.md), Paths. `<pack>` is `~/.software-factory/packs/<name>@<hash>/`: the pack's files at the hash this project's `factory.lock` pins, fetched into the pack cache by `<framework>/bin/factory-packs-fetch`. Each project loads its own pins, so two projects pinned to different hashes of one pack each load their own.
+How a factory skill loads a lens or a language pack. `<kit>` and `<project>` are defined in [gates.md](gates.md), Paths. `<pack>` is the exact pinned pack resolved below: a matching book bundle at `<kit>/packs/<name>@<hash>/`, otherwise `~/.software-factory/packs/<name>@<hash>/`. The framework ships its configured book rubrics; `<framework>/bin/factory-packs-fetch` can hydrate the shared cache from those verified copies offline. Each project loads its own pins, so two projects pinned to different hashes of one pack each load their own.
 
 ## Pick
 
@@ -12,8 +12,8 @@ How a factory skill loads a lens or a language pack. `<kit>` and `<project>` are
 For each pack:
 
 1. Pin: the pack's entry under `packs` in `<project>/factory.lock`. No pin: say so, and continue without the pack.
-2. `<pack>` is `~/.software-factory/packs/<name>@<hash>/` for that pin's `hash`. A pack loads only from there, never from a skill installed elsewhere under the same name.
-3. Missing: run `<framework>/bin/factory-packs-fetch` from the repository root, where `<framework>` is the folder that holds `<kit>` (gates.md, Resolve `<kit>`), or tell the user to when this session cannot run it. It fetches every pin of the lock. Under the headless runner (`FACTORY_RUNNER_MANAGED=1`) the harness does not fetch: the runner host's operator fetches each installed framework's own `kit/packs.lock.yaml`, never a branch's lock, and the runner skips a change whose pins differ from its framework's (`runner/factory_run.py`). Still missing: say which pack and the reason it printed, and continue without it.
+2. For a book pin whose `source`, `path` and `hash` match `<kit>/packs.lock.yaml`, prefer the exact `<kit>/packs/<name>@<hash>/` bundle. Bundles retain the upstream Git tree, full/mini/nano files and modes; fetch and benchmark preparation verify that tree, and benchmark preparation refuses missing or corrupt required books. Otherwise use the exact shared-cache directory. Never substitute an unversioned global skill or relabel another revision. Headless branch pins must still match the installed framework's pins.
+3. Missing: run `<framework>/bin/factory-packs-fetch` from the repository root, where `<framework>` is the folder that holds `<kit>` (gates.md, Resolve `<kit>`), or tell the user to when this session cannot run it. It copies matching verified bundles into the cache without network, and fetches other missing pins of the lock. Under the headless runner (`FACTORY_RUNNER_MANAGED=1`) the harness does not fetch: the runner host's operator fetches each installed framework's own `kit/packs.lock.yaml`, never a branch's lock, and the runner skips a change whose pins differ from its framework's (`runner/factory_run.py`). Still missing: say which pack and the reason it printed, and continue without it.
 
 A pin approves a pack's content, so it follows a read: `/factory-packs` shows what changed upstream and writes the pins the user approves into the framework's `kit/packs.lock.yaml`, and a project takes them into its `factory.lock` only through `/factory-upgrade`.
 

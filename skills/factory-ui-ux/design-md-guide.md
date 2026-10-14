@@ -16,6 +16,8 @@ Front-end dependencies (react, next, vue, svelte, solid, angular), templates or 
 
 `.software-factory/system/product.md`, `glossary.md`, `constraints.md` (accessibility promises), the latest `01-product.md` (problem, user, success metric), a `PRODUCT.md` if present, and Pond for the users' own words and complaints.
 
+Read any supplied brand kit and optional feature references ([references.md](references.md)). Keep the brand commitments as the target; feature examples inform composition and interaction within that target. Reuse the single discovery invitation, never require an external reference or repeat it in development.
+
 ## 4. Extract tokens from code
 
 In this order: CSS variables, Tailwind config or `@theme`, theme files, `*.tokens` or `tokens.json`, components, global CSS. Every observed token cites its source file. Record these as **observed implementation**, not the approved target. Identify whether they belong to an intentional brand/theme or a disposable starter; absent evidence, mark that status `inferred`. What the code lacks goes under `omitted:` with a reason. Target tokens may be proposed from the product evidence and desired reference, with their decision source and confirmation status; do not preserve starter styling merely because it exists.
@@ -43,7 +45,7 @@ Show the draft first. Then ask at most 3 questions per round, at most 2 rounds, 
 - the primary action of screens where the inference was ambiguous
 - term pairs where code strings and user quotes disagree
 - whether the existing appearance is intentional approved branding or replaceable starter styling
-- one desired product/reference and the quality bar for this release (for example, a finished daily work tool versus a functional prototype), with a concrete acceptance check
+- the quality bar for this release (for example, a finished daily work tool versus a functional prototype), with a concrete acceptance check; desired feature examples remain optional and reuse those already supplied
 - one example of the intended voice for a real action or error, offering a draft when none exists
 - brand commitments that cannot change (logo, colors, faces)
 

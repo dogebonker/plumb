@@ -203,6 +203,107 @@ with tempfile.TemporaryDirectory() as tmp:
     assert r.returncode == 1 and "failed evil: git clone" in r.stdout, r.stdout + r.stderr
     assert not (packs / ".mirrors" / "owner__evil.git").exists() and not leftovers()
 
+    # A fresh installed framework hydrates exact manifest bundles without any reachable source.
+    framework = tmp / "framework"
+    bundled_fetch = framework / "bin" / "factory-packs-fetch"
+    bundled_fetch.parent.mkdir(parents=True)
+    shutil.copy2(FETCH, bundled_fetch)
+    bundle = framework / "kit" / "packs" / f"demo@{tree1}"
+    shutil.copytree(demo1, bundle, symlinks=True)
+    manifest = framework / "kit" / "packs.lock.yaml"
+    manifest.write_text(f"packs:\n  demo: {{ source: owner/repo, path: packs/demo, hash: {tree1} }}\n")
+    offline_repo = project("bundled", [("demo", "owner/repo", tree1)])
+
+    def bundled_run(label, repo=offline_repo):
+        fixture_home = tmp / label
+        return subprocess.run([sys.executable, bundled_fetch, str(repo)], capture_output=True, text=True, check=False,
+                              env={**os.environ, "HOME": str(fixture_home), "GIT_CONFIG_COUNT": "1",
+                                   "GIT_CONFIG_KEY_0": f"url.file://{tmp}/unreachable/.insteadOf",
+                                   "GIT_CONFIG_VALUE_0": "https://github.com/"})
+
+    r = bundled_run("offline-home")
+    assert r.returncode == 0 and f"bundled demo@{tree1}" in r.stdout, r.stdout + r.stderr
+    hydrated = tmp / "offline-home" / ".software-factory" / "packs" / f"demo@{tree1}"
+    assert (hydrated / "SKILL.md").read_bytes() == b"v1\n"
+    assert os.access(hydrated / "run.sh", os.X_OK)
+    assert not (hydrated.parent / ".mirrors").exists()
+    # Explicit upstream maintenance bootstraps its mirror even when ordinary hydration needed none.
+    maintenance = """
+import fcntl
+import runpy
+import sys
+from pathlib import Path
+module = runpy.run_path(sys.argv[1])
+source = "owner/repo"
+assert module["SOURCE"].fullmatch(source)
+cache = Path(sys.argv[2])
+cache.mkdir(parents=True, exist_ok=True)
+with (cache / ".lock").open("w") as held:
+    fcntl.flock(held, fcntl.LOCK_EX)
+    mirror = module["mirror_for"](cache, source, set(), {})
+    module["network"](source, {}, mirror, "fetch", "--quiet", "origin")
+    assert module["git"](mirror, "config", "remote.origin.url") == "https://github.com/owner/repo.git"
+    assert module["git"](mirror, "rev-parse", "HEAD:packs/demo") == sys.argv[3]
+"""
+    r = subprocess.run([sys.executable, "-c", maintenance, str(bundled_fetch), str(hydrated.parent), tree2],
+                       capture_output=True, text=True, check=False,
+                       env={**FIXTURE_ENV, "HOME": str(tmp / "offline-home"), "GIT_CONFIG_COUNT": "1",
+                            "GIT_CONFIG_KEY_0": f"url.file://{base}/.insteadOf",
+                            "GIT_CONFIG_VALUE_0": "https://github.com/"})
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert (hydrated.parent / ".mirrors" / "owner__repo.git").is_dir()
+    assert (hydrated / "SKILL.md").read_bytes() == b"v1\n"
+    assert os.access(hydrated / "run.sh", os.X_OK)
+    # Archive attributes, ignores, safe links and hostile global filters also survive bundled hydration.
+    for name, tree in (("odd", odd), ("links", trees["links"])):
+        shutil.copytree(packs / f"{name}@{tree}", framework / "kit" / "packs" / f"{name}@{tree}", symlinks=True)
+        manifest.write_text(manifest.read_text() + f"  {name}: {{ source: owner/repo, path: packs/{name}, hash: {tree} }}\n")
+        fixture_home = tmp / ("offline-" + name)
+        write(fixture_home / ".gitconfig", (home / ".gitconfig").read_text())
+        r = bundled_run("offline-" + name, project("bundled-" + name, [(name, "owner/repo", tree, "packs/" + name)]))
+        assert r.returncode == 0 and f"bundled {name}@{tree}" in r.stdout, r.stdout + r.stderr
+        copied = fixture_home / ".software-factory" / "packs" / f"{name}@{tree}"
+        if name == "odd":
+            for filename, content in odd_files.items():
+                assert (copied / filename).read_bytes() == content.encode(), filename
+        else:
+            assert (copied / "AGENTS.md").is_symlink()
+            assert (copied / "sub" / "up.md").read_bytes() == b"linked\n"
+        assert not marker.exists()
+    # Neither altered bytes nor executable modes are accepted or hidden by a network fallback.
+    for label, change, restore in (
+        ("bad-bytes", lambda: (bundle / "SKILL.md").write_text("corrupt\n"),
+         lambda: (bundle / "SKILL.md").write_text("v1\n")),
+        ("bad-mode", lambda: (bundle / "run.sh").chmod(0o644),
+         lambda: (bundle / "run.sh").chmod(0o755)),
+    ):
+        change()
+        r = bundled_run(label)
+        assert r.returncode == 1 and "hash to" in r.stdout and "git clone" not in r.stdout, r.stdout + r.stderr
+        assert not (tmp / label / ".software-factory" / "packs" / f"demo@{tree1}").exists()
+        restore()
+    # Reject root symlinks and links escaping the copied pack, even with a matching link tree hash.
+    actual_bundle = bundle.with_name("saved")
+    bundle.rename(actual_bundle)
+    bundle.symlink_to(actual_bundle, target_is_directory=True)
+    r = bundled_run("bad-root")
+    assert r.returncode == 1 and "root" in r.stdout and "git clone" not in r.stdout, r.stdout + r.stderr
+    bundle.unlink()
+    actual_bundle.rename(bundle)
+    escaping_bundle = framework / "kit" / "packs" / f"out@{trees['out']}"
+    shutil.copytree(work / "packs" / "out", escaping_bundle, symlinks=True)
+    manifest.write_text(manifest.read_text() + f"  out: {{ source: owner/repo, path: packs/out, hash: {trees['out']} }}\n")
+    r = bundled_run("bad-link", project("bundled-out", [("out", "owner/repo", trees["out"], "packs/out")]))
+    assert r.returncode == 1 and "symlinks leave the pack" in r.stdout, r.stdout + r.stderr
+    # A bundle name alone never substitutes for a different source, path or revision.
+    for label, entry in (
+        ("wrong-source", ("demo", "other/repo", tree1)),
+        ("wrong-path", ("demo", "owner/repo", tree1, "other/path")),
+        ("wrong-revision", ("demo", "owner/repo", tree2)),
+    ):
+        r = bundled_run(label, project("bundled-" + label, [entry]))
+        assert r.returncode == 1 and "bundled " not in r.stdout and "git clone" in r.stdout, r.stdout + r.stderr
+
     # The lock's packs are a block of one-line entries; anything else stops the run instead of loading nothing.
     def lock_with(label, text):
         repo = tmp / label

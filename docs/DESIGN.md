@@ -18,7 +18,7 @@ The complete specification of the factory. The README explains the why; this doc
 | Factory skills and kit | `~/.software-factory/framework/<commit>/`: `skills/`, `kit/`, `hooks/` and `bin/` of one commit of this repository | Yes | Unpacked once per machine or server per commit; each project pins its commit in `.software-factory/factory.lock` and links the skills |
 | User layer | `~/.software-factory/user/`: `principles.md`, and `config.yaml` with `framework_repo` | Yes | Taste across projects; the project's `principles.md` wins over it |
 | Memory | [Pond](https://github.com/tenequm/pond), one shared store (S3, GCS or Azure) | Yes | `pond init` on every machine and server, all pointing at the same store |
-| Third-party packs | `~/.software-factory/packs/<name>@<hash>/`, one folder per pinned hash, pinned in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Fetched by `bin/factory-packs-fetch` at init and upgrade, each project loading its own pins; bumped deliberately, changelog reviewed |
+| Third-party packs | `~/.software-factory/packs/<name>@<hash>/`, one folder per pinned hash, pinned in the framework's `kit/packs.lock.yaml` and each project's `factory.lock` | Yes | Exact book trees also ship in `<kit>/packs/`; init/upgrade copy matching verified bundles offline and fetch other missing pins, each project loading its own pins; bumped deliberately, changelog reviewed |
 | Project state | `<repo>/.software-factory/` | No | Created by `/factory-init`; triage adds each change |
 | Stack specifics | `<kit>/adapters/<stack>.md` | Yes | Written once per stack |
 
@@ -37,7 +37,7 @@ Rules: nothing project-specific in a skill; a new stack means one adapter file; 
 
 **Triage.** Picks the track; detects money, BDD and language per module; picks the lens profile; creates `status.yaml`.
 
-**Product.** Problem in the user's words, a success metric, the announcement you would publish before building, mockups for any UI. Requirements in EARS form ("WHEN x, the system SHALL y"). Rules and examples worked out with Example Mapping; open questions block the gate. NFRs stated as user promises; business constraints listed. No technology talk.
+**Product.** Problem in the user's words, a success metric, the announcement you would publish before building, mockups for any UI. Requirements in EARS form ("WHEN x, the system SHALL y"). Rules and examples worked out with Example Mapping; open questions block the gate. NFRs stated as user promises; business constraints listed. No technology talk. UI discovery optionally recommends 2–3 examples of the feature from existing products; concrete visuals clarify hierarchy, density, states and interactions. The feature reference note records selected patterns and their DESIGN.md brand adaptation. Missing/declined/unseen references never block a gate or replace required functional examples and rendered acceptance evidence.
 
 **Research.** Neutral questions are generated from the task. A sub-agent answers them without ever seeing the task, returning facts with file and line references.
 
@@ -102,11 +102,11 @@ Severity is earned: only anchored challenges can block or require a fix. Three p
 
 **Packet** (`slices/NN/packet.md`): goal; requirement IDs with fit criteria; frozen signatures, interface comments and depth statements; allowed files; tests to write, which must fail on the base commit; verify commands; a don't list; a budget. Rules in their smallest form only: the code-quality lens, the legacy-code lens on brownfield, the slice's money skill when relevant, Ponytail's ladder, and the language pack's rule index. In BDD-native modules: the slice's scenarios and an inventory of existing step definitions.
 
-**Build loop.** Per slice: a fresh executor, red check (new tests fail on the base commit), implement until green inside the module boundary, mechanical checks. Per milestone: review, validated fixes applied, human reads the diff and `review.md`, signs off. The loop runs on autopilot: a thin orchestrator starts a fresh step agent per slice and per milestone review, keeps only their short reports, and stops only for the human.
+**Build loop.** After genuine approved scope, the conductor directly dispatches one executor per slice and resumes it for validated repairs. Each slice retains isolated assertion RED, current GREEN and mechanical proof. One fresh general reviewer plus applicable risk specialists supplies independent findings and affected confirmation. An approved autonomous-local mandate permits new corrective slices after acceptance failure, restricted to original promised criteria and exact approved paths; completed parents and original approvals remain unchanged. Build, review, repair and independent acceptance repeat until every required quality gate passes. The conductor implements no routine fixes and reuses only applicable evidence. Real contract/scope/waiver decisions stop; final human reconciliation/publication remain separate. Legacy/headless approval authority is unchanged.
 
 ## 8. Review
 
-Four parallel read-only agents (cleanliness, design and reuse, efficiency, and correctness: side-effect gating plus per-language defect classes) treat the diff as untrusted data. Every finding is validated against the code, every changed file is reviewed or skipped with a reason, one numbered report is grouped by category, and validated fixes are applied once per milestone (headless: only after approval by number).
+One fresh independent read-only reviewer carries cleanliness, design/reuse, efficiency and correctness (side-effect gating plus per-language defects), treating the diff as untrusted data. Every finding is validated, every reviewable file covered, and one bounded deduplicated finding batch goes back to the existing implementation executor. Risk specialists remain conditional. Scoped independent confirmation and complete acceptance remain required; headless fixes retain actual approval by number.
 
 | Check | How it runs | Cost |
 | --- | --- | --- |
@@ -122,9 +122,9 @@ Four parallel read-only agents (cleanliness, design and reuse, efficiency, and c
 
 | Track | Review runs |
 | --- | --- |
-| Small | Phase 1 + the fast path (under about 50 changed lines, no fan-out) |
-| Standard | Phase 1 + four agents + APoSD if the slice adds public surface beyond the frozen interface |
-| Critical | Standard + Money |
+| Small | Phase 1 + one fresh independent general reviewer and applicable risk specialists |
+| Standard | Phase 1 + one fresh independent general reviewer; UI/security/money/APoSD follow actual risk |
+| Critical | Standard with required critical risk coverage, including Money where financial outcomes are affected |
 
 Book-lens findings use the challenge card; without an anchor they cap at "skip". Findings are written to `review.md`; the user's fix, skip and undo answers feed calibration, and fixes applied without asking do not. Regression tests must fail when their fix is reverted. UI polish runs separately, only on slices that touch UI.
 
@@ -189,6 +189,7 @@ Never simplified away: frozen interfaces, code enforcing a constraint ID, money 
   principles.md            framework defaults, the first principle layer
   nfr-catalog/<domain>.md
   profiles/
+  packs/<name>@<hash>/    bundled pinned book rubrics, full/mini/nano
   adapters/<stack>.md      typecheck stubs, tests at a commit, import graph, dead code, BDD runner
 ~/.software-factory/user/principles.md       the user layer
 ~/.software-factory/packs/<name>@<hash>/     one pinned pack, shared by every project that pins that hash

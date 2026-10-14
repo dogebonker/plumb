@@ -1,8 +1,8 @@
 # Feature-Sliced Design (frontend)
 
-ID `fsd`, row L9. Layers from the top: app, pages, widgets, features, entities, shared. A module imports only from layers strictly below, and slices on one layer do not import each other. Not every layer is needed. Sources: `docs/research/layouts-selection.md`, pattern 8; https://feature-sliced.design.
+ID `fsd`, row L9: an explicit alternative to the FDA default. Layers from the top: app, pages, widgets, features, entities, shared. A module imports only from layers strictly below, and slices on one layer do not import each other. Not every layer is needed. Sources: `docs/research/layouts-selection.md`, pattern 8; https://feature-sliced.design.
 
-**Fits:** a frontend root with an entity or user action that two or more screens use, or a growing team. **Does not fit:** nothing shared between screens yet (`frontend-small`; moving up later is renames, not a rewrite).
+**Fits:** an existing FSD convention, or a team explicitly preferring its shared entities/features and layer vocabulary. Record why this fits better than `fda`; screen count alone does not override the default. **Does not fit:** a tiny prototype whose extra layers have no responsibility (`frontend-small` exception).
 
 ## Layout lines
 

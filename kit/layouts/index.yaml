@@ -3,13 +3,15 @@
 #
 # Procedure, per root (factory-architecture, Layout):
 # - An existing convention wins: record the tree the code already uses as `Pattern: existing`.
-# - A frontend root: row L8 or L9, under any profile.
+# - A new frontend root: FDA (L10), under any profile, unless a recorded exception fits L8 or L9.
+#   Existing conventions still win; do not migrate them merely to select FDA.
 # - Any other root: the first row from the top whose profile and signal match. Then, for each domain-core context,
 #   also evaluate L7, which adds to the chosen pattern.
 # - Propose the row's alternative too when the facts fit both, or the user is unsure.
 # - No row matches: crud-service with several business areas gets modular-monolith with layered modules (modular-monolith.md);
 #   anything else gets layered and modular-monolith as options, and the user chooses.
 # - Each proposal carries the row's reason and two exemplars from its pattern file, in the root's stack when it has them.
+#   FDA currently has one upstream example: disclose that limitation, never invent independent adoption.
 #
 # Each pattern file lists Layout lines per stack in one order with one description each, layers per stack,
 # sibling rules, and a checker from tools.yaml.
@@ -57,15 +59,21 @@ rows:                             # evaluated top to bottom; ids are stable, ord
     propose: cqrs                 # adds to the chosen pattern: Pattern <host>+cqrs
     alternative: a read-only views folder in the host's application layer (cqrs.md)
     reason: Fowler limits CQRS to specific bounded contexts; most systems fit CRUD
+  - id: L10
+    profile: any
+    signal: a new frontend application root, including a frontend in a full-stack root, without an existing convention
+    propose: fda
+    alternative: frontend-small for a tiny prototype or static site; fsd or feature-folders for an explicit team preference
+    reason: Factory defaults to colocated business domains and explicit browser/server contracts; this lightweight policy adapts FDA rather than requiring every upstream layer
   - id: L8
     profile: any
-    signal: a frontend root where no entity or user action is used by two or more screens, and the team is not growing
+    signal: a documented FDA exception for a tiny prototype, static site or component library, where no shared business domain needs isolation
     propose: frontend-small
     alternative: fsd
     reason: React advises not spending long choosing and splitting as the app grows
   - id: L9
     profile: any
-    signal: a frontend root with an entity or user action that two or more screens use, or a growing team
+    signal: a documented FDA exception because the team explicitly prefers FSD or feature folders and shared entities or user actions benefit from that structure
     propose: fsd
     alternative: feature-folders
     reason: FSD moves code out of a page when it is reused on several pages
@@ -78,6 +86,7 @@ patterns:                         # id: file in this folder; `existing` has none
   cqrs: cqrs.md
   vertical-slice: vertical-slice.md
   modular-monolith: modular-monolith.md
+  fda: fda.md
   fsd: fsd.md
   frontend-small: frontend-small.md
   feature-folders: feature-folders.md

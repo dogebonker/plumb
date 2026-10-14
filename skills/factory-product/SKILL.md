@@ -22,6 +22,7 @@ Load the change as gates.md describes, for the `product` gate.
 - Read `.software-factory/system/constraints.md`.
 - Search Pond for earlier requests, complaints and decisions about the same behavior.
 - Read the code in scope only far enough to describe today's behavior in user terms.
+- UI: reuse the optional feature examples captured at triage, following [../factory-ui-ux/references.md](../factory-ui-ux/references.md). Only when no references were supplied and the invitation was not already offered or declined, include its one optional 2–3-example invitation with the existing discovery questions; missing examples never become an Open question or block approval.
 
 Done when you can state today's behavior and the requested change in the user's words.
 
@@ -40,7 +41,10 @@ Done when you can state today's behavior and the requested change in the user's 
 <the short note you would publish when it ships, written before building>
 
 ## Mockups
-<ui true: screenshot paths from /factory-ui-ux mockups, or a sketch or ASCII when the user declined screenshots, following the design file's principles and primary-action table; "none" without UI>
+<ui true: screenshot paths from /factory-ui-ux mockups and sketches for the screens it did not render, or a sketch or ASCII when the user declined screenshots, following the design file's principles and primary-action table; "none" without UI>
+
+## Visual references (optional)
+<link to visual-references.md and the selected feature patterns, or "none — proceed with DESIGN.md and the brief"; these do not replace the functional examples below>
 
 ## Rules and examples
 ### <business rule>

@@ -10,7 +10,7 @@ argument-hint: "[slug]"
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
-Reconcile runs once, after the last slice is signed off and before the branch merges, so the project's living documents ship with the code they describe. Below, `<change>` is `.software-factory/changes/<slug>` and `<system>` is `.software-factory/system`.
+Reconcile runs once, after the last slice is completed (signed off by the runner in headless mode) and before the branch merges, so the project's living documents ship with the code they describe. Below, `<change>` is `.software-factory/changes/<slug>` and `<system>` is `.software-factory/system`.
 
 ## 1. Load
 
@@ -32,12 +32,21 @@ The agreed FR examples and applicable NFR fit criteria (including touched standi
    > Author your independent browser checks in the reserved `<repo>/test_acceptance_<unique>.cjs`; this is the sole file you may write outside `<tmp>`. Use the supplied installed browser module and local URL, then invoke the exact argument-free `test_command` directly. It also runs existing workspace checks: attribute each acceptance result only to the independent checks you authored and their evidence, not to unrelated green tests. Store screenshots under `<tmp>/evidence/`. Do not inspect implementation, existing tests or `.software-factory/`. If the capability cannot execute your check or collect its evidence, record `not run`.
 
    The agent can still reach the repository: the instruction is the firewall.
-5. **Record.** Remove only the reserved acceptance script you created, on every outcome. Copy the result to `<change>/acceptance.md` under a line `Tried at: <git rev-parse HEAD>`, move the evidence files to `<change>/acceptance/` and rewrite their paths, then delete `<tmp>`. Ask the user about every `fail` and `not run` line at once (headless mode: wait for the user, gates.md), and write each answer on its line:
-   - `defect`
-   - `wrong example`, with the corrected example, which step 4 uses as the fit criterion
-   - `not run accepted`. A `not run` the user can fix (a missing seed, a server that did not start) is tried again first.
+5. **Record.** Remove only the reserved acceptance script you created, on every outcome. Copy the result to `<change>/acceptance.md` under a line `Tried at: <git rev-parse HEAD>`, move the evidence files to `<change>/acceptance/` and rewrite their paths, then delete `<tmp>`. Classify reproducible failures against the unchanged approved criterion as implementation defects, without requesting the same authority again. Missing evidence stays `not run`: repair local setup within existing scope and retry first. A changed or ambiguous requirement, relaxed NFR, unavailable proof needing waiver, or security/money outcome decision is held for the final actual question; never auto-accept it.
 
-   When any line is a defect, send the change back to `slices` once (gates.md, Send back) with the reason `acceptance: <defect IDs>`, and stop. The fixes come as new slices, and reconcile runs again once they are signed off, trying every example again.
+   Headless mode retains the existing user classification/wait: ask about all `fail` and `not run` lines together and record actual answers (`defect`, `wrong example` with correction, or `not run accepted`). No headless approval is inferred.
+
+   For a defect in an active green milestone, validate its unchanged authorized scope and resume the existing executor with one bounded reproduced finding batch, add isolated regression proof, obtain affected independent review/checks and rerun acceptance. The conductor and independent reviewers do not write routine source/test fixes.
+
+   After all original slices are `done`, use gates.md **Autonomous local corrections** only when actual interactive initial approval includes frozen `## Development` / `Mode: autonomous-local` / `Repairs: approved-slice-files`, the independent failure contradicts an unchanged approved criterion, and exact required paths (including tests) are a subset of selected original parents' Allowed files. Confirm all four gates genuinely approved or legitimate small-track skipped, with unchanged hashes and actual approval authority. Batch related failures and retain their complete evidence. On clean committed source, capture fixed start/source commits, immutable failure/input snapshots and exact schema `repair.json`; append the next unused ordinary slice ID with its own new milestone, `base_commit: <start_commit>` fixed immediately, null test/head receipts, and state `pending`. Original parents remain done with unchanged heads/receipts; all original gate bytes/hashes remain untouched.
+
+   Derive a candidate packet from the record paths and original approved criteria/contracts, not a nonexistent correction heading in `04-slices.md`. Run `repair-check --checkpoint edit` before building/dispatch and on every resume. Invalid metadata, off-branch/stale inputs or unrelated dirty source block while preserving work. Then automatically invoke `/factory-build <slug>` → `/factory-review <slug>` → `/factory-reconcile <slug>` under that real approval, honoring explicit manual/one-step preferences. The correction gets its own isolated RED/GREEN, fresh native executor completion and independent general/applicable-risk review. Before its `done` write run `repair-check --checkpoint complete` and actual current proof checks; validation alone is structural scope/provenance, never quality or approval.
+
+   Missing mandate/authority, legacy/headless plans, changed or ambiguous promises/contracts, expanded paths (including a new regression file or typecheck caller), and waivers retain existing genuine gate/send-back behavior. If no authorized open slice can represent the defect, send back to `slices` once with `acceptance: <defect IDs>`. Never reopen completed parents or silently rehash approved documents. Real publication, credential, destructive and security/money outcome decisions stay separate.
+
+   Continue bounded repairs until all required quality passes or a real unresolved decision/verification blocker remains. Identical failures trigger one bounded evidence-based diagnosis then an authorized recovery; no retry-count permission question, whole-source rewind, endless unchanged full panels or arbitrary time-limit waiver.
+
+   Changed source reruns affected criteria and shared-state regressions; require a final complete current acceptance matrix. Reuse only evidence applicable to the current source, exact criterion, commands/dependencies/environment and approved/effective input receipt; unchanged source alone is insufficient. Timeout, setup failure and missing proof remain `not run`, never pass. Unresolved defects or required proof block completion.
 
 Done when every current FR example and applicable NFR/SYS-NFR fit criterion has its own evidence and is `pass` or carries the user's answer, and none is a defect.
 
@@ -94,7 +103,7 @@ Follow [../factory-retro/SKILL.md](../factory-retro/SKILL.md) for this change. I
 
 ## 8. Confirm and write
 
-Show the user every drafted ADR, ADR status change, constraint row, product section, glossary line, layout tree change, principle change and user-layer proposal, and everything retro drafted: `retro.md`, the playbook changes and counters, the environment fixes, proposals for the factory repository and suspicious items. Write them once the user confirms; apply their corrections first. The project's `principles.md` goes into the reconcile commit. An accepted user-layer proposal is written to `~/.software-factory/user/principles.md`, which no repository tracks. Reconcile never edits the framework cache: changes to the factory stay proposals for the factory repository.
+Ask one consolidated final question: present acceptance results, held review/requirement/waiver decisions and every drafted ADR, ADR status change, constraint row, product section, glossary line, layout tree change, principle change and user-layer proposal, and everything retro drafted: `retro.md`, the playbook changes and counters, the environment fixes, proposals for the factory repository and suspicious items. Write local drafts once the user confirms; apply their corrections first. Only actual explicit final approval fills the milestone reviews' `Sign-off` lines; retain their original completion records. An answer changing a promise follows the appropriate gate and invalidation path before completion. The project's `principles.md` goes into the reconcile commit. Global user-layer changes need explicit separate authority; a local reconcile confirmation alone does not authorize them. An explicitly accepted user-layer proposal is written to `~/.software-factory/user/principles.md`, which no repository tracks. Reconcile never edits the framework cache: changes to the factory stay proposals for the factory repository.
 
 ## 9. Record
 

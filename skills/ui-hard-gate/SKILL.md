@@ -9,7 +9,7 @@ Goal: the UI approver accepts the change on the first pass. Every rule below was
 
 ## Workflow
 
-1. **Reference before code.** AI doesn't make design calls. Find the visual reference: a design frame linked on the issue, a wireframe, an approved mockup, or a named existing screen to match. If none exists, stop and ask for one. Do not guess a layout. When the reference comes from another product, copy its structure and density but keep this product's own conventions, and do not drop elements the current screen has just because the reference lacks them. List what you did not copy.
+1. **Use references when supplied.** Reuse the optional 2–3 feature examples from [factory-ui-ux/references.md](../factory-ui-ux/references.md), approved branded mockups or this product's good screens. External examples guide useful composition and interactions; DESIGN.md owns brand, density, tokens and component conventions. List what you borrowed, adapted and left out. Without examples, proceed from the approved product job and design system; do not stop for another reference request. Keep all required behavior, rendered-state and accessibility checks.
 2. **Read the issue.** The acceptance criteria and the out-of-scope list. Nothing out of scope gets touched.
 3. **Build** against the rules below with the project's existing components and tokens. When a visual choice changes data or backend behavior (a count chosen to fill a grid, a code length chosen for looks), name the consequence in the same reply.
 4. **Capture every state** in a real browser: default, loading or running, empty, failed, success, read-only, and the page after a refresh mid-work. Check every tab and breakpoint the change touches.
@@ -34,7 +34,7 @@ Goal: the UI approver accepts the change on the first pass. Every rule below was
 **Words**
 - H10 The users' vocabulary, from the design file's Words: never internal codenames or the machinery (job, pipeline, queue, lock, source-control metaphors). Name a thing after what it does for the user, so the name alone says why it matters ("recovery codes" over "backup codes"). When the ticket, the backend and the reviewers use different names, choose by that test and say why.
 - H11 Every label explains itself and matches behavior. Copy matches what the backend actually does ("use one of the codes" only when several are issued). A button named "Try again" that refreshes something is renamed for what it does. Unexplained badges go. Icons get at least a one-word label. Helper text updates with the selection.
-- H12 Short copy. No wall of text, a summary shorter than its description, no key information in a footer, sentence case, no ALL CAPS, "Tip:" over "(Optional)". A neutral, factual tone: don't assume what the user did, no casual phrasing. Each fact is stated once in a flow, where it is needed.
+- H12 Short copy. No wall of text, a summary shorter than its description, no key information in a footer, sentence case, no ALL CAPS, "Tip:" over "(Optional)". Tone follows the design file's Voice; without one, neutral and factual with no casual phrasing. In any voice, don't assume what the user did. Each fact is stated once in a flow, where it is needed.
 - H13 Every claim links to its source, and the citation opens the exact passage. One citation component everywhere.
 
 **Visual**
