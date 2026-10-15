@@ -33,10 +33,12 @@ To develop the factory itself, `framework` may instead be `{ dev_path: <absolute
 
 | Gate | Document | Skill | Line budget |
 | --- | --- | --- | --- |
-| product | `<change>/01-product.md` | `/factory-product` | 100 |
+| product | `<change>/01-product.md` | `/factory-product` | 120 |
 | architecture | `<change>/02-architecture.md` | `/factory-architecture` | 150 |
 | interface | `<change>/03-interface.md` | `/factory-interface` | 200, or 250 when it designs a frontend root (factory-interface, step 2) |
 | slices | `<change>/04-slices.md` | `/factory-slices` | 100 |
+
+Track standard drafts and approves all four documents together through `/factory-plan`, in interactive mode.
 
 Gate states: `pending`, `approved`, `skipped`. Track `small` skips product, architecture and interface; triage marks them `skipped`.
 
@@ -73,9 +75,11 @@ In interactive mode the conductor follows build and review directly: prepare one
 4. Real requirement/authority questions are shown whole and actual answers passed verbatim. Resume the same agent for repairable failures. Retry counts are diagnostic; preserve dirty/untracked work and commits. Neither a task identity, hash, status label nor telemetry supplies approval authority.
 5. Append one `step_tokens` event with actual agent ids and normalized usage; do not count nested rollups twice. Continue directly under approved scope, unless `--one-step`, manual pause or a genuine blocker stops execution.
 
-**Overlapped review.** Interactive mode, when a later milestone exists: once milestone N is all `green`, the conductor appends a `review_overlapped` event (History), starts N's review in the background and builds milestone N+1 meanwhile. The overlap is open while that event's milestone has a slice not `done` and every such slice is `green`; once one leaves `green` (a send-back), it closes and build returns to N. Only the milestone's latest `review_overlapped` event counts, and a `sent_back` event after it closes it for good. Build and review read it at Load. At most one review runs, and build runs at most one milestone ahead: N+2 waits until N is `done`. The review runs on a verification clone of N's `<head>` (factory-review, Overlapped review), never on the live checkout. Its fix batch, and the checks that need the running app, wait for a quiet point, when no slice is `building` or `red`. The conductor then starts no slice until the fix is committed and proven, and the impacted checks of every `green` slice, N+1's included, are rerun at the new HEAD. A send-back, or a decision that blocks N's completion (factory-review, step 5), stops N+1 immediately; Development proof inputs decide which N+1 work stays valid. The last milestone, `--one-step` and headless mode review after build, as before.
+**Fast lane.** Track standard, interactive mode: one milestone. One executor builds every open slice in order. The conductor waits for it once, with the longest timeout the harness allows, and waits again on timeout. No listing, no polling, no messages to a running executor. The executor sends no progress messages, only its final report or one blocking question. Slices stay `green` after review. A filled Completion under approved scope in `slices/<last>/review.md` marks review as finished, so a resumed session goes to reconcile, not to review again. In item 1, "reconcile when all are done" reads, for the fast lane, "reconcile when all are green and review is finished". Items 3 and 5 (the native handoff contract with completion envelopes and `runtime.py handoff`, per-step `step_tokens`) and Overlapped review apply to track critical and small, and to headless mode.
 
-Initial slices approval must explicitly authorize bounded local implementation, executable-test correction under unchanged promises, review repairs and automatic intermediate completion. Existing plans use actual session authorization, never an inferred state flag. Interactive `green -> done` requires that real approval, independent current-source review and passing mechanical proof. Record `Completion under approved scope` with the original approval reference separately from the empty final `Sign-off`; never invent a human signature. One final real decision at reconcile covers acceptance, held review items and document drafts. Headless approval and sign-off derivation remain unchanged.
+**Overlapped review.** Track critical and small, interactive mode, when a later milestone exists: once milestone N is all `green`, the conductor appends a `review_overlapped` event (History), starts N's review in the background and builds milestone N+1 meanwhile. The overlap is open while that event's milestone has a slice not `done` and every such slice is `green`; once one leaves `green` (a send-back), it closes and build returns to N. Only the milestone's latest `review_overlapped` event counts, and a `sent_back` event after it closes it for good. Build and review read it at Load. At most one review runs, and build runs at most one milestone ahead: N+2 waits until N is `done`. The review runs on a verification clone of N's `<head>` (factory-review, Overlapped review), never on the live checkout. Its fix batch, and the checks that need the running app, wait for a quiet point, when no slice is `building` or `red`. The conductor then starts no slice until the fix is committed and proven, and the impacted checks of every `green` slice, N+1's included, are rerun at the new HEAD. A send-back, or a decision that blocks N's completion (factory-review, step 5), stops N+1 immediately; Development proof inputs decide which N+1 work stays valid. The last milestone, `--one-step` and headless mode review after build, as before.
+
+Except on the fast lane, initial slices approval must explicitly authorize bounded local implementation, executable-test correction under unchanged promises, review repairs and automatic intermediate completion. Existing plans use actual session authorization, never an inferred state flag. Interactive `green -> done` requires that real approval, independent current-source review and passing mechanical proof. Record `Completion under approved scope` with the original approval reference separately from the empty final `Sign-off`; never invent a human signature. One final real decision at reconcile covers acceptance, held review items and document drafts. Headless approval and sign-off derivation remain unchanged.
 
 `--one-step` runs exactly one slice or milestone review, then reports the next skill and stops. A user's manual pause is honored. Contract changes, waivers, unrelated scope, destructive actions, credentials, security/money outcome decisions and publication still need the appropriate authority. Completed slices remain edit-locked. An unchanged-criterion acceptance defect uses the authorized derived-correction branch below only when all its conditions hold; other corrections use the existing genuine approval path, never silent rehashing.
 
@@ -98,7 +102,11 @@ Initial slices approval must explicitly authorize bounded local implementation, 
 6. A gate skill drafts only when every earlier gate is `approved` or `skipped`. Otherwise name the first gate that is not, and its skill. Stop. Build and review need all four `approved` or `skipped`.
 7. **Playbook.** Read `.software-factory/system/playbook.md` as [playbook.md](playbook.md) says, when it exists.
 
+`/factory-plan` differs at four steps. Step 1: with an empty slug it uses the only change whose four gates are not all approved. Step 4: it stops only when all four gates are `approved`. Step 5: it does not stop for a missing design file, because it writes one; the hook still blocks source edits until then. Step 6: it drafts the pending documents in order, so an earlier pending gate does not stop it.
+
 ## Development proof inputs
+
+Not on the fast lane (Milestones and autopilot), where a gate reopened by the chain check or by a send-back instead invalidates the `checks.md`, `review.md` and `acceptance.md` of every slice not `done`, and build reruns its verification.
 
 Before selecting or skipping a build/review slice, compare every non-`done` slice's packet and receipts against the current genuinely approved gate documents and referenced inputs. Record an `Inputs` manifest in the packet/checks/review: exact path and SHA-256 for each non-skipped gate document, plus the source documents/files supplying applicable criteria, SYS promises, budgets, signatures, layout, design, rules, pack pins, adapter and verification commands. Mark skipped gates explicitly. Hash immutable input files in full. For mutable metadata such as `status.yaml` or mixed `lenses.yaml` records, capture exact effective fields/values or hash their canonical projection: commands, baseline exclusions, applicable module/layer/pack settings and verification environment. Exclude history, slice progress/commit checkpoints, completion records and the receipts themselves; source revisions remain separate proof. A progress write must not invalidate evidence, while a changed command, baseline, tool/dependency/environment or effective rule must. Matching Covers IDs or unchanged source alone is insufficient; compare the copied promises and effective rules too.
 
@@ -110,7 +118,7 @@ A `done` slice remains edit-locked. If new approved inputs affect completed work
 
 ## Autonomous local corrections
 
-New interactive `04-slices.md` plans include this mandate before actual approval:
+Interactive mode, not on the fast lane. New interactive `04-slices.md` plans include this mandate before actual approval:
 
 ```markdown
 ## Development
@@ -207,9 +215,11 @@ Headless mode: commit and push the document, then wait for the user (below) with
 2. `notes_for_fresh_session`: "<gate> approved. Next: <next skill> <slug>."
 3. Committed mode: `git add .software-factory/changes/<slug>` and commit `chore(factory): <gate> <slug>`.
 
+`/factory-plan` approves the four gates together: same `approved_by` and `approved_at`, each gate's own `doc_sha256`, one commit `chore(factory): plan <slug>`.
+
 ## Run the next skill
 
-Interactive mode only; headless approvals stay with the runner. A session that continues to the next gate skill itself, instead of the user starting it in a fresh session, runs that skill as one fresh step agent on the session's model: the product, architecture, threat model, interface and slices steps each start with an empty context. The agent receives the skill path, the slug and the answers to its own questions, nothing else from this conversation. It loads the change from disk (Load a change) and returns `state: question` with the whole question, or `state: completed` with its document's path.
+Interactive mode only; headless approvals stay with the runner. Track standard runs `/factory-plan` directly in the session, with no step agent: its questions go straight to the user. On other tracks, a session that continues to the next gate skill itself, instead of the user starting it in a fresh session, runs that skill as one fresh step agent on the session's model: the product, architecture, threat model, interface and slices steps each start with an empty context. The agent receives the skill path, the slug and the answers to its own questions, nothing else from this conversation. It loads the change from disk (Load a change) and returns `state: question` with the whole question, or `state: completed` with its document's path.
 
 The session shows each question whole and resumes that agent with the answer word for word, labelled as the user's own words. The agent treats it as the user's answer in chat and records an approval itself, as Approve a gate says. The session never answers a question, never writes `gates.*` and never writes the approval event. When the agent is gone, a fresh one resumes the document from its Open questions.
 
@@ -231,7 +241,7 @@ Then:
 2. Set `sent_back` to `{ gate: <target>, slice: <NN or null>, reason }`, and append a `sent_back` event (ref: the slice, or `-`; detail: the target gate and reason).
 3. Add the reason to Open questions in the target gate's document.
 4. Committed mode: `git add .software-factory/changes/<slug> .software-factory/system` and commit `chore(factory): send back <slug> to <gate>`.
-5. Tell the user to run the target gate's skill. Stop.
+5. Tell the user to run the target gate's skill. Stop. On track standard in interactive mode, that skill is `/factory-plan`, which redrafts the reopened documents and asks one approval question for them.
 
 ## Models
 

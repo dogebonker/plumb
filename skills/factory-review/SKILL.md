@@ -12,7 +12,21 @@ Session: ${CLAUDE_SESSION_ID}
 
 The conductor runs mechanical checks and one fresh independent general review with applicable risk specialists, routes one bounded validated repair batch to the existing implementation executor and records completion. Reviewers remain read-only; the conductor coordinates and verifies instead of writing source/test fixes or duplicating the whole-file review. A review covers one milestone ([../factory-shared/gates.md](../factory-shared/gates.md)), its slices not `done`: `M` is its number, `<last>` its last open slice, `<base>` the first slice's base commit and `<head>` the last slice's head commit. Headless milestones contain one slice. `<tmp>` is a new review temp directory, removed at hand-off. Follow this skill directly; no review step wrapper is mandatory.
 
-## 1. Load the milestone
+## Fast lane
+
+Track standard, interactive mode ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot). It replaces steps 1 to 6 below, which it cites.
+
+1. **Load** as step 1, without Development proof inputs and repair checks. A `slices/<last>/review.md` with a filled Completion under approved scope means review is finished: point to `/factory-reconcile <slug>` and stop. The review covers all slices: `<base>` is slice 01's base, `<head>` is HEAD.
+2. **Phase 1** checks 5 to 9 once over the whole diff. Checks 1 to 4 reuse build's `checks.md` as it is, without an Inputs line.
+3. Committed mode: commit the planning state as Phase 2 step 1 does. **Start the dev server** once, for the `runtime` scan, the UI/UX reviewer and acceptance.
+4. **In parallel, once:** the general reviewer ([review-agents.md](review-agents.md)); the UI/UX and Security reviewers on Phase 2 step 2's triggers and with its prompt, the Security reviewer also whenever the diff touches sign-in, sessions or who-may-see rules; and the acceptance agent with [../factory-reconcile/SKILL.md](../factory-reconcile/SKILL.md) step 2's procedure, writing `<change>/acceptance.md` with `Tried at`. No APoSD reviewer and no Money reviewer (money is track critical). Acceptance changes data, injects failures and runs the fixed browser capability, which takes one run at a time: the `runtime` scan and the UI/UX reviewer's rendering finish on the shared server before acceptance starts, while the general and Security reviewers run beside it.
+5. **One batch.** Validate and deduplicate the findings and the failed acceptance lines, as Phase 2 steps 4 to 6 say, into one batch for the same executor, dispatched and proven as steps 7 and 8 say.
+6. **Re-check once:** rerun Phase 1 checks 2 to 5 at the fix HEAD, as step 9 says, and only the reviewers whose findings were fixed, scoped to the fix diff. When the fix changed source, rerun the whole acceptance set once, so `Tried at` matches the final HEAD and reconcile can reuse it. No second round. A finding or acceptance line still failing becomes a held item for reconcile's final question. Non-blocking residuals go to Follow-ups.
+7. **Write** `slices/<last>/review.md` from step 4's template without its `Inputs` and `Owned spans` lines. Record the fix commits as one repair span checked against the union of the packets, set `<last>`'s `head_commit` to the final HEAD, and fill Completion under approved scope. Slices stay `green`. Set `notes_for_fresh_session` to "Review finished. Next: /factory-reconcile <slug>.", delete `<tmp>` and continue to reconcile.
+
+## Track critical and small, and headless mode
+
+### 1. Load the milestone
 
 - For a derived correction, run gates.md's `repair-check --checkpoint edit` on load/resume before any selection or shortcut and immediately before review-fix dispatch or source edits; use its fixed start and strict exact paths, not mutable packets as scope authority.
 - Load the change as gates.md describes and apply **Development proof inputs** before selecting or accepting green slices: the work is the first milestone with a slice not `done`, and every one of its slices that is not `done` must be `green`. Otherwise point to `/factory-build <slug>` and stop.
@@ -25,7 +39,7 @@ The conductor runs mechanical checks and one fresh independent general review wi
   - Steps 6 to 9 and every commit in the live checkout, Phase 2 step 1's included, wait for a quiet point (gates.md), so no commit can take the building executor's staged files. Record the fix commits as a repair span of the milestone's slices, start: HEAD at the quiet point, end: the last fix commit, and leave `<last>`'s `head_commit` at `<head>`. Step 9's impacted checks include every `green` slice of the next milestone, at the new HEAD.
   - Remove the clone at hand-off.
 
-## 2. Phase 1: mechanical checks
+### 2. Phase 1: mechanical checks
 
 Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; reuse results of checks 1 to 4 only with a matching current Inputs manifest; otherwise rerun them. Historical files without recorded inputs are not current proof. Run checks 5 to 9 once over the milestone, since a later slice can change what an earlier one's results mean. "The adapter" is `<kit>/adapters/<language>.md` for the module's `language`. Below, for one slice, `<b>` and `<test>` are its own `base_commit` and `test_commit` and "the packet" is its packet; over the milestone, `<b>` is `<base>` and the packet is the union of the milestone's packets. After a review fix commit `<fix>`, rerun impacted checks; reuse evidence only with unchanged source/test/command/dependency/environment and recorded approved/effective proof inputs with its original revision. New risks expand coverage. Require the complete mechanical suite applicable to the final source, with reused receipts explicitly identified. Red tests unchanged for the repair diffs only that commit: `git diff <fix>~1 <fix> -- <every packet's Tests first files>`. The `runtime` scan reruns only when the change touched files with that pack's `extensions`.
 
@@ -44,7 +58,7 @@ Build ran checks 1 to 5 on each slice and wrote them to `slices/NN/checks.md`; r
 
 A frozen-contract difference sends its slice back, as gates.md describes.
 
-## 3. Phase 2: review agents and lens reviewers
+### 3. Phase 2: review agents and lens reviewers
 
 1. Committed mode: `git add .software-factory/changes/<slug> .software-factory/system` and, when anything is staged, commit `chore(factory): milestone M review`, so the review starts from a clean tree. In interactive mode this commit also carries the planning state since the last one (gates.md, Commits).
 2. Start the applicable risk reviewers in the background, one fresh sub-agent each, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes and read from its resolved pack folder:
@@ -55,7 +69,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 
    Each receives:
 
-   > Remain read-only: report findings, never edit source/tests. Review `git diff <base>..HEAD -- . ':!.software-factory' ':!.factory'` in `<repo>` through `<lens files>`. The agreed contracts are `<packet paths>`; judge what the code does behind them. Write at most three findings to `<tmp>/<lens>.md`, each as a challenge card (`<absolute path of factory-interface/challenge-card.md>`) read for code: Where quotes the changed line, Alternative is the code change, and Response will be fix or skip. Severity `block` or `fix` needs an anchor: a constraint ID in a packet's Covers, the interface comment of a frozen signature the code contradicts, a threat ID in `.software-factory/system/threat-model.md`, a principle, position or word of the design file, a WCAG 2.2 A or AA criterion, or a verified applicable security/money rule with concrete reproduction; every other finding is a `note`. A finding about a rendered screen quotes the changed line that renders the element.
+   > Remain read-only: report findings, never edit source/tests. Review `git diff <base>..HEAD -- . ':!.software-factory' ':!.factory'` in `<repo>` through `<lens files>`. The agreed contracts are `<packet paths>`; judge what the code does behind them. Write at most three findings to `<tmp>/<lens>.md`, each as a challenge card (`<absolute path of factory-interface/challenge-card.md>`) read for code: Where quotes the changed line, Alternative is the code change, and Response will be fix or skip. Severity `block` or `fix` needs an anchor: a constraint ID in a packet's Covers, the interface comment of a frozen signature the code contradicts, a threat ID in `.software-factory/system/threat-model.md` or in the `## Threats` section of `02-architecture.md`, a word in the `## Glossary` Never column of `01-product.md`, a Voice line of the design file, a principle, position or word of the design file, a WCAG 2.2 A or AA criterion, or a verified applicable security/money rule with concrete reproduction; every other finding is a `note`. A finding about a rendered screen quotes the changed line that renders the element.
 
 3. Run the review agents through their report, as [review-agents.md](review-agents.md) describes, with these factory rules on top:
    - the packets' Covers and Frozen contracts are agreed and are not design findings
@@ -77,9 +91,9 @@ A frozen-contract difference sends its slice back, as gates.md describes.
 6. A derived correction uses its existing approved test paths only: no new regression file or typecheck deviation may expand `repair.json` paths. A required extra path follows the genuine slice approval route. For ordinary slices, a fix may add its regression test in a new test file beside the slice's tests: before writing it, log `{ slice, file, reason: "regression test for finding N" }` in `deviations` and append the file to that slice's packet's Allowed files. Any other fix the factory hook blocks (a file outside the Allowed files) is not applied: it becomes a follow-up.
 7. Dispatch the one deduplicated validated batch to the existing implementation executor (fresh only if unavailable or unsafe to resume), after derived-correction edit validation when applicable. Pass exact findings/anchors/reproductions, expected unchanged criteria/contracts, allowed paths, packet/input references and affected verification commands; preserve the full frozen contract. The executor makes minimal fixes, stages only authorized paths and commits `fix(<slug>): milestone M review`, retaining exact correction spans and test deviations. Observe its actual native terminal completion and validate returned commits/artifacts; a file or progress message is not completion. Preserve unrelated dirty work and block unattended completion on it. Neither reviewers nor conductor make routine source/test fixes.
 8. Each added or corrected regression test proves itself in an isolated checkout: `python3 <kit>/runtime.py red --repo <absolute repo> --commit <fix parent> --tests-from <fix commit> --test-file <exact test path> --checkpoint <absolute slice checkpoint> --timeout <budget> -- <test command>`. Repeat `--test-file` for each test. Read assertion failures, retain source/test commits, hashes and logs, and run the identical tests at current HEAD for GREEN. Do not restore live production files. Fixed browser requests cannot overlay tests; require a valid recorded pre-fix source/test commit through that capability or record a bounded blocker. Setup failure, timeout or an already-green test is not regression proof; report the precise limit, retaining valid coverage.
-9. Rerun impacted Phase 1 checks and obtain one scoped independent confirmation of fixes and any test correction/exemption. New risks broaden coverage; unaffected review is reused at its recorded revision. Require final applicable mechanical proof before updating `<last>`'s `head_commit`. A broken fix returns as a bounded evidence batch to the same executor, retaining history; do not discard concurrent work or treat a retry count as an approval question.
+9. Rerun impacted Phase 1 checks and obtain one scoped independent confirmation of fixes and any test correction/exemption. Fast lane: re-check only with the reviewers whose findings were fixed, on the fix diff, once. New risks broaden coverage; unaffected review is reused at its recorded revision. Require final applicable mechanical proof before updating `<last>`'s `head_commit`. A broken fix returns as a bounded evidence batch to the same executor, retaining history; do not discard concurrent work or treat a retry count as an approval question.
 
-## 4. Write `slices/<last>/review.md`
+### 4. Write `slices/<last>/review.md`
 
 ```markdown
 # Review: milestone M, slices NN to <last>
@@ -113,7 +127,7 @@ Owned spans: <original per-slice spans and exact repair spans, with original hea
 <final actual human name and ISO time; empty until supplied>
 ```
 
-## 5. Complete or hold the milestone
+### 5. Complete or hold the milestone
 
 For a derived correction, run gates.md's `repair-check --checkpoint complete` with its current recorded head before any `done` write. Failure blocks completion without changing parents or approved documents. Scope/provenance success never supplies independent review, native terminal completion, RED/GREEN or acceptance proof.
 
@@ -123,7 +137,7 @@ If the user requested manual milestone sign-off, or existing session approval do
 
 Headless mode: commit and push `review.md`, then wait for the user (gates.md) with the comment "Slice NN reviewed: `review.md`. Sign off with a pull-request review whose first line is `sign off slice NN`." The runner records the sign-off.
 
-## 6. Hand off
+### 6. Hand off
 
 Interactive mode only: a headless run stops at step 5's wait, and the runner records the sign-off.
 

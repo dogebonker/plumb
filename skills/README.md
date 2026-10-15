@@ -72,7 +72,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 
 ## Run one change
 
-`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices, its review and your sign-off, then the next milestone, then `/factory-reconcile` before merging. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step.
+`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices, its review and your sign-off, then the next milestone, then `/factory-reconcile` before merging. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step. Track standard in interactive mode runs `/factory-triage`, `/factory-plan`, then `/factory-build` through reconcile.
 
 ## Skills
 
@@ -83,6 +83,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check, mechanical checks per slice, a milestone's slices back to back |
 | `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), review agents with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes routed to the executor, regression proofs, approved-scope completion and final human sign-off; once per milestone |
+| `factory-plan` | S2 | Track standard, interactive: one discovery pass, the four gate documents drafted together, one approval |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
 | `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |

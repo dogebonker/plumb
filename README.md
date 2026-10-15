@@ -15,7 +15,7 @@ A reusable set of agent skills, a shared git-backed kit, and [Pond](https://gith
    ```
    To set a project up by hand instead, see [kit/README.md](kit/README.md) and [skills/README.md](skills/README.md).
 2. In the repository you want to change, run `/factory-init`: it locks the framework commit, fetches the packs it pins, migrates an old `.factory/`, links the skills and offers the hard-gate hook. Then start with `/factory-triage <the task in plain words>`.
-3. Follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`. Approved local development continues automatically; real scope decisions and final acceptance still need your answer.
+3. Track standard runs `/factory-plan` next, in the same session, then `/factory-build` through `/factory-reconcile`. Other tracks follow the hand-offs, one fresh session each: `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build` once: it builds and reviews milestone after milestone and ends in `/factory-reconcile`. Approved local development continues automatically; real scope decisions and final acceptance still need your answer.
 4. You approve the discovery gates and execution scope, then sign off acceptance and reconciliation together. Manual milestone and headless PR sign-offs remain available. The optional hard-gate hook and the headless runner are in [skills/README.md](skills/README.md).
 
 ---
@@ -73,14 +73,15 @@ flowchart LR
 | Stage | What happens | What it produces |
 | --- | --- | --- |
 | Triage | Picks the track, detects money and BDD per module, picks the lens profile and language pack | `status.yaml` |
+| Plan (track standard) | One pass instead of the four gates below: at most two batched rounds of discovery questions (roles, who sees what, data lifecycle, failure, vocabulary, brand voice, visual direction, non-goals), then every planning document and one mockup, approved once | `01`–`04` documents, design file, glossary |
 | Product | Problem, success metric, the announcement you would write before building, mockups; requirements in EARS form; rules and examples worked out with Example Mapping | `01-product.md` |
 | Research | A sub-agent receives only the questions, never the task, and returns facts with file and line references | `research.md` |
 | Architecture | Fit with the existing system, the folder layout of every module it creates or extends, proposed from a catalog of reference layouts, contracts, data, flow; NFRs become measurable budgets; each decision becomes an ADR | `02-architecture.md`, ADRs |
 | Interface Design | You draft signatures and interface comments, frontend pages and shared components included; lenses challenge them; you answer; stubs compile and freeze | `03-interface.md`, stubs |
 | Slices | Vertical slices, tracer bullet first; each slice names the requirements it covers and how it is verified | `04-slices.md` |
 | Packet | Everything one executor needs and nothing else | `slices/NN/packet.md` |
-| Build | Fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |
-| Review | Once per milestone: scripts, one independent general reviewer plus risk specialists, and bounded repairs under the approved scope | `slices/NN/review.md` |
+| Build | Track standard: one executor builds every slice in order, red then green per slice, while the conductor waits once. Other tracks: fresh executor per slice; new tests must fail on the base commit before code is written; mechanical checks per slice; a milestone's slices run back to back | code + tests, `slices/NN/checks.md` |
+| Review | Track standard: once at the end, with independent acceptance alongside. Other tracks: once per milestone. Scripts, one independent general reviewer plus risk specialists, and bounded repairs under the approved scope | `slices/NN/review.md` |
 | Reconcile | A fresh agent tries every example on the running product without reading the code; then what shipped folds back into living specs, ADRs, constraints and lessons | `acceptance.md`, updated `.software-factory/system/` |
 
 ### Tracks
@@ -90,8 +91,8 @@ flowchart TD
   T[New task] --> Q{How risky?}
   Q -->|rename, copy, config| A[Trivial: straight to an agent]
   Q -->|a few files, no new interface| B[Small: slices + packet + quick review]
-  Q -->|new endpoint, table, screen or interface| C[Standard: full loop]
-  Q -->|money, auth, migrations| D[Critical: full loop + Money reviewer]
+  Q -->|new endpoint, table, screen, interface or a new product's first sign-in| C[Standard: one plan, one approval, one build, one review]
+  Q -->|money, changes to an existing sign-in or permission system, migrations of stored data| D[Critical: four gates + Money reviewer]
 ```
 
 ### Hard gates

@@ -25,7 +25,7 @@ Done when every slice can name existing or new files by path.
 
 ## 3. Draft `04-slices.md`
 
-Track `small` has no earlier documents: write Goal, Requirements, Standing constraints and Interface here too. Other tracks start at Development, then Slices. New interactive plans include the explicit Development mandate below before approval; preserve explicit manual/one-step preferences. Headless plans keep their existing approval route.
+Track `small` has no earlier documents: write Goal, Requirements, Standing constraints and Interface here too. Other tracks start at Development, then Slices. New interactive plans include the explicit Development mandate below before approval, except on track standard, where `/factory-plan` leaves the Development section out; preserve explicit manual/one-step preferences. Headless plans keep their existing approval route.
 
 For a small UI change, link the optional `<change>/visual-references.md` in its brief, or record `none`; apply [../factory-ui-ux/references.md](../factory-ui-ux/references.md) without asking again. Functional examples and DESIGN.md requirements remain required.
 
@@ -65,7 +65,7 @@ Verify: <commands>
 Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
-- Slice 01 is milestone 1 on its own. Later slices form milestones of two to four slices, each ending where the user can try something new; independent review and completion under approved execution scope happen once per milestone; final interactive sign-off happens at reconcile (gates.md, Milestones and autopilot). A slice added after its milestone was completed gets a new milestone number. Headless mode: every slice is its own milestone, so its Milestone line is its own number.
+- Track standard, interactive: every slice is `Milestone: 1`. Otherwise slice 01 is milestone 1 on its own. Later slices form milestones of two to four slices, each ending where the user can try something new; independent review and completion under approved execution scope happen once per milestone; final interactive sign-off happens at reconcile (gates.md, Milestones and autopilot). A slice added after its milestone was completed gets a new milestone number. Headless mode: every slice is its own milestone, so its Milestone line is its own number.
 - Allowed files include every file that implements, fakes or constructs a type whose signature the slice adds or changes: test fakes, the composition root, other callers.
 - Allowed files are exact paths, never wildcards like `web/**`, and every new file fits the Layout (gates.md, Layout). A file that fits no line is an open question.
 - When a Layout Decision picks a checker, the first slice that touches that root installs it and creates its config verbatim from the Decision: the manifest, the lockfile and the config are in its Allowed files (a global install, as `tools.yaml` marks it, is the user's to run). Its Verify runs the checker. Unless the check is `none`, `compiler` or `cargo`, its packet also asks the executor, once before the green commit, to plant a violation of a layer or sibling rule in a new temporary file under the root, report the checker's failing output, and delete the file; the planted file is never committed.
@@ -90,5 +90,7 @@ Headless mode: make the updates below to `status.yaml` when you push the documen
 - the slice named in `sent_back` gets `state: rewind`; factory-build inspects and repairs retained work under the corrected approval; it never cleans or restores the repository by default
 - every other non-done slice applies gates.md Development proof inputs: changed approved document hashes or criteria/budgets/signatures/rules invalidate checks/review and refresh its packet even when Covers IDs are unchanged; retained-work slices become `building`, without resetting commits or rebuilding code automatically. Missing input manifests are stale, not reusable proof
 - a new slice is appended as `{ id, name, milestone, state: pending, base_commit: null, test_commit: null, head_commit: null }`
+
+On track standard in interactive mode, `/factory-plan` asks its own fast-lane approval sentence and runs this step's `status.yaml` slice update.
 
 Next skill: `/factory-build`, in a fresh session; from there the factory runs on autopilot (gates.md, Milestones and autopilot).

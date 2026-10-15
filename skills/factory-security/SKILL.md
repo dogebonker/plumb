@@ -17,7 +17,7 @@ Defensive review of this repository, never of systems it does not own. Why each 
 | --- | --- | --- |
 | `audit` | on demand | steps 1 to 6, `security-audit` in full audit mode with the chosen profile (default `quick`) |
 | `threat-model` | track critical, after the architecture gate | step 2 only |
-| `lens <slug>` | factory-review, on a slice whose diff touches a trust boundary or entry point of the threat model | steps 3 and 5 for that diff: one agent, `security-audit` in guidance mode, no run folder |
+| `lens <slug>` | factory-review, on a slice whose diff touches a trust boundary or entry point of the threat model (track standard without `threat-model.md`: of the `## Threats` section of `02-architecture.md`; an absent threat model never skips the lens) | steps 3 and 5 for that diff: one agent, `security-audit` in guidance mode, no run folder |
 
 Never copy a secret value into any file, report or message: cite file:line, rule and fingerprint.
 
@@ -35,7 +35,7 @@ Show the draft, and its differences from an existing model, to the user and ask:
 
 ## 3. Route
 
-Pick from `index.yaml`, for each component of the threat model (lens mode: only the components the diff touches):
+Pick from `index.yaml`, for each component of the threat model (lens mode: only the components the diff touches; on track standard without `threat-model.md`, the components of the `Components:` line in the `## Threats` section of `02-architecture.md`):
 
 - the method: `security-audit`'s parent instructions for the orchestrator; for each hunter, its hunting method and the one attack-class block and component file `index.yaml` names
 - knowledge: the matching `own` checklist, plus the first pack entry in index order whose `when` tags match and whose pack passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md)
@@ -53,7 +53,7 @@ Follow `security-audit`'s hunting and verification for the profile, one hunter p
 
 Each candidate ends `confirmed`, `needs_validation` (with the exact blocker and the plan that would settle it) or `rejected`, under `security-audit`'s evidence bar. Exploitability that needs a running system is proven only inside an isolated sandbox; without one the candidate stays `needs_validation`.
 
-Audit mode: write `findings.json` and the coverage ledger in the run folder as `security-audit` specifies, and run its validators on them (`node <pack>/validate-findings.cjs <run>/findings.json`, where `<pack>` is `security-audit`'s cache folder ([../factory-shared/packs.md](../factory-shared/packs.md)), and `validate-coverage-ledger.cjs` on the ledger). Lens mode: return confirmed findings as cards anchored to a threat ID of the threat model.
+Audit mode: write `findings.json` and the coverage ledger in the run folder as `security-audit` specifies, and run its validators on them (`node <pack>/validate-findings.cjs <run>/findings.json`, where `<pack>` is `security-audit`'s cache folder ([../factory-shared/packs.md](../factory-shared/packs.md)), and `validate-coverage-ledger.cjs` on the ledger). Lens mode: return confirmed findings as cards anchored to a threat ID of the threat model, or on track standard without `threat-model.md`, of the `## Threats` section of `02-architecture.md`.
 
 ## 6. Rank and propose (audit)
 

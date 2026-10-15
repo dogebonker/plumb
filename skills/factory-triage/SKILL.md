@@ -41,8 +41,8 @@ Done when every module has a language, a language pack, a BDD state and a run co
 | --- | --- | --- |
 | trivial | rename, copy, config, one-line fix | no factory: tell the user to hand it straight to an agent, then stop |
 | small | a few files, no new or changed interface | slices gate only, then build and review |
-| standard | new endpoint, table, screen, or any interface change | all four gates, then build and review |
-| critical | money, auth, migrations. Code behind a money signal counts as money | all four gates, plus `/factory-security threat-model` after the architecture gate; review adds the Money reviewer in money repositories |
+| standard | new endpoint, table, screen, a new product's first sign-in, or any interface change | `/factory-plan` (one discovery pass, one approval of all four documents), then one build session, one review, reconcile. Headless: all four gates, then build and review |
+| critical | money, a change to an existing authentication or authorization system, or a migration of existing stored data. Code behind a money signal counts as money | all four gates, plus `/factory-security threat-model` after the architecture gate; review adds the Money reviewer in money repositories |
 
 Pick the track from what the code shows, not from how the task is worded.
 
@@ -130,4 +130,4 @@ history:                    # append-only events (factory-shared/gates.md, Histo
 
 ## 6. Hand off
 
-Name the flaky tests from step 5.8, if any, as candidates for a fix of their own. Tell the user the next skill: `/factory-ui-ux design-md` when `ui` is `true` and the design file is missing; otherwise `/factory-product <slug>`, or `/factory-slices <slug>` on track small.
+Name the flaky tests from step 5.8, if any, as candidates for a fix of their own. Track standard in interactive mode: continue to `/factory-plan <slug>` in this session, also when `ui` is `true` and the design file is missing, since factory-plan writes it. Otherwise tell the user the next skill: `/factory-ui-ux design-md` when `ui` is `true` and the design file is missing; otherwise `/factory-product <slug>`, or `/factory-slices <slug>` on track small.

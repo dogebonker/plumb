@@ -1,5 +1,7 @@
 # Packet: slice <NN>, <name>
 
+Fast lane: Goal, Covers, Allowed files, Tests first and Verify only (factory-build, Fast lane).
+
 Written from: <each current approved gate document and doc_sha256; skipped gates explicitly marked>
 Inputs: <immutable input path/SHA-256 and mutable metadata effective field/value projections for criteria/SYS promises, budgets, signatures, layout/design/rules, pins, adapters and verification commands; exclude progress/history/receipts; gates.md, Development proof inputs>
 

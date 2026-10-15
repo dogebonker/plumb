@@ -12,6 +12,8 @@ Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides how the change fits the existing system. Interfaces come next, in `/factory-interface`.
 
+Track standard, interactive mode: `/factory-plan` drafts this document.
+
 ## 1. Load
 
 Load the change as gates.md describes, for the `architecture` gate. Read `01-product.md`.
@@ -77,6 +79,12 @@ The path of one request or event through the system, step by step.
 ## Constraints
 - C-01: <constraint> -> rules out <options>
 
+## Threats
+Components: <tags from <kit>/security/index.yaml>
+Entry points: <each one, with the code that serves it>
+Trust boundaries: <each one, with what enforces it>
+- T-01: <abuse path against a who-may-see-or-do rule of the product> -> mitigated by <FR, NFR or named test>
+
 ## Decisions
 ### <title>
 Supersedes: <earlier ADR, or none>
@@ -93,6 +101,7 @@ Consequences: <what gets easier, what gets harder>
 - For saved user data, Budgets turns each agreed persistence promise into an observable fit criterion and named failure boundary: a failed write, unreadable or invalid existing data, and interleaved writers including an editor opened before another save. Contracts and data identifies the actual persistence dependency and recovery/conflict strategy. Explain the guarantees the chosen storage can provide; do not call browser-local state a durable backup or assume a successful write alone prevents stale overwrite. Any promise the strategy cannot meet is an open question, resolved through the existing gate approval.
 - Cite storage, runtime and platform guarantees from their documentation (its URL) or `research.md`. Run an experiment only when a Budget or failure boundary depends on behavior the documentation leaves unclear: at most three per change, each in a temp directory outside the repository. Record each in `research.md` under `## Experiments` with its command, output and the NFR or C it settles; Research cites those entries like any answer. Every other guarantee becomes a test the slices write.
 - Track critical: Budgets holds at least one NFR budget.
+- Threats: one abuse path per who-may-see-or-do rule of the product, each mitigated by an FR, an NFR or a named test, at most 15 lines. The Security lens routes by the Components line. Track critical writes "see `.software-factory/system/threat-model.md`" instead, since `/factory-security threat-model` runs there.
 - When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, and the Layout Decision does not supply them, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
 
 ## 4. Walk the human through it

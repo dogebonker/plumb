@@ -12,6 +12,8 @@ Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). The human owns this gate: you draft, they decide. Agents later implement behind these signatures and cannot change them.
 
+Track standard, interactive mode: `/factory-plan` drafts this document from step 2 only, without Cost lines and Decisions. Steps 3 to 5 (compile, cost, challenge panel, rounds) run on every other track and mode.
+
 ## 1. Load
 
 Load the change as gates.md describes, for the `interface` gate. Read `01-product.md`, `02-architecture.md`, and the modules it names with their callers.

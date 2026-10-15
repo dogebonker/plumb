@@ -14,7 +14,20 @@ The conductor prepares the packet, dispatches one implementation executor per sl
 
 Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets `done`). Legacy `rewind` requests mean inspect and repair the retained work, not restore or clean the repository. Interactive mode continues through build and review under the real approved execution scope ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot); `--one-step` stops after one slice.
 
-## 1. Check the gate
+## Fast lane
+
+Track standard, interactive mode ([../factory-shared/gates.md](../factory-shared/gates.md), Milestones and autopilot). It replaces steps 2 to 6 below.
+
+1. **Check the gate** as step 1 says, without Development proof inputs. **Resume:** slices `building` with a live executor: wait for it. Executor gone: read `git log` for the red and green commits already made, record those slices' commits, and start a fresh executor on the first slice without a green commit, keeping all work. After a re-approved send-back, the executor reworks the slices whose Covers, Allowed files or frozen signatures changed, on top of their commits, and step 5 reverifies every slice.
+2. **Thin packets.** For every open slice, write `slices/NN/packet.md` with only Goal, Covers (IDs), Allowed files (one bullet per path, the form the hook reads), Tests first and Verify, copied from `04-slices.md`. Set every open slice to `building`.
+3. **Dispatch** one executor in the foreground with: the four approved documents, the design file, the packet paths, the Stubs section of `<kit>/adapters/<language>.md` for each module, `baseline_failures`, the Rules in scope paths once (packs.md, principle layers), and step 3's instructions applied per slice in order, each slice's commits consecutive. Add to its instructions: "Send no progress messages. Return only the final report, or stop with one blocking question." Its report, per slice: test and head commit shas, the failing tail of RED and the passing tail of GREEN, deviations, `red_exempt` candidates. `--one-step` stops after the first slice's green commit.
+4. **Wait** once, as gates.md's Fast lane says. A blocking question goes to the user whole, and the answer goes back to the same executor.
+5. **Verify.** Set each slice's `test_commit`, `head_commit`, and `base_commit` as `<test_commit>^`, so its span holds only its own commits. Batch the read-only checks: per slice, the commit pair in order, the span `<base_commit>..<head_commit>` within its Allowed files plus logged deviations, Tests first files unchanged after the RED commit, and the frozen signatures of `03-interface.md` present. Prove RED per slice, one after another, with step 4 items 2 and 3: the browser-red request plus `red_test_command` when the module uses the fixed browser capability, `runtime.py red` with `test_file_command` otherwise. At HEAD run `test_command` and `check_command`. Write each `slices/NN/checks.md` from step 6's template without its `Inputs` and `Owned spans` lines. Failures go back to the same executor as one batch. Its fix commits form one repair span, from the HEAD before the batch to the last fix commit, checked against the union of the open slices' Allowed files; each slice's own span stays as recorded.
+6. **Next.** Set every slice `green`, set `notes_for_fresh_session` to "All slices green. Next: /factory-review <slug>.", and continue to review.
+
+## Track critical and small, and headless mode
+
+### 1. Check the gate
 
 - Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) describes: the work is a slice not `done`. Legacy detached RED state must be recovered to the recorded deliverable branch without discarding dirty work; new RED verification never detaches that checkout.
 - For any derived correction, run gates.md's `repair-check --checkpoint edit` on load/resume and immediately before edits/dispatch; an undeclared active ID on a mandated plan requires valid repair metadata even without a repair flag. Preserve the fixed start baseline and stop on invalid scope/provenance.
@@ -26,7 +39,7 @@ Slice states: `pending` -> `building` -> `red` -> `green` -> `done` (review sets
   - `red`: step 5.
 - Inspect `git status --short` before edits. Unrelated dirty, staged or untracked source blocks unattended execution; preserve it and report the exact paths. Do not commit someone else's work or discard it to get a clean tree. Slice-owned interrupted edits may be continued with their provenance recorded.
 
-## 2. Write the packet
+### 2. Write the packet
 
 Write `.software-factory/changes/<slug>/slices/NN/packet.md` from [packet.md](packet.md), replacing any older packet for this slice, with Written from and the Inputs manifest recording current approved gate hashes and all referenced proof inputs (gates.md, Development proof inputs). Retain the previous packet as historical evidence instead of overwriting its proof context. Before ordinary generation, use the candidate packet already staged with a correction and validate its record/packet together via `repair-check --checkpoint edit`; when refreshing that control-only packet, derive Goal from its independently reproduced unchanged criterion/defect, Covers and Frozen contract from original approved documents, and exact Allowed files from `repair.json`. Copy applicable approved commands and parent planned tests restricted to those paths; record the repair record/input snapshot and original completed parents. Do not search frozen `04-slices.md` for a nonexistent correction heading. Retain its own base/test/head receipts; parents and original approved bytes stay untouched. No new-test/typecheck deviation widens a correction; use the genuine slice approval path instead. The remaining ordinary packet rules apply where relevant.
 
@@ -43,7 +56,7 @@ For an original slice, copy, never paraphrase:
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 
-## 3. Dispatch the executor
+### 3. Dispatch the executor
 
 For a derived correction, rerun `repair-check --checkpoint edit` immediately before dispatch and pass its exact record paths, immutable inputs and failure evidence with the packet. Routine repair batches go to this same executor, not the conductor or reviewers.
 
@@ -70,7 +83,7 @@ When the executor stops, append an `executor_stop` event with the reason. Diagno
 
 **Send back** follows gates.md, which picks the target gate from the reason.
 
-## 4. Prove red
+### 4. Prove red
 
 1. Record `test_commit`: the sha of the `test(<slug>): slice NN red` commit. The test files are those listed in the packet's Tests first.
 2. When the module's test uses a fixed browser-check capability, require `red_test_command` in the status/packet. First write its fixed request with `python3 <kit>/runtime.py browser-red-request --repo <absolute repo> --commit <test_commit full 40-hex SHA> --checkpoint <slug>-NN-red-<attempt>`; the checkpoint token uses only letters, digits, underscore or hyphen and at most 64 characters. This writes `.software-factory/browser-red.json` with exactly `{"commit": "<SHA>", "checkpoint": "<token>"}` (no commands or paths). Then invoke the prepared `red_test_command` directly as one bare command, once: it runs every cloned `test*.cjs` including existing tests, returning actual exit, bounded summary and raw log path. Do not pass the live browser wrapper to `runtime.py red`: it ignores cwd and can test GREEN instead. A missing isolated browser capability is a bounded verification blocker, not RED proof.
@@ -83,11 +96,11 @@ Red means: it builds; every new test fails, on an assertion or an error raised t
 - Red: set the slice to `red`.
 - Not red: append a `red_retry` event, classify assertion/test/setup/contract failure, and continue the same executor with a bounded local repair and supplementary proof. Preserve work and history. Only an unresolved requirement, authority or verification blocker stops progress.
 
-## 5. Prove green
+### 5. Prove green
 
 At the branch head, run every Verify command and `test_command`. Green means all pass, apart from tests in `baseline_failures`. On failure, append a `green_retry` event, diagnose and continue the executor with the output; use a fresh executor only when necessary. Preserve work and stop only on an actual blocker. Record `head_commit`; the slice stays `red` until step 6 passes.
 
-## 6. Check the slice
+### 6. Check the slice
 
 Run Phase 1 of [../factory-review/SKILL.md](../factory-review/SKILL.md) (checks 1 to 5) on this slice alone: its recorded original owned span, exact repair spans, `test_commit` and refreshed packet. Check each owned span separately; do not use original base through current HEAD as its edit range when that includes later slices. Contract and GREEN checks still inspect current HEAD. Write `slices/NN/checks.md`:
 
@@ -109,7 +122,7 @@ Owned spans: <original base..original slice head, plus each repair start..correc
 
 When the checks pass, set the slice to `green`.
 
-## 7. Next
+### 7. Next
 
 - Headless mode: `git add .software-factory/changes/<slug>`, commit `chore(factory): slice NN built`, push unless `FACTORY_RUNNER_MANAGED=1` (gates.md), and stop; the runner starts the review.
 - Otherwise set `notes_for_fresh_session` to "Slice NN green. Next: /factory-build <slug>." or, when every open slice of the milestone is `green`, "Milestone M green. Next: /factory-review <slug>.", and continue directly to that skill under the approved scope (gates.md, Milestones and autopilot); with `--one-step` or a manual pause, tell the user the next skill and stop. A green milestone with a later milestone after it, and no review already running, starts its review in the background as an overlapped review, and build continues with the next milestone's first slice. When a slice reaches `green` while that review waits for a quiet point, run what waits (its app checks, then its fix batch: factory-review, Overlapped review and steps 6 to 9) before starting another slice.

@@ -12,6 +12,8 @@ Session: ${CLAUDE_SESSION_ID}
 
 Gate rules: [../factory-shared/gates.md](../factory-shared/gates.md). This gate decides what the change does for its users, in their vocabulary: behavior, rules and outcomes. Technology enters at architecture.
 
+Track standard, interactive mode: `/factory-plan` drafts this document.
+
 ## 1. Load
 
 Load the change as gates.md describes, for the `product` gate.
@@ -52,6 +54,11 @@ Done when you can state today's behavior and the requested change in the user's 
   Example: <concrete input> -> <concrete outcome>
   (EARS: `The system SHALL`, `WHEN`, `WHILE <state>`, `WHERE <feature>`, `IF <unwanted> THEN`)
 
+## Glossary
+| Term | Meaning | Never on screen |
+| --- | --- | --- |
+| <the users' word> | <one line, in their words> | <words the product must not show for it> |
+
 ## Promises
 - NFR-01: <what the user can count on, in their words; numbers come in architecture>
 
@@ -62,6 +69,9 @@ Done when you can state today's behavior and the requested change in the user's 
 - SYS-NFR-01: <how this change touches it>   (or: none)
 
 ## Non-goals
+
+## Assumptions
+- <what was assumed where the user did not answer> (rejected: <the alternative>)
 
 ## Open questions
 ```

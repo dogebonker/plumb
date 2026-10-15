@@ -37,7 +37,9 @@ Fill [DESIGN.template.md](DESIGN.template.md), with 3 to 5 principles. Label eac
 
 ## 7. Confirm intent where evidence cannot answer
 
-Show the draft first. Then ask at most 3 questions per round, at most 2 rounds, picking from:
+Run from `/factory-plan`, the discovery answers replace this interview: ask nothing more. Its representative preview is the mockup capture, not a second one.
+
+Otherwise show the draft first. Then ask at most 3 questions per round, at most 2 rounds, picking from:
 
 - the primary user and their moment, only when `product.md` lacks it
 - what the product must never be mistaken for, offering 2 or 3 named anti-references from its category
