@@ -52,6 +52,7 @@ Repairs: approved-slice-files
 ## Slices
 ### 01 <name>
 Milestone: 1
+Depends on: <earlier slice numbers this slice needs, or none>
 Covers: FR-01
 Modules: <module paths this slice touches>
 Tests first: <test file or feature file> :: <test name or scenario> - <what it asserts>
@@ -66,6 +67,7 @@ Rules:
 
 - Slice 01 is the tracer bullet: the thinnest path that runs end to end. Each later slice adds one capability and ends green.
 - Track standard, interactive: every slice is `Milestone: 1`. Otherwise slice 01 is milestone 1 on its own. Later slices form milestones of two to four slices, each ending where the user can try something new; independent review and completion under approved execution scope happen once per milestone; final interactive sign-off happens at reconcile (gates.md, Milestones and autopilot). A slice added after its milestone was completed gets a new milestone number. Headless mode: every slice is its own milestone, so its Milestone line is its own number.
+- `Depends on` names the earlier slices whose code or data this slice needs; slice 01 has `none`. On track standard, cut slices so independent ones build in parallel (factory-build, Fast lane): slice 01 creates the files every later slice would otherwise edit (route table, schema, shared styles, shared test helpers, dependency manifest and lockfile), with an entry and a stub for each later slice's own file, and each later slice gets its own source and test files. Two slices that still share a file depend one on the other. Verify commands use a free port and their own temporary data, so slices can run side by side.
 - Allowed files include every file that implements, fakes or constructs a type whose signature the slice adds or changes: test fakes, the composition root, other callers.
 - Allowed files are exact paths, never wildcards like `web/**`, and every new file fits the Layout (gates.md, Layout). A file that fits no line is an open question.
 - When a Layout Decision picks a checker, the first slice that touches that root installs it and creates its config verbatim from the Decision: the manifest, the lockfile and the config are in its Allowed files (a global install, as `tools.yaml` marks it, is the user's to run). Its Verify runs the checker. Unless the check is `none`, `compiler` or `cargo`, its packet also asks the executor, once before the green commit, to plant a violation of a layer or sibling rule in a new temporary file under the root, report the checker's failing output, and delete the file; the planted file is never committed.

@@ -31,6 +31,12 @@ def git(cwd, *args, raw=False):
     return (r.stdout if raw else r.stdout.strip()) if r.returncode == 0 else None
 
 
+def common_dir(folder):
+    """The shared .git of every worktree of folder's repository."""
+    value = git(folder, "rev-parse", "--git-common-dir")
+    return value and (folder / value).resolve()
+
+
 def field(text, key):
     m = re.search(rf"\b{key}:\s*[\"']?([^,\"'}}\s]+)", text)
     return m.group(1) if m else None
@@ -378,8 +384,8 @@ def repair_cli():
     return 0
 
 
-def check(change, status, rel):
-    """Return a reason to block, or None to allow."""
+def check(change, status, rel, worktree=None):
+    """Return a reason to block, or None to allow. worktree: the slice number whose worktree holds rel."""
     gates = status["gates"]
     if len(gates) < len(GATES):
         return "cannot read all four gates in status.yaml; keep each gate as a one-line { } map (gates.md)."
@@ -401,12 +407,24 @@ def check(change, status, rel):
             return f"source edits wait for the slices gate; the {gate} gate is not approved yet. Run /factory-{gate}."
     if status["slices"] and all(s["state"] == "done" for s in status["slices"]):
         return "every slice is done. Run /factory-reconcile; a defect comes back as a new slice."
-    # While a slice is being built, only its packet counts; green slices waiting for their milestone's
-    # review are editable only at review time, when nothing is being built.
-    active = ([s for s in status["slices"] if s["state"] in EDITING - {"green"}]
-              or [s for s in status["slices"] if s["state"] == "green"])
-    if not active:
-        return "no slice is being built. Run /factory-build to start the next slice."
+    building = [s for s in status["slices"] if s["state"] in EDITING - {"green"}]
+    if worktree is not None:
+        # A slice worktree (factory-build, Fast lane) edits only its own slice's files, while it builds.
+        active = [s for s in building if re.fullmatch(r"[0-9]+", s["id"]) and int(s["id"]) == worktree]
+        if not active:
+            return f"slice {worktree} is not being built, so its worktree is closed."
+    else:
+        # A slice building in its own worktree is edited there, never in the checkout.
+        folder = root / ".software-factory" / "worktrees"
+        away = {int(p.name) for p in folder.iterdir() if re.fullmatch(r"[0-9]+", p.name)} if folder.is_dir() else set()
+        here = [s for s in building if not (re.fullmatch(r"[0-9]+", s["id"]) and int(s["id"]) in away)]
+        if building and not here:
+            return "every slice being built has its own worktree under .software-factory/worktrees/; edit there."
+        # While a slice is being built, only its packet counts; green slices waiting for their milestone's
+        # review are editable only at review time, when nothing is being built.
+        active = here or [s for s in status["slices"] if s["state"] == "green"]
+        if not active:
+            return "no slice is being built. Run /factory-build to start the next slice."
     original = original_slices((change / "04-slices.md").read_text()) if mandate((change / "04-slices.md").read_text()) else None
     if original is not None:
         ids = [s["id"] for s in status["slices"]]
@@ -487,6 +505,18 @@ def main():
         rel = path.resolve().relative_to(root).as_posix()
     except ValueError:
         return 0
+    # A slice worktree (factory-build, Fast lane) is <checkout>/.software-factory/worktrees/NN, gated by the
+    # checkout's live state; its own copy of the factory files is not the conductor's and stays closed.
+    worktree = None
+    if re.fullmatch(r"[0-9]+", root.name) and root.parent.name == "worktrees" and root.parent.parent.name == ".software-factory":
+        common = common_dir(probe)
+        root, worktree = root.parents[2], int(root.name)
+        if not common or common != common_dir(root):
+            print(f"factory gate: slice worktree {worktree} is not a git worktree of {root}", file=sys.stderr)
+            return 2
+        if rel.startswith((".software-factory/", ".factory/")) or rel == "DESIGN.md":
+            print("factory gate: factory files change in the checkout, not in a slice worktree", file=sys.stderr)
+            return 2
     # Decided before any .software-factory logic: a lock, runs/ or another change there must not open the gate.
     if legacy_active(root):
         if rel.startswith((".factory/", ".software-factory/")):
@@ -504,7 +534,7 @@ def main():
                 continue
             if status["scalars"].get("reconciled") == "true":
                 continue
-            reason = lock_problem(root) or check(status_file.parent, status, rel)
+            reason = lock_problem(root) or check(status_file.parent, status, rel, worktree)
         except Exception as e:  # noqa: BLE001 - an active change with unreadable state stays closed
             reason = f"cannot read the change's state ({type(e).__name__}: {e}). Fix {status_file.relative_to(root)}."
         if reason:

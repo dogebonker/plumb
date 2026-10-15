@@ -5,7 +5,7 @@ All notable changes to Software Factory. Dates are when the change landed on `ma
 ## 2026-10-15
 
 ### Added
-- **Fast lane for track standard.** New `/factory-plan` skill: at most two batched rounds of discovery questions from a fixed checklist (users and roles, who may see or do what, data lifecycle, failure and durability, vocabulary, brand voice and where it must stay plain, visual direction and quality bar, non-goals), then all planning documents, the design file and one representative mockup, approved once. One executor builds every slice red then green; one review at the end runs alongside independent acceptance; reconcile follows. Target: a small multi-user web app in 60 to 90 minutes.
+- **Fast lane for track standard.** New `/factory-plan` skill: at most two batched rounds of discovery questions from a fixed checklist (users and roles, who may see or do what, data lifecycle, failure and durability, vocabulary, brand voice and where it must stay plain, visual direction and quality bar, non-goals), then all planning documents, the design file and one representative mockup, approved once. Slice 01 builds first, then independent slices build red then green in parallel, one executor each in its own git worktree, merged back with one check per group; one review at the end runs alongside independent acceptance; reconcile follows. Target: a small multi-user web app in 60 to 90 minutes.
 
 ### Changed
 - **Track critical** now means money, changes to an existing sign-in or permission system, or migrations of existing stored data. A new product's first sign-in is standard, with a `## Threats` section and a mandatory security reviewer.

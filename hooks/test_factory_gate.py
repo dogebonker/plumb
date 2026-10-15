@@ -125,6 +125,77 @@ with tempfile.TemporaryDirectory() as tmp:
     assert r.returncode == 2 and "no .software-factory/factory.lock" in r.stderr, r.stderr
     assert run(root, ".software-factory/factory.lock").returncode == 0
 
+# Fast lane parallel group: slices 2 and 3 build at once, each in its own worktree, gated by the checkout's live
+# status.yaml. Each worktree admits only its own slice's files; the checkout admits neither while they build there.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp).resolve()
+
+    def g(*args):
+        subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
+                        "-c", "commit.gpgsign=false", *args], check=True, capture_output=True)
+
+    g("init", "-q", "-b", "factory/demo")
+    change = root / ".software-factory" / "changes" / "demo"
+    for n, files in [(1, "src/a.ts"), (2, "src/b.ts, src/b.test.ts, src/sub/b2.ts"), (3, "src/c.ts")]:
+        (change / "slices" / f"0{n}").mkdir(parents=True)
+        (change / "slices" / f"0{n}" / "packet.md").write_text(f"# Packet\n\n## Allowed files\n- {files}\n")
+    for gate, doc in GATES:
+        (change / doc).write_text(f"# {gate}\n")
+    approved = [(g_, "approved", hashlib.sha256((change / d).read_bytes()).hexdigest()) for g_, d in GATES]
+    (root / ".software-factory" / "factory.lock").write_text("framework: { commit: " + "a" * 40 + " }\n")
+    st = change / "status.yaml"
+    st.write_text(status(approved, slices="slices:\n  - { id: 1, name: tracer, state: pending }"))
+    g("add", ".")
+    g("commit", "-qm", "plan")
+    (root / ".git" / "info" / "exclude").write_text("/.software-factory/worktrees/\n")
+    group = ("slices:\n  - { id: 1, name: tracer, milestone: 1, state: green }\n"
+             "  - { id: 2, name: two, milestone: 1, state: building }\n  - { id: 3, name: three, milestone: 1, state: building }")
+    st.write_text(status(approved, slices=group))  # live and uncommitted: the worktrees' copies still say pending
+    wt = {}
+    for n in (2, 3):
+        wt[n] = root / ".software-factory" / "worktrees" / f"0{n}"
+        g("worktree", "add", "-q", "-b", f"factory/demo-0{n}", str(wt[n]), "HEAD")
+    assert run(wt[2], "src/b.ts").returncode == 0 and run(wt[2], "src/b.test.ts").returncode == 0
+    assert run(wt[3], "src/c.ts").returncode == 0
+    (wt[2] / "src" / "sub").mkdir(parents=True)  # git prints a subfolder's common dir relative to it
+    assert run(wt[2], "src/sub/b2.ts").returncode == 0
+    for n, other in [(2, "src/c.ts"), (3, "src/b.ts"), (2, "src/a.ts")]:
+        r = run(wt[n], other)
+        assert r.returncode == 2 and f"Allowed files of slice {n}" in r.stderr, (n, other, r.stderr)
+    for path in ["src/b.ts", "src/c.ts"]:
+        r = run(root, path)
+        assert r.returncode == 2 and "own worktree" in r.stderr, r.stderr
+    for path in [".software-factory/changes/demo/status.yaml", "DESIGN.md"]:
+        r = run(wt[2], path)
+        assert r.returncode == 2 and "not in a slice worktree" in r.stderr, (path, r.stderr)
+    assert run(root, ".software-factory/changes/demo/status.yaml").returncode == 0
+    # Slice 3 checked and green: its worktree closes; slice 2's stays open.
+    st.write_text(status(approved, slices=group.replace("three, milestone: 1, state: building", "three, milestone: 1, state: green")))
+    r = run(wt[3], "src/c.ts")
+    assert r.returncode == 2 and "slice 3 is not being built" in r.stderr, r.stderr
+    assert run(wt[2], "src/b.ts").returncode == 0
+    # A folder shaped like a slice worktree that is not a worktree of this checkout is closed.
+    fake = root / ".software-factory" / "worktrees" / "04"
+    subprocess.run(["git", "init", "-q", str(fake)], check=True)
+    r = run(fake, "src/d.ts")
+    assert r.returncode == 2 and "not a git worktree" in r.stderr, r.stderr
+    # The checkout may itself be a linked worktree (a session's worktree): its slice worktrees share its .git.
+    co = root / "co"
+    g("worktree", "add", "-q", "-b", "factory/co", str(co), "HEAD")
+    (co / ".software-factory" / "changes" / "demo" / "status.yaml").write_text(status(approved, slices=group, branch="factory/co"))
+    g("worktree", "add", "-q", "-b", "factory/co-02", str(co / ".software-factory" / "worktrees" / "02"), "HEAD")
+    assert run(co / ".software-factory" / "worktrees" / "02", "src/b.ts").returncode == 0
+    r = run(co / ".software-factory" / "worktrees" / "02", "src/c.ts")
+    assert r.returncode == 2 and "Allowed files of slice 2" in r.stderr, r.stderr
+    g("worktree", "remove", "--force", str(co / ".software-factory" / "worktrees" / "02"))
+    g("worktree", "remove", "--force", str(co))
+    # Worktrees removed after the merge: the checkout admits the building slices' files again.
+    for n in (2, 3):
+        g("worktree", "remove", str(wt[n]))
+    subprocess.run(["rm", "-rf", str(fake)], check=True)
+    st.write_text(status(approved, slices=group))
+    assert run(root, "src/b.ts").returncode == 0 and run(root, "src/c.ts").returncode == 0
+
 # A repository with an unreconciled change in .factory/ is closed to source edits until /factory-init migrates
 # it, whatever .software-factory/ already holds; .factory/ and .software-factory/ stay editable so init can run.
 LEGACY = "still uses .factory/; run /factory-init"

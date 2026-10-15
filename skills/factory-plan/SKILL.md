@@ -54,7 +54,7 @@ In this order, each from its existing template:
 - The mockup, when step 3 decided one: the Mockups section of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) on track standard, built from the design draft. Its capture is also the design file's representative preview: one capture, not two.
 - `02-architecture.md`: the template of [../factory-architecture/SKILL.md](../factory-architecture/SKILL.md) step 3 and its rules, Threats included, after that skill's step 2 items 5 and 6 (earlier ADRs, the profile's lenses). The Layout Decision names its rows and reasons without the two exemplars. The domain-model decision takes one line.
 - `03-interface.md`: the template of [../factory-interface/SKILL.md](../factory-interface/SKILL.md) step 2 and its rules, with signatures only for modules another module or a later slice calls, no Cost lines and no Decisions. Test plan and Coverage stay complete: an unmapped ID blocks approval.
-- `04-slices.md`: the template and Rules of [../factory-slices/SKILL.md](../factory-slices/SKILL.md) step 3, every slice `Milestone: 1`, without the Development section.
+- `04-slices.md`: the template and Rules of [../factory-slices/SKILL.md](../factory-slices/SKILL.md) step 3, every slice `Milestone: 1` with its `Depends on` line, cut so independent slices build in parallel as those Rules say, without the Development section.
 
 ## 5. Line budgets
 
