@@ -10,6 +10,8 @@
     .head { fill: #8A97A3; }
     .group { fill: none; stroke: #C5CDD4; stroke-width: 1.25; stroke-dasharray: 5 5; }
     .gate { fill: #E8A317; }
+    .token { fill: #E8A317; }
+    .halo { fill: #E8A317; opacity: 0.25; }
     @media (prefers-color-scheme: dark) {
       .bg { fill: #15191D; }
       .ink { fill: #E6EAEE; }
@@ -29,24 +31,12 @@
 
   <rect class="bg" x="0" y="0" width="760" height="440" rx="14"/>
 
-  <text class="ink" x="24" y="38" font-size="17" font-weight="700">You decide twice; agents do the rest</text>
-  <text class="quiet" x="24" y="60" font-size="12.5">Standard track: one plan, one approval, one build, one review, then reconcile</text>
-
   <!-- row 1: decide -->
   <rect class="box" x="24" y="84" width="200" height="72" rx="8"/>
-  <text class="ink" x="40" y="112" font-size="14" font-weight="700">Triage</text>
-  <text class="quiet" x="40" y="132" font-size="11.5">picks the track and</text>
-  <text class="quiet" x="40" y="147" font-size="11.5">how much process it needs</text>
 
   <rect class="box" x="280" y="84" width="200" height="72" rx="8"/>
-  <text class="ink" x="296" y="112" font-size="14" font-weight="700">Plan</text>
-  <text class="quiet" x="296" y="132" font-size="11.5">asks who sees what, failures,</text>
-  <text class="quiet" x="296" y="147" font-size="11.5">vocabulary, voice, non-goals</text>
 
   <rect class="you" x="536" y="84" width="200" height="72" rx="8"/>
-  <text class="ink" x="552" y="112" font-size="14" font-weight="700">You approve</text>
-  <text class="quiet" x="552" y="132" font-size="11.5">one plan, one approval:</text>
-  <text class="quiet" x="552" y="147" font-size="11.5">product, design, slices</text>
 
   <path class="line" d="M224 120H276" marker-end="url(#arrow)"/>
   <path class="line" d="M480 120H532" marker-end="url(#arrow)"/>
@@ -54,22 +44,12 @@
 
   <!-- row 2: autopilot -->
   <rect class="group" x="24" y="188" width="712" height="118" rx="10"/>
-  <text class="quiet" x="40" y="210" font-size="12" font-weight="600">On autopilot</text>
 
   <rect class="box" x="40" y="222" width="200" height="68" rx="8"/>
-  <text class="ink" x="56" y="248" font-size="14" font-weight="700">Build</text>
-  <text class="quiet" x="56" y="268" font-size="11.5">every slice: failing test,</text>
-  <text class="quiet" x="56" y="283" font-size="11.5">then the code</text>
 
   <rect class="box" x="280" y="222" width="200" height="68" rx="8"/>
-  <text class="ink" x="296" y="248" font-size="14" font-weight="700">Review + acceptance</text>
-  <text class="quiet" x="296" y="268" font-size="11.5">independent reviewers and</text>
-  <text class="quiet" x="296" y="283" font-size="11.5">examples run on the product</text>
 
   <rect class="box" x="520" y="222" width="200" height="68" rx="8"/>
-  <text class="ink" x="536" y="248" font-size="14" font-weight="700">Fix</text>
-  <text class="quiet" x="536" y="268" font-size="11.5">one batch to the builder,</text>
-  <text class="quiet" x="536" y="283" font-size="11.5">re-checked by who found it</text>
 
   <path class="line" d="M636 156V184H140V218" marker-end="url(#arrow)"/>
   <path class="line" d="M240 256H276" marker-end="url(#arrow)"/>
@@ -77,22 +57,53 @@
 
   <!-- row 3: finish -->
   <rect class="you" x="24" y="344" width="200" height="72" rx="8"/>
-  <text class="ink" x="40" y="372" font-size="14" font-weight="700">You sign off</text>
-  <text class="quiet" x="40" y="392" font-size="11.5">acceptance results and</text>
-  <text class="quiet" x="40" y="407" font-size="11.5">anything held for you</text>
 
   <rect class="box" x="280" y="344" width="200" height="72" rx="8"/>
-  <text class="ink" x="296" y="372" font-size="14" font-weight="700">Reconcile</text>
-  <text class="quiet" x="296" y="392" font-size="11.5">living docs, decisions,</text>
-  <text class="quiet" x="296" y="407" font-size="11.5">constraints, glossary</text>
 
   <rect class="box" x="536" y="344" width="200" height="72" rx="8"/>
-  <text class="ink" x="552" y="372" font-size="14" font-weight="700">Merge</text>
-  <text class="quiet" x="552" y="392" font-size="11.5">the next change starts</text>
-  <text class="quiet" x="552" y="407" font-size="11.5">from what shipped</text>
 
   <path class="line" d="M620 290V322H124V340" marker-end="url(#arrow)"/>
   <circle class="gate" cx="124" cy="331" r="6"/>
   <path class="line" d="M224 380H276" marker-end="url(#arrow)"/>
   <path class="line" d="M480 380H532" marker-end="url(#arrow)"/>
+
+  <!-- travelling token: above boxes, below labels -->
+  <g>
+    <circle class="halo" r="11" cx="0" cy="0"/>
+    <circle class="token" r="5.5" cx="0" cy="0"/>
+    <animateMotion dur="16s" repeatCount="indefinite" calcMode="linear"
+      path="M124 120H636V184H140V256H620V322H124V380H636"/>
+  </g>
+
+  <!-- labels -->
+  <text class="ink" x="24" y="38" font-size="17" font-weight="700">You decide twice; agents do the rest</text>
+  <text class="quiet" x="24" y="60" font-size="12.5">Standard track: one plan, one approval, one build, one review, then reconcile</text>
+  <text class="ink" x="40" y="112" font-size="14" font-weight="700">Triage</text>
+  <text class="quiet" x="40" y="132" font-size="11.5">picks the track and</text>
+  <text class="quiet" x="40" y="147" font-size="11.5">how much process it needs</text>
+  <text class="ink" x="296" y="112" font-size="14" font-weight="700">Plan</text>
+  <text class="quiet" x="296" y="132" font-size="11.5">asks who sees what, failures,</text>
+  <text class="quiet" x="296" y="147" font-size="11.5">vocabulary, voice, non-goals</text>
+  <text class="ink" x="552" y="112" font-size="14" font-weight="700">You approve</text>
+  <text class="quiet" x="552" y="132" font-size="11.5">one plan, one approval:</text>
+  <text class="quiet" x="552" y="147" font-size="11.5">product, design, slices</text>
+  <text class="quiet" x="40" y="210" font-size="12" font-weight="600">On autopilot</text>
+  <text class="ink" x="56" y="248" font-size="14" font-weight="700">Build</text>
+  <text class="quiet" x="56" y="268" font-size="11.5">every slice: failing test,</text>
+  <text class="quiet" x="56" y="283" font-size="11.5">then the code</text>
+  <text class="ink" x="296" y="248" font-size="14" font-weight="700">Review + acceptance</text>
+  <text class="quiet" x="296" y="268" font-size="11.5">independent reviewers and</text>
+  <text class="quiet" x="296" y="283" font-size="11.5">examples run on the product</text>
+  <text class="ink" x="536" y="248" font-size="14" font-weight="700">Fix</text>
+  <text class="quiet" x="536" y="268" font-size="11.5">one batch to the builder,</text>
+  <text class="quiet" x="536" y="283" font-size="11.5">re-checked by who found it</text>
+  <text class="ink" x="40" y="372" font-size="14" font-weight="700">You sign off</text>
+  <text class="quiet" x="40" y="392" font-size="11.5">acceptance results and</text>
+  <text class="quiet" x="40" y="407" font-size="11.5">anything held for you</text>
+  <text class="ink" x="296" y="372" font-size="14" font-weight="700">Reconcile</text>
+  <text class="quiet" x="296" y="392" font-size="11.5">living docs, decisions,</text>
+  <text class="quiet" x="296" y="407" font-size="11.5">constraints, glossary</text>
+  <text class="ink" x="552" y="372" font-size="14" font-weight="700">Merge</text>
+  <text class="quiet" x="552" y="392" font-size="11.5">the next change starts</text>
+  <text class="quiet" x="552" y="407" font-size="11.5">from what shipped</text>
 </svg>
