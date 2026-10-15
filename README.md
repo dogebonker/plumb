@@ -99,6 +99,8 @@ The full log, with costs and trade-offs, is [docs/DECISIONS.md](docs/DECISIONS.m
 | Language packs per module ([React](https://github.com/vercel-labs/agent-skills), [Rust](https://github.com/leonardomso/rust-skills), [Go](https://github.com/cxuu/golang-skills), [Python](https://github.com/trailofbits/skills)) | Books decide boundaries, packs decide idiom; lint-able rules go to the linter | One generic style guide |
 | FDA for new frontends | Colocated domains with explicit public entries; existing conventions still win | FSD or feature folders by default |
 | [Ponytail](https://github.com/DietrichGebert/ponytail) prune job | Agents add code; a scheduled, behavior-preserving prune pushes back | Ad-hoc cleanup |
+| DRY, SOLID, YAGNI, KISS with a written order | They conflict. YAGNI and KISS win, DRY waits for the third copy, SOLID stays at module boundaries | Principles applied by habit |
+| Gang of Four map behind a smell | A pattern fits only when its smell is in the code. Required patterns breed pattern-itis | Patterns as a checklist |
 
 ## Quick start
 

@@ -45,14 +45,15 @@ Junk to remove. Fast and high-confidence.
 
 ### Design and reuse
 
-Structure. Needs the codebase beyond the diff.
+Structure. Needs the codebase beyond the diff. Findings against a named principle carry its tag, `[factory/yagni]`, `[factory/kiss]`, `[factory/dry]` or `[factory/solid]`, apply its Test from the principle layers, and follow their order when two conflict.
 
 - **Reuse**: an existing utility, helper or shared module that could replace new code. Search utility directories, shared modules and the changed files' neighbours.
-- **Over-engineering**: a helper used once, a wrapper around one call, a try/catch that rethrows the same error or catches the impossible, validation repeated after the boundary already did it, a flag or config for what could be code, a compatibility shim for code written in this diff.
+- **Over-engineering** (YAGNI, KISS): a helper used once, an interface with one implementation, a wrapper around one call, a try/catch that rethrows the same error or catches the impossible, validation repeated after the boundary already did it, a flag or config for what could be code, a compatibility shim for code written in this diff.
 - **Redundant state**: state that duplicates other state, cached values that could be derived, effects or observers that could be direct calls.
 - **Parameter sprawl**: a new parameter where generalizing an existing one fits.
-- **Near-duplicates**: copy-paste blocks with small variations that should be one.
-- **Leaky abstractions**: internals exposed, or an existing boundary broken.
+- **Duplicated knowledge** (DRY): the same rule, constant, format or schema in a third place. Two copies, and code that only looks alike, are not findings.
+- **Leaky abstractions** (SOLID): internals exposed, or an existing boundary broken, at a module's public interface.
+- **Pattern smells**: a finding about object construction, a new global instance, conditionals on a type or state field, inheritance that multiplies classes, wrappers around another interface, objects coordinating each other, repeated algorithm outlines, memory held in duplicate state, or hand-written undo, notification, handler chains, traversal or rule evaluation. For these, read `gang-of-four/SKILL.md`. Its row gives the recommended edit: the pattern when Fits when holds, otherwise the smaller treatment. Tag it `[gang-of-four/<pattern>]`. Never raise a finding only because a pattern is absent.
 - **Stringly-typed code**: raw strings where the codebase already has constants, enums or branded types.
 - **Structure**: a function that grew past about 50 lines, naming that departs from the codebase's conventions.
 - **Behavior drift** in moved or rewritten code, against the prior version from step 1: dropped input validation, removed guards or early returns, changed error semantics (status codes, return shapes). A refactor that changes behavior is a regression however clean each line looks.

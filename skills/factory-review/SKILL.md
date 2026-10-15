@@ -77,7 +77,7 @@ A frozen-contract difference sends its slice back, as gates.md describes.
    - out-of-diff findings are recorded as follow-ups in `review.md`, not fixed in this milestone
    - findings from a rule under the merged Quiet rules of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths), money and security rules excepted, are recommended as skip
    - rubric for the agents, each finding from a rubric tagged `[lens/rule]`, each rubric pack checked as packs.md describes and read from its resolved pack folder:
-     - design and reuse: `refactoring-guru.mini.md` and the simplification ladder from packs.md
+     - design and reuse: the merged Principles of the principle layers, with the named principles YAGNI, KISS, DRY and SOLID and their order when they conflict, `refactoring-guru.mini.md`, the simplification ladder from packs.md, and `gang-of-four/SKILL.md` under review-agents.md's Pattern smells rule
      - design and efficiency: the module's language pack index; only its CRITICAL and HIGH categories are findings, the rest are notes
      - cleanliness: each test under a packet's Tests first asserts the outcome its line names, and for an FR the outcome of its Example in Covers; a test that only calls the code, or only checks that it does not throw, is a finding tagged `[factory/example-asserted]`
      - cleanliness, in modules with `bdd: native`: duplicate steps, steps that name clicks, fields or URLs, and wording that differs from the product's rules
