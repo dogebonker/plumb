@@ -125,7 +125,7 @@ instructions explicitly accept a recorded simulated answer forwarded to a fresh
 step agent. Original skills and production approval rules are unchanged. The root
 prompt requests JSON directly; native JSON-schema enforcement is omitted because
 it interrupted agents waiting for their reviewers. These adaptations are recorded
-in provenance and limit this to an automated skills comparison.
+in provenance and limit this to an automated skills comparison. Required book rubrics now come from verified `kit/packs/<name>@<hash>/` bundles; missing or corrupt books stop preparation before model execution. Their exact bytes are excluded from path rewrites. Optional nonbook cache misses remain recorded as skips.
 
 Graders and oracles stay outside agent workspaces. After execution, trusted tests
 run in a fresh product copy. Agent-generated tests cannot replace them. Python
@@ -212,3 +212,15 @@ not attributed to Context Mode without evidence. Large non-browser outputs are
 routed to Context execution/index/search when available; browser checks retain the
 shared direct Bash command. Summaries do not replace raw verification evidence,
 and usage alone establishes no token savings without matched reruns.
+
+## Codex-only full-stack comparison
+
+Use `--harness codex --codex /absolute/path/to/codex --model gpt-6.1-sol --effort high --cases support-fullstack --repeats 1 --until-complete` with the same fixed operator policy, pinned Superpowers source and installed `PLAYWRIGHT_MODULE`. Both arms choose their stack within the case's launch/API contract. Project-scoped pinned Node/Python dependencies are permitted through the recorded registry allowlist; runtime services stay local. Context is intentionally unsupported in this adapter.
+
+`--until-complete` removes time, price, question and repair caps, as requested. Process errors, policy admission failures and unanswered operator decisions still stop with retained resumable work; Ctrl-C preserves the owned trial. An accepted product must pass independent acceptance after the workflow reports completion. Factory reconciliation and Superpowers finish evidence still require trajectory review before declaring the comparison valid.
+
+Codex starts with project-scoped prepared CLI policy and real local capability probes, rather than Claude plugin initialization. Pinned skills are read as files; tool mappings use actual Codex native interfaces. Browser checks use the declared zero-argument `benchmark_browser.check` and `red_check` MCP capabilities: the immutable bridge invokes the native Seatbelt wrappers outside the actor sandbox. Shell execution of those wrappers is unsupported; the execution-surface mapping preserves command identity and RED/GREEN evidence. Raw root JSONL is preserved. Actual `thread.started` IDs resume each session. Observer-side per-response usage includes discovered child threads, deduplicates response identities, and records unknown coverage. Completion requires each thread's latest owned start/completion evidence; an open child edge means resumable, not necessarily running. Collect final usage after root-process exit and check persistence/shutdown warnings. Shell policy probes and fixed browser capabilities do not establish universal isolation of every possible tool surface; see retained admission limitations.
+
+Requested model/effort is audited in every recorded turn. Installed role TOMLs can override inherited defaults. Future preparation snapshots the inspected installed role preset, preserves instructions and other fields, pins model/effort in immutable copies, and checks hashes before initial commands and resumes. Python 3.11's `tomllib` or an already installed `tomli` parses these files; the adapter installs neither. Metadata records exact coverage and keeps `complete_effective_inventory_verified=false` and `uniform_effort_enforced=false`: higher-priority managed configuration, undiscovered role roots and full forks remain outside this bounded preset. Observed drift makes the uniform-effort comparison invalid; a prompt or root CLI flag is not proof of child effort.
+
+`DECISIONS.md` captures stack rationale and FR/NFR agreements. The grader records verified requirement IDs and predefined user journeys separately from those claims. Cost per accepted application and per predefined accepted journey uses estimated API rates, not self-reported task counts. Actual invoice price remains null; missing usage/model/effort or unresolved child usage makes the measurement invalid, never free. Input includes cached subsets: additive token totals count input plus output once. No cost comparison is valid until both products and accounting are reviewed.

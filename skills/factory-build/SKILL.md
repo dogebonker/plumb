@@ -7,6 +7,8 @@ argument-hint: "[slug] [--one-step]"
 
 # Factory build
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -55,7 +57,7 @@ For an original slice, copy, never paraphrase:
 - its tests, allowed files and verify commands, from `04-slices.md`; in a module with `bdd: native`, its scenarios verbatim from the Test plan of `03-interface.md` (track small: from `04-slices.md`), and the existing step definitions found with the adapter's BDD step search (`path:line` and step text)
 - under Layout, the lines that admit each Allowed file (gates.md, Layout), with what lives there and what may not; a file admitted only because its folder already existed is listed as `existing`
 - UI slices: under Visual direction, the relevant approved DESIGN.md brand/component/state rules, branded mockup paths and selected feature-reference notes/artifacts ([../factory-ui-ux/references.md](../factory-ui-ux/references.md)); carry only this slice's applicable examples, or `none`, without another question or unapproved scope expansion
-- under Rules in scope, the active playbook entries whose scope matches the Allowed files, copied (gates.md, Load a change, step 7); the Principles of the principle layers (gates.md, Paths), merged and copied; then the resolved pack paths (packs.md, Load) of the profile's `packet` lenses (size `nano`) and of the module's language pack index and rules, each that passes the pin check in [../factory-shared/packs.md](../factory-shared/packs.md), and the simplification ladder from that file, copied
+- under Rules in scope, applicable active playbook entries and concise project Principles; the simplification ladder; the module's language index and one or two applicable rules; and only explicitly selected relevant `design_lenses` references at packs.md's task-sized excerpt. Profile packet-book candidates are not automatic loads. Pass rule paths instead of copying book rubrics into every packet.
 
 Done when an engineer who has never seen the gate documents could build the slice from the packet alone.
 

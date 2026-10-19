@@ -54,16 +54,34 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "hooks"))
 from factory_gate import GATES, field, parse_status
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "kit"))
+from usage import read_events, receipt
+
 BRANCH = re.compile(r"^factory/[A-Za-z0-9._/-]+$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
 PACK_ENTRY = re.compile(r"\s+([^\s:#]+):\s*\{([^{}]*)\}\s*(#.*)?")  # the same entry form as bin/factory-packs-fetch
 GIT_SAFE = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false")
-HARNESS = "claude -p --setting-sources user --strict-mcp-config"
+HARNESS = "claude -p --setting-sources user --strict-mcp-config --output-format stream-json --verbose"
 GIT_TIMEOUT = 300
 MAX_REPLY_BYTES = 100_000
 PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
 FRAMEWORK = Path.home() / ".software-factory" / "framework"
 NOT_PLANNING = {".software-factory/factory.lock", ".software-factory/principles.md"}
+
+
+def write_json(path, value):
+    """Keep the previous trusted checkpoint intact on interruption."""
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, delete=False) as stream:
+            temporary = Path(stream.name)
+            json.dump(value, stream)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def run(cwd, *cmd, timeout=GIT_TIMEOUT, binary=False):
@@ -318,17 +336,23 @@ def triage_skips(repo, ref, status_path, starts):
 
 def run_harness(cmd, cwd, timeout):
     """Run the harness in its own process group, so a timeout stops its tools too."""
-    proc = subprocess.Popen(cmd, cwd=cwd, start_new_session=True,
-                            env={**os.environ, "FACTORY_RUNNER_MANAGED": "1"})
+    observed = Path(cmd[0]).name == "claude" and "stream-json" in cmd
+    stream = (Path(cwd).parent / "usage-stream.jsonl").open("ab") if observed else None
     try:
-        return proc.wait(timeout=timeout)
-    except BaseException:
+        proc = subprocess.Popen(cmd, cwd=cwd, start_new_session=True, stdout=stream,
+                                env={**os.environ, "FACTORY_RUNNER_MANAGED": "1"})
         try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        proc.wait()
-        raise
+            return proc.wait(timeout=timeout)
+        except BaseException:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            proc.wait()
+            raise
+    finally:
+        if stream:
+            stream.close()
 
 
 def created_commits(clone):
@@ -360,6 +384,9 @@ def harness_pass(repo, branch, head, cmd, setup, timeout):
     work.mkdir()
     code = None
     outcome = "setup-or-clone-failure"
+    ledger = repo / ".git" / "factory-usage" / "usage.jsonl"
+    skills = re.findall(r"\bfactory-[a-z-]+\b", cmd[-1]) if cmd else []
+    skill = skills[0] if skills else "unknown"
     try:
         run(work, "git", "clone", "-q", "--branch", branch, url, ".")
         if run(work, "git", "rev-parse", "HEAD").strip() != head:
@@ -367,8 +394,16 @@ def harness_pass(repo, branch, head, cmd, setup, timeout):
         # Harness skills commit locally; only a successful runner publishes their trusted commits.
         run(work, "git", "config", "remote.origin.pushurl", str(root / "publication-disabled"))
         try:
-            code = run_harness(shlex.split(setup), work, timeout) if setup else 0
+            code = 0
+            if setup:
+                receipt(ledger, branch, "runner-setup", [], root.name + "-setup")
+                try:
+                    code = run_harness(shlex.split(setup), work, timeout)
+                finally:
+                    if (root / "usage-stream.jsonl").exists():
+                        (root / "usage-stream.jsonl").rename(root / "setup-usage-stream.jsonl")
             if code == 0:
+                receipt(ledger, branch, skill, [], root.name)
                 code = run_harness(cmd, work, timeout)
         except subprocess.TimeoutExpired:
             code = None
@@ -385,6 +420,25 @@ def harness_pass(repo, branch, head, cmd, setup, timeout):
         outcome = "success" if code == 0 else "timeout" if code is None else "nonzero"
         return code, created_commits(work)
     finally:
+        try:
+            # Receipts live outside the harness clone and survive success, failure and timeout.
+            evidence = repo / ".git" / "factory-usage" / root.name
+            evidence.mkdir(parents=True, exist_ok=True)
+            source = root / "usage-stream.jsonl"
+            if source.exists():
+                shutil.copyfile(source, evidence / source.name)
+            receipt(ledger, branch, skill, read_events(source), root.name,
+                    partial=outcome != "success", source=str(evidence / source.name))
+            if setup:
+                setup_source = root / "setup-usage-stream.jsonl"
+                if setup_source.exists():
+                    shutil.copyfile(setup_source, evidence / setup_source.name)
+                receipt(ledger, branch,
+                        "runner-setup", read_events(setup_source), root.name + "-setup",
+                        partial=outcome != "success", source=str(evidence / setup_source.name))
+        except (OSError, ValueError) as error:
+            outcome = "usage-recording-failure"
+            print(f"usage receipt failed; retaining harness evidence: {error}", file=sys.stderr)
         if outcome == "success":
             shutil.rmtree(root, ignore_errors=True)
         else:
@@ -431,7 +485,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     status = parse_status(text)
     if (status["scalars"].get("mode") != "headless" or status["branch"] != branch
             or status["scalars"].get("reconciled") == "true"):
-        return
+        return {"status": "idle"}
     change = str(Path(status_path).parent)
     slug = Path(change).name
     reviews, notes = pull_request(repo, branch)
@@ -441,7 +495,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
         if any(r["login"].lower() in allowed for r in reviews):
             print(f"{slug}: no standing start review by an approver; a later CHANGES_REQUESTED revokes it",
                   file=sys.stderr)
-        return  # no approver has started this change: the runner leaves it alone
+        return {"status": "waiting", "reason": "no standing start review"}
     head = run(repo, "git", "rev-parse", ref).strip()
     trusted = heads.get(branch) == head or any(r["commit"] == head for r in approvals)
     may_skip = triage_skips(repo, ref, status_path, starts)
@@ -460,7 +514,7 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     if not recorded and (skill is None or (waiting and not replies) or not trusted):
         if skill and not trusted:
             print(f"{slug}: {head[:12]} was pushed by someone else; waiting for an approver to review it", file=sys.stderr)
-        return
+        return {"status": "waiting" if skill else "idle", "reason": "awaiting authority/reply or no ready step"}
     if run(repo, "git", "status", "--porcelain").strip():
         raise RuntimeError("the clone has uncommitted changes; the runner needs a clean, dedicated clone")
     run(repo, "git", "checkout", "-B", branch, ref)
@@ -478,11 +532,11 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
         if trusted:
             heads[branch] = head
     if skill is None or not trusted:
-        return
+        return {"status": "progress" if recorded and trusted else "waiting"}
     missing = missing_framework(repo, ref, change)
     if missing:
         print(f"{slug}: {missing}; not running {skill}", file=sys.stderr)
-        return
+        return {"status": "blocked", "reason": missing}
     message = prompt.format(skill=skill, slug=slug)
     message += "\nFACTORY_RUNNER_MANAGED=1: commit the step locally; do not push. The runner publishes only successful clean work."
     if replies:
@@ -501,8 +555,11 @@ def pass_change(repo, branch, status_path, allowed, harness, prompt, timeout, he
     else:
         print(f"{slug}: {after[:12]} holds commits the harness did not write; waiting for an approver", file=sys.stderr)
 
+    state = "failed" if code != 0 else ("progress" if after != head and heads.get(branch) == after else "idle")
+    return {"status": state, "skill": skill, "before": head, "after": after}
 
-def main():
+
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("repo", type=Path, help="a clean clone dedicated to the runner")
     parser.add_argument("--approvers", required=True, help="comma-separated GitHub logins whose reviews approve")
@@ -510,10 +567,20 @@ def main():
     parser.add_argument("--prompt", default="/{skill} {slug}", help="prompt template for the harness")
     parser.add_argument("--timeout", type=int, default=3600, help="seconds per skill run")
     parser.add_argument("--setup", help="command run in the harness's fresh clone first, e.g. 'npm ci'")
-    args = parser.parse_args()
+    parser.add_argument("--report", type=Path, help="structured pass result outside the dedicated clone")
+    args = parser.parse_args(argv)
+    summary = {"status": "idle", "changes": []}
+    def finish(code):
+        if args.report:
+            target = args.report.absolute()
+            if target.is_symlink() or target.resolve().is_relative_to(args.repo.resolve()):
+                raise ValueError("pass report must be a regular artifact outside the clone")
+            write_json(target, summary)
+        return code
     if home_problem():
         print(home_problem(), file=sys.stderr)
-        return 1
+        summary.update(status="failed", reason=home_problem())
+        return finish(1)
     repo = args.repo.resolve()
     approvers = {a.strip().lower() for a in args.approvers.split(",") if a.strip()}
     approvers.discard(run(repo, "gh", "api", "user", "--jq", ".login").strip().lower())  # the harness's own login
@@ -522,7 +589,8 @@ def main():
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             print("another runner pass is still going", file=sys.stderr)
-            return 0
+            summary["status"] = "busy"
+            return finish(0)
         start = run(repo, "git", "rev-parse", "--abbrev-ref", "HEAD").strip()
         run(repo, "git", "fetch", "--prune", "origin")
         heads_file = repo / ".git" / "factory-runner-heads.json"
@@ -543,14 +611,20 @@ def main():
                 continue
             for status_path in own:
                 try:
-                    pass_change(repo, branch, status_path, approvers, args.harness, args.prompt, args.timeout,
-                                heads, args.setup)
+                    outcome = pass_change(repo, branch, status_path, approvers, args.harness, args.prompt, args.timeout,
+                                          heads, args.setup)
+                    summary["changes"].append(dict(outcome, branch=branch))
+                    if outcome["status"] == "progress":
+                        write_json(heads_file, heads)
                 except Exception as e:  # noqa: BLE001 - one change's failure must not stop the others
                     print(f"{branch}: {type(e).__name__}: {e}", file=sys.stderr)
-        heads_file.write_text(json.dumps(heads))
+                    summary["changes"].append({"branch": branch, "status": "failed", "reason": str(e)})
+        write_json(heads_file, heads)
         if start != "HEAD" and not run(repo, "git", "status", "--porcelain").strip():
             run(repo, "git", "checkout", start)
-    return 0
+    states = {row["status"] for row in summary["changes"]}
+    summary["status"] = next((x for x in ("failed", "progress", "blocked", "waiting") if x in states), "idle")
+    return finish(0)
 
 
 if __name__ == "__main__":

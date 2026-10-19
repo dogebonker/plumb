@@ -10,6 +10,13 @@
 # Exit: 0 all ok, 1 a check failed, 2 nothing failed but a stack was skipped (LAY01_ALLOW_SKIP=1 makes that 0).
 set -u
 
+# Target one cross-stack checker without installing every unrelated tool.
+if [ "${1:-}" = "--only" ] && [ "${2:-}" = "archgraph" ] && [ "$#" -eq 2 ]; then
+  exec python3 "$(dirname "$0")/archgraph/run.py"
+elif [ "$#" -ne 0 ]; then
+  echo "usage: $0 [--only archgraph]" >&2; exit 1
+fi
+
 HERE=$(cd "$(dirname "$0")" && pwd)
 TOOLS="$HERE/../../kit/layouts/tools.yaml"
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/lay01.XXXXXX")
@@ -142,6 +149,18 @@ if command -v cargo >/dev/null; then
   check cargo rust cargo E0432
 else
   skip cargo "cargo not found"
+fi
+
+if command -v python3 >/dev/null; then
+  python3 "$HERE/archgraph/run.py"
+  rc_archgraph=$?
+  case "$rc_archgraph" in
+    0) : ;;
+    2) skip archgraph "pinned binary unavailable (install line above)" ;;
+    *) FAILED=1; SUMMARY+=("archgraph: FAIL (see logs above)") ;;
+  esac
+else
+  skip archgraph "python3 not found"
 fi
 
 echo

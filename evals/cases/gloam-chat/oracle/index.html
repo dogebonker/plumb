@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gloam</title>
+<style>
+:root{--bg:#17130f;--panel:#1f1914;--line:#3b3029;--text:#ece2d3;--quiet:#a8998a;--ember:#e8894a;--on-ember:#1a120c;color-scheme:dark}
+@media (prefers-color-scheme:light){:root{--bg:#f4ede1;--panel:#fbf7f0;--line:#d8cab5;--text:#2a211a;--quiet:#6b5c4e;--ember:#b0501b;--on-ember:#fff8f0;color-scheme:light}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-wrap:anywhere}
+header{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid var(--line)}
+.mark{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.25rem;letter-spacing:.04em}
+#tableName{color:var(--quiet);flex:1}
+h1,h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:500;margin:0 0 .5rem}
+h2{font-size:1.35rem}aside h2{font-size:1rem;font-family:inherit;color:var(--quiet);font-weight:600;margin-top:1.25rem}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:transparent;border:1px solid var(--line);border-radius:6px;padding:.45rem .85rem;min-height:40px;cursor:pointer}
+button:hover{border-color:var(--quiet)}
+button.primary{background:var(--ember);border-color:var(--ember);color:var(--on-ember);font-weight:600}
+button:disabled{opacity:.6;cursor:default}
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.5rem .6rem;width:100%;max-width:100%}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+label{display:grid;gap:.3rem;color:var(--quiet);font-size:.9rem}
+.quiet,small{color:var(--quiet)}small{font-size:.8rem}
+[role=alert]:not(:empty){color:var(--text);border-left:3px solid var(--quiet);padding-left:.6rem}
+.login{max-width:380px;margin:12vh auto 0;padding:0 1rem;display:grid;gap:1rem}
+.login h1{font-size:2.4rem}
+.app{display:grid;gap:1.5rem;max-width:1120px;margin:0 auto;padding:1rem}
+@media (min-width:900px){.app{grid-template-columns:280px minmax(0,1fr);padding:1.5rem}}
+nav{display:grid;gap:.4rem}
+.scene-link{display:flex;justify-content:space-between;gap:.5rem;text-align:left;width:100%}
+.scene-link[aria-current=true]{border-color:var(--quiet);background:var(--panel)}
+aside form,aside>label{margin-top:.75rem;display:grid;gap:.5rem}
+#roster{list-style:none;padding:0;margin:0;display:grid;gap:.5rem}#roster li{display:grid;gap:.3rem}
+.result{border-top:1px solid var(--line);padding:.5rem 0}.result p{margin:.2rem 0}
+.scenehead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.75rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem}
+.notice:not(:empty){background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.75rem 1rem}
+.posts{list-style:none;padding:0;margin:1rem 0;display:grid;gap:1.25rem}
+.post{border-left:2px solid var(--line);padding-left:1rem}
+.who{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline;font-size:.85rem;color:var(--quiet)}
+.who strong{color:var(--text);font-weight:600}
+.tag{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:0 .35rem}
+.text{margin:.35rem 0;white-space:pre-wrap}
+.ic .text{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.2rem;line-height:1.7}
+.ooc{border-left-style:dotted}.ooc .text{font-size:.92rem;color:var(--quiet)}
+.veiled .text{font-style:italic;color:var(--quiet);font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:.4rem}.actions button{min-height:32px;padding:.2rem .6rem;font-size:.85rem;color:var(--quiet)}
+.empty{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.15rem;color:var(--quiet)}
+.composer{display:grid;gap:.75rem;border-top:1px solid var(--line);padding-top:1rem}
+.composer textarea{min-height:7rem;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end}.row>label{flex:1 1 180px}
+.check{display:flex;align-items:center;gap:.4rem;flex:0 0 auto!important;color:var(--text)}.check input{width:auto}
+</style>
+</head>
+<body>
+<header><span class="mark">Gloam</span><span id="tableName"></span><button id="logout" type="button" hidden>Log out</button></header>
+<main>
+<form id="login" class="login" hidden>
+  <h1>Gloam</h1>
+  <p class="quiet">The lamps are lit. Pull up a chair.</p>
+  <label>Email<input name="email" type="email" autocomplete="username" required></label>
+  <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+  <button class="primary">Log in</button>
+  <p role="alert" id="loginError"></p>
+</form>
+<div id="app" class="app" hidden>
+  <aside>
+    <h2>Scenes</h2>
+    <nav id="scenes" aria-label="Scenes"></nav>
+    <form id="newScene" hidden><label>Title of the new scene<input id="sceneTitle" maxlength="120" required></label><button>Start a scene</button></form>
+    <label>Search this table<input id="search" data-testid="search" type="search"></label>
+    <div id="results"></div>
+    <section id="players" hidden><h2>Players</h2><ul id="roster"></ul></section>
+    <p role="alert" id="pageError"></p>
+  </aside>
+  <section id="scene" hidden>
+    <div class="scenehead">
+      <h2 id="sceneHeading" tabindex="-1"></h2>
+      <div class="controls">
+        <button id="xcard" type="button" data-testid="xcard">X-card</button>
+        <button id="resume" type="button" data-testid="resume" hidden>Resume the scene</button>
+        <button id="close" type="button" data-testid="close-scene" hidden>Draw to a close</button>
+      </div>
+    </div>
+    <p id="notice" class="notice" role="status"></p>
+    <ol id="posts" class="posts"></ol>
+    <p id="empty" class="empty" hidden>Nothing's been said here yet. Set the scene.</p>
+    <form id="composer" class="composer">
+      <label>Your post<textarea id="body" data-testid="composer" rows="4"></textarea></label>
+      <div class="row">
+        <label class="check"><input id="ic" type="checkbox" data-testid="in-character"> In character</label>
+        <label id="speakingAs" hidden>Speaking as<input id="character" maxlength="60" placeholder="The Ferryman"></label>
+        <label>Who hears this<select id="to" data-testid="whisper-to"></select></label>
+        <button id="send" class="primary" data-testid="send">Post</button>
+      </div>
+      <p role="alert" id="postError"></p>
+      <p role="status" id="postStatus" class="quiet"></p>
+    </form>
+  </section>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let me=null,scenes=[],current=null,draftKey=newKey(),searchTimer;
+const FAILED="Your post didn't reach the table. It's still here. Send it again.";
+function newKey(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function el(tag,props={},...kids){const n=document.createElement(tag);for(const [k,v] of Object.entries(props))k.includes('-')?n.setAttribute(k,v):n[k]=v;n.append(...kids.filter(k=>k!=null&&k!==false));return n}
+async function api(url,method='GET',body){let r,data={};
+  try{r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)})}catch{throw Object.assign(Error("Gloam can't be reached right now. Try again in a moment."),{status:0})}
+  try{data=await r.json()}catch{}
+  if(!r.ok)throw Object.assign(Error(data.error||'Gloam could not do that.'),{status:r.status,data});return data}
+function fail(e){$('pageError').textContent=e.message}
+function showLogin(){me=null;current=null;$('login').hidden=false;$('app').hidden=$('logout').hidden=$('scene').hidden=true;$('tableName').textContent=''}
+async function show(){$('login').hidden=true;$('app').hidden=$('logout').hidden=false;$('tableName').textContent=me.table_name;
+  $('newScene').hidden=me.role!=='keeper';$('ic').checked=me.role!=='keeper';renderRoster();await loadScenes()}
+async function refreshMe(){({user:me}=await api('/api/me'))}
+$('login').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';const f=new FormData(e.target);
+  try{await api('/api/login','POST',{email:f.get('email'),password:f.get('password')});await refreshMe();e.target.reset();await show()}
+  catch(err){$('loginError').textContent=err.status===401?"That email and password don't match.":err.message}};
+$('logout').onclick=async()=>{try{await api('/api/logout','POST',{})}catch{}showLogin()};
+async function loadScenes(){({scenes}=await api('/api/tables/'+encodeURIComponent(me.table)+'/scenes'));
+  $('scenes').replaceChildren(...scenes.map(s=>el('button',{type:'button',className:'scene-link','data-testid':'scene-link','aria-current':String(current?.id===s.id),onclick:()=>openScene(s.id)},
+    el('span',{textContent:s.title}),s.state==='open'?null:el('small',{textContent:s.state==='paused'?'Paused':'Drawn to a close'}))))}
+async function openScene(id){current={id};$('postError').textContent=$('postStatus').textContent=$('pageError').textContent='';
+  try{await loadScene();$('sceneHeading').focus({preventScroll:true});$('scene').scrollIntoView({block:innerWidth<900?'start':'nearest'})}catch(e){fail(e)}}
+async function loadScene(){const {scene}=await api('/api/scenes/'+current.id);current=scene;
+  const paused=scene.state==='paused',drawn=scene.state==='drawn',keeper=me.role==='keeper';
+  $('scene').hidden=false;$('sceneHeading').textContent=scene.title;
+  $('notice').textContent=paused?'The X-card was tapped. The scene is paused. You can talk out of character, or wait for the Keeper.':drawn?'This scene has been drawn to a close. It stays as it was.':'';
+  $('xcard').hidden=$('composer').hidden=drawn;$('resume').hidden=!(paused&&keeper);$('close').hidden=drawn||!keeper;
+  $('empty').hidden=scene.posts.length>0;$('posts').replaceChildren(...scene.posts.map(renderPost));
+  $('ic').disabled=paused;if(paused)$('ic').checked=false;syncSpeaking();renderWhisper();await loadScenes()}
+function nameOf(email){const r=me.roster.find(x=>x.email===email);return !r?email:r.role==='keeper'?'the Keeper':r.character}
+function renderPost(p){const keeperEmail=me.roster.find(r=>r.role==='keeper').email,open=current.state!=='drawn';
+  const who=el('div',{className:'who'},el('strong',{textContent:p.in_character?p.speaker:p.speaker===keeperEmail?'Keeper':p.speaker}),
+    p.in_character?null:el('span',{className:'tag',textContent:'OOC'}),
+    p.to?el('span',{className:'tag',textContent:p.mine?'Whisper to '+nameOf(p.to):'Whisper to you'}):null,
+    p.departed?el('span',{className:'tag',textContent:'Departed'}):null);
+  const text=el('p',{className:'text',textContent:p.veiled?'Veiled by the X-card.':p.body});
+  const li=el('li',{className:'post '+(p.veiled?'veiled':p.in_character?'ic':'ooc'),'data-testid':'post','data-post-id':p.id},who,text);
+  if(open&&!p.veiled){const actions=el('div',{className:'actions'});
+    if(p.mine&&!p.canon)actions.append(el('button',{type:'button',textContent:'Edit',onclick:()=>editPost(p,li,text,actions)}),el('button',{type:'button',textContent:'Withdraw',onclick:()=>withdraw(p)}));
+    actions.append(el('button',{type:'button',textContent:'X-card','aria-label':'Tap the X-card on this post',onclick:()=>tap({post:p.id})}));li.append(actions)}
+  return li}
+function editPost(p,li,text,actions){const box=el('textarea',{value:p.body,rows:4,'aria-label':'Edit your post'}),note=el('p'),newer=el('p',{className:'text quiet'});
+  const save=el('button',{type:'button',className:'primary',textContent:'Save',onclick:async()=>{note.textContent='';
+    try{await api('/api/posts/'+p.id,'PATCH',{version:p.version,body:box.value});await loadScene()}
+    catch(e){note.textContent=e.status>=500||!e.status?"Your edit didn't save. It's still here. Save it again.":e.message;
+      if(e.data?.post){p.version=e.data.post.version;newer.textContent=e.data.post.body}}}});
+  const cancel=el('button',{type:'button',textContent:'Cancel',onclick:()=>loadScene()});
+  note.setAttribute('role','alert');text.replaceWith(el('div',{},newer,box));actions.replaceChildren(save,cancel);li.append(note);box.focus()}
+async function withdraw(p){if(!confirm('Withdraw this post? It leaves the scene for good.'))return;try{await api('/api/posts/'+p.id,'DELETE');await loadScene()}catch(e){fail(e)}}
+async function tap(body){try{await api('/api/scenes/'+current.id+'/xcard','POST',body);await loadScene();$('sceneHeading').focus()}catch(e){fail(e)}}
+$('xcard').onclick=()=>tap({});
+$('resume').onclick=async()=>{try{await api('/api/scenes/'+current.id+'/resume','POST',{});await loadScene()}catch(e){fail(e)}};
+$('close').onclick=async()=>{if(!confirm('Draw this scene to a close? It becomes read-only for good.'))return;
+  try{await api('/api/scenes/'+current.id+'/close','POST',{});await loadScene();$('sceneHeading').focus()}catch(e){fail(e)}};
+function syncSpeaking(){$('speakingAs').hidden=!(me.role==='keeper'&&$('ic').checked);$('character').required=!$('speakingAs').hidden}
+$('ic').onchange=syncSpeaking;
+function renderWhisper(){const keep=$('to').value,options=[['','The whole table']];
+  for(const r of me.roster)if(!r.departed&&(me.role==='keeper'?r.role==='player':r.role==='keeper'))options.push([r.email,'Whisper to '+(r.role==='keeper'?'the Keeper':r.character)]);
+  $('to').replaceChildren(...options.map(([value,label])=>el('option',{value,textContent:label})));$('to').value=options.some(o=>o[0]===keep)?keep:''}
+$('composer').onsubmit=async e=>{e.preventDefault();$('postError').textContent=$('postStatus').textContent='';const text=$('body').value;
+  if(!text.trim()){$('postError').textContent='Write something first.';return}
+  const body={body:text,in_character:$('ic').checked,key:draftKey};if($('to').value)body.to=$('to').value;if(me.role==='keeper'&&body.in_character)body.character=$('character').value;
+  $('send').disabled=true;
+  try{await api('/api/scenes/'+current.id+'/posts','POST',body);$('body').value='';draftKey=newKey();$('postStatus').textContent="Posted. The table's turn.";await loadScene()}
+  catch(err){$('postError').textContent=err.status>=500||!err.status?FAILED:err.message}finally{$('send').disabled=false}};
+$('newScene').onsubmit=async e=>{e.preventDefault();try{const {scene}=await api('/api/tables/'+encodeURIComponent(me.table)+'/scenes','POST',{title:$('sceneTitle').value});$('sceneTitle').value='';await openScene(scene.id)}catch(err){fail(err)}};
+$('search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(runSearch,200)};
+async function runSearch(){const q=$('search').value.trim();if(!q)return $('results').replaceChildren();
+  try{const {posts}=await api('/api/tables/'+encodeURIComponent(me.table)+'/search?q='+encodeURIComponent(q));
+    $('results').replaceChildren(posts.length?'':el('p',{className:'quiet',textContent:'Nothing at this table says that.'}),...posts.map(p=>el('article',{className:'result','data-testid':'post','data-post-id':p.id},
+      el('small',{textContent:(scenes.find(s=>s.id===p.scene)?.title||'')+' · '+(p.in_character?p.speaker:'OOC')}),el('p',{textContent:p.body}),
+      el('button',{type:'button',textContent:'Open the scene',onclick:()=>openScene(p.scene)}))))}catch(e){fail(e)}}
+function renderRoster(){$('players').hidden=me.role!=='keeper';if(me.role!=='keeper')return;
+  $('roster').replaceChildren(...me.roster.filter(r=>r.role==='player').map(r=>el('li',{},el('span',{textContent:r.character+' · '+r.email}),
+    r.departed?el('small',{textContent:'Departed'}):el('button',{type:'button',textContent:'Release from the table',onclick:()=>release(r)}))))}
+async function release(r){if(!confirm('Release '+r.character+' from the table? Their posts stay in the story.'))return;
+  try{await api('/api/tables/'+encodeURIComponent(me.table)+'/players/'+r.email,'DELETE');await refreshMe();renderRoster();if(current?.posts)await loadScene()}catch(e){fail(e)}}
+(async()=>{try{await refreshMe();await show()}catch{showLogin()}})();
+</script>
+</body>
+</html>

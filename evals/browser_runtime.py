@@ -28,7 +28,7 @@ def installed_browser(node):
                        "version": json.loads(metadata.read_text())["version"], "executable": str(executable)}
 
 
-def sandbox_policy(work, readable, writable, node, protected, browser_runtime=None):
+def sandbox_policy(work, readable, writable, node, protected, browser_runtime=None, strict_reads=False):
     python = Path(sys.executable).resolve()
     readable = [work, *readable, Path(node).parent.parent, python.parent.parent,
                 Path(sysconfig.get_path("stdlib")).resolve()]
@@ -47,12 +47,70 @@ def sandbox_policy(work, readable, writable, node, protected, browser_runtime=No
         ancestors = {parent for key in ("module", "core", "cache") for parent in Path(browser_runtime[key]).parents}
         metadata_reads = "".join(f"(allow file-read-metadata (literal {json.dumps(str(p))}))\n"
                                  for p in sorted(ancestors))
-    return ("(version 1)\n(allow default)\n" + network
+    policy = ("(version 1)\n(allow default)\n" + network
                        + "(deny file-write* (require-all " + " ".join(f"(require-not {subpath(p)})" for p in writable) + "))\n"
                        + "(deny file-read* (require-all " + subpath(Path.home().resolve()) + " "
                        + " ".join(f"(require-not {subpath(p)})" for p in readable) + "))\n"
                        + '(allow file-write* (literal "/dev/null"))\n'
                        + metadata_reads + "".join(f"(deny file-read* {subpath(p)})\n" for p in protected))
+    if strict_reads:
+        roots = [*readable, Path("/System"), Path("/usr"), Path("/bin"), Path("/sbin"),
+                 Path("/dev"), Path("/private/var/db"), Path("/opt/homebrew"), Path("/Library"), Path("/private/etc")]
+        policy += "(deny file-read-data (require-all (vnode-type REGULAR-FILE) " + " ".join(
+            f"(require-not {subpath(path.resolve())})" for path in roots) + "))\n"
+    return policy
+
+
+_MCP_HELPER = r"""
+import json
+import subprocess
+import sys
+
+CAPABILITIES = CAPABILITIES_JSON
+
+def reply(identity, result=None, error=None):
+    value = {"jsonrpc": "2.0", "id": identity}
+    value["error" if error else "result"] = error or result
+    print(json.dumps(value), flush=True)
+
+for line in sys.stdin:
+    request = None
+    try:
+        request = json.loads(line)
+        if not isinstance(request, dict):
+            raise ValueError("Expected an object")
+        if "id" not in request:
+            continue
+        identity = request["id"]
+        method, params = request.get("method"), request.get("params", {})
+        if not isinstance(params, dict):
+            raise ValueError("Parameters must be an object")
+        if method == "initialize":
+            reply(identity, {"protocolVersion": params.get("protocolVersion", "2025-03-26"),
+                             "capabilities": {"tools": {}},
+                             "serverInfo": {"name": "factory-browser-capability", "version": "1"}})
+        elif method == "ping":
+            reply(identity, {})
+        elif method == "tools/list":
+            reply(identity, {"tools": [{"name": name,
+                "description": "Run the fixed isolated browser " + name + " and retain full logs.",
+                "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}}
+                for name in CAPABILITIES]})
+        elif method == "tools/call":
+            name = params.get("name")
+            if name not in CAPABILITIES or params.get("arguments", {}) != {}:
+                reply(identity, error={"code": -32602, "message": "Only fixed zero-argument checks are allowed"})
+                continue
+            check = subprocess.run([CAPABILITIES[name]], capture_output=True, text=True, check=False)
+            reply(identity, {"content": [{"type": "text", "text": json.dumps({
+                "exit_code": check.returncode, "output": (check.stdout + check.stderr)[:12000]})}],
+                "isError": check.returncode != 0})
+        else:
+            reply(identity, error={"code": -32601, "message": "Unsupported method"})
+    except (ValueError, TypeError, OSError) as error:
+        reply(request.get("id") if isinstance(request, dict) else None,
+              error={"code": -32603, "message": str(error)})
+"""
 
 
 
@@ -92,7 +150,7 @@ function capture(stream, chunk) {
   states.set(stream, state);
 }
 const tests = fs.readdirSync(work).filter(name => /^test.*\.cjs$/.test(name)).sort();
-const child = spawn(process.execPath, ['--test', ...(tests.length ? tests : [path.join(work, 'test*.cjs')])], {cwd: work, env: process.env, stdio: ['ignore', 'pipe', 'pipe']});
+const child = spawn(process.execPath, ['--test', '--test-reporter=tap', ...(tests.length ? tests : [path.join(work, 'test*.cjs')])], {cwd: work, env: process.env, stdio: ['ignore', 'pipe', 'pipe']});
 child.stdout.on('data', chunk => capture('stdout', chunk));
 child.stderr.on('data', chunk => capture('stderr', chunk));
 child.on('error', error => capture('stderr', Buffer.from(error.stack + '\n')));
@@ -102,7 +160,7 @@ child.on('close', (code, signal) => {
   const status = code === null ? (signal ? 128 + (constants.signals[signal] || 0) : 1) : code;
   const diagnostic = !summary ? '\nDiagnostic tail:\n' + tail : '';
   process.stdout.write(('Browser check exit: ' + status + '\nRaw log: ' + log + '\n' + failures + summary + diagnostic).slice(0, 8500) + '\n');
-  finished({exit_code: status, raw_log: log, test_command: [process.execPath, '--test', ...tests]});
+  finished({exit_code: status, raw_log: log, test_command: [process.execPath, '--test', '--test-reporter=tap', ...tests]});
   process.exitCode = status;
 });
 }
@@ -165,7 +223,7 @@ require('./capture-check.cjs').run(clone, path.join(work, '.tmp', 'browser-check
 """
 
 
-def prepare_browser_check(destination, work, protected):
+def prepare_browser_check(destination, work, protected, codex_sandbox=False):
     """Create a fixed, argument-free runner for this trial's test*.cjs files."""
     sandbox, node, git = shutil.which("sandbox-exec"), shutil.which("node"), shutil.which("git")
     if platform.system() != "Darwin" or not sandbox or not node or not git:
@@ -183,13 +241,15 @@ def prepare_browser_check(destination, work, protected):
     data = work / ".tmp" / "browser-check"
     data.mkdir(parents=True)
     profile = destination / "sandbox.sb"
-    profile.write_text(sandbox_policy(work, [destination], [work, data], node, protected, runtime))
+    profile.write_text(sandbox_policy(work, [destination], [work, data], node, protected, runtime,
+                                      strict_reads=codex_sandbox))
     command = destination / "browser-check"
     env = {"PLAYWRIGHT_MODULE": runtime["module"], "TMPDIR": str(data),
-           "PATH": os.pathsep.join([str(Path(node).parent), os.defpath])}
+           "PATH": os.pathsep.join([str(Path(node).parent), str(Path(sys.executable).resolve().parent), os.defpath])}
     helper = destination / "capture-check.cjs"
     helper.write_text(_CHECK_HELPER)
-    cmd = shlex.join([sandbox, "-f", str(profile), "/usr/bin/env", "-i",
+    prefix = [sandbox, "-f", str(profile)]
+    cmd = shlex.join([*prefix, "/usr/bin/env", "-i",
                       *(f"{key}={value}" for key, value in env.items()), node, str(helper)])
     command.write_text('#!/bin/sh -p\n[ "$#" -eq 0 ] || exit 64\ncd ' + shlex.quote(str(work)) + '\nexec ' + cmd + '\n')
     command.chmod(0o555)
@@ -198,10 +258,22 @@ def prepare_browser_check(destination, work, protected):
     red_helper = destination / "capture-red.cjs"
     red_helper.write_text(_RED_HELPER.replace("GIT_PATH", json.dumps(str(Path(git).resolve()))))
     red_command = destination / "browser-check-red"
-    red_cmd = shlex.join([sandbox, "-f", str(profile), "/usr/bin/env", "-i",
+    red_cmd = shlex.join([*prefix, "/usr/bin/env", "-i",
                           *(f"{key}={value}" for key, value in env.items()), node, str(red_helper)])
     red_command.write_text('#!/bin/sh -p\n[ "$#" -eq 0 ] || exit 64\ncd ' + shlex.quote(str(work)) + '\nexec ' + red_cmd + '\n')
     red_helper.chmod(0o444)
     red_command.chmod(0o555)
-    return {"command": str(command), "profile": str(profile), "helper": str(helper), "red_command": str(red_command), "red_helper": str(red_helper), "runtimeproof": runtime,
-            "sha256": {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in [("command", command), ("profile", profile), ("helper", helper), ("red_command", red_command), ("red_helper", red_helper)]}}
+    files = [("command", command), ("profile", profile), ("helper", helper),
+             ("red_command", red_command), ("red_helper", red_helper)]
+    result = {"command": str(command), "profile": str(profile), "helper": str(helper),
+              "red_command": str(red_command), "red_helper": str(red_helper), "runtimeproof": runtime,
+              "enforcement": "native_seatbelt_mcp_capability" if codex_sandbox else "native_seatbelt_wrapper"}
+    if codex_sandbox:
+        bridge = destination / "browser-mcp.py"
+        bridge.write_text(_MCP_HELPER.replace("CAPABILITIES_JSON", json.dumps({
+            "check": str(command), "red_check": str(red_command)})))
+        bridge.chmod(0o444)
+        result["mcp_bridge"] = str(bridge)
+        files.append(("mcp_bridge", bridge))
+    result["sha256"] = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in files}
+    return result

@@ -1,0 +1,137 @@
+{
+  "persona": "Wren, founder of Gloam and Keeper of three long-running tabletop campaigns for a troupe of about forty players. Wren opened with one sentence and answers only what is asked, in plain words, with strong opinions about how the product sounds, what things are called and what players may see about each other. Both workflows get the same one-line request and these same answers.",
+  "combine": true,
+  "answers": [
+    {
+      "id": "C-purpose",
+      "match": "who (will|would|is going to) use|who are the users|\\busers?\\b.{0,25}\\b(be|are)\\b|audience|how (do|does) (your|the|you)\\b.{0,20}\\b(play|run|work)|what (do|does|would|should) (people|players|they|your groups?|the groups?|users?)\\b.{0,15}\\b(do|need|want)|use cases?|core features?|what features|main (goal|purpose|job)|problem.{0,20}solv|tell me (more )?about|walk me through|describe (your|the) (groups?|games?|sessions?)|between sessions|what kind of (chat|game|roleplay)",
+      "answer": "We run tabletop roleplaying campaigns: horror, noir, science fiction. Each campaign is a table: a Keeper who runs the game and four or five players, each playing one character. Between sessions we keep playing in writing. We post in scenes, sometimes in character and sometimes out of character to talk about the game. The Keeper whispers to players privately. Anyone at the table can tap the X-card. Players search their table's scenes to find what happened three weeks ago."
+    },
+    {
+      "id": "C-scale",
+      "match": "how many|\\bscale\\b|\\bsize of\\b|number of (users|players|people|tables|groups)",
+      "answer": "Three tables now, about forty players across them, maybe a dozen tables one day. Each table is five or six people. One machine is plenty."
+    },
+    {
+      "id": "C-accounts",
+      "match": "accounts?|sign[- ]?(in|up)|log ?in|authenticat|\\bauth\\b|password|invit|\\bjoin",
+      "answer": "People sign in with email and password. A Keeper creates a table and invites players by email; a player names their character when they join. No public sign-up, no social login."
+    },
+    {
+      "id": "C-devices",
+      "match": "mobile|phones?\\b|desktop|devices?|platforms?|browsers?|native app|\\bios\\b|android|responsive",
+      "answer": "A web app in the browser. Half the troupe posts from phones on the bus, the rest from laptops. No native apps."
+    },
+    {
+      "id": "C-scope",
+      "match": "\\bmvp\\b|\\bv1\\b|first version|priorit|must[- ]haves?|nice[- ]to[- ]have|deadline|timeline|phase",
+      "answer": "Version one is whatever lets a table play a whole scene well: tables, scenes, posts in and out of character, whispers, the X-card and search. Everything else waits."
+    },
+    {
+      "id": "N02-lines-veils",
+      "match": "lines and veils|lines\\s*(&|and|/)\\s*veils|session zero",
+      "answer": "Lines and veils live on paper at session zero. Not in Gloam v1. Don't build a lines list or a content settings page."
+    },
+    {
+      "id": "L05-xcard",
+      "match": "x-?card|safety tool|safety mechanic|consent|content warning|trigger warning|\\bveil(ed|ing)?\\b|uncomfortable|pause (a |the )?scene",
+      "answer": "Anyone at the table can tap the X-card, Keeper included, with or without pointing at a post. Three rules, no exceptions. One: it is anonymous. Nobody learns who tapped it, not the Keeper, not in history, not in any response the server sends to anyone else. Two: it pauses the scene. While paused, nobody can post in character; out-of-character posts are allowed so people can talk. Only the Keeper resumes. Three: a post it points at becomes veiled for everyone, its author included. Veiled is not deleted: it stays in the record, and nobody reads it in Gloam again. Nobody can unveil it. No questions asked of the person who tapped, no reason field."
+    },
+    {
+      "id": "L03-whispers",
+      "match": "whisper|private (post|message|channel|conversation)|direct message|\\bDMs?\\b|\\bPMs?\\b",
+      "answer": "A whisper is between the Keeper and one player. The Keeper whispers to any player at the table; a player whispers only to the Keeper. Players never whisper to each other: side plots between players happen at the table, not behind it. A whisper must not leak anywhere: not in another player's scene view, search results, counts, previews or history. Whispers stay private forever, including after the scene is drawn to a close. Whispers can be in or out of character."
+    },
+    {
+      "id": "L07-ic-ooc",
+      "match": "in[- ]character|out[- ]of[- ]character|\\bIC\\b|\\bOOC\\b|character name|(more than one|multiple|several|second|two) characters?|display name|speaker|attribut|who (wrote|posted|said)|\\bnpcs?\\b|non-player",
+      "answer": "In character, you are your character: the post shows the character's name and never the player's email. Out of character shows the player, and should look clearly different from story text, smaller and quieter. Each player has exactly one character per table and cannot post as anyone else. The Keeper has no fixed character: when posting in character the Keeper types whatever name the moment needs, the Ferryman, a radio voice, the house. A Keeper post in character without a name is refused."
+    },
+    {
+      "id": "L09-departure",
+      "match": "leaves? the table|leaving the table|depart|\\bkick|remov\\w* (a |the )?player|\\bban(ned|ning)?\\b|player (quits|leaves|drops)|roster|membership",
+      "answer": "Only the Keeper releases a player from the table; the action reads 'Release from the table'. Removal takes effect at once: that session can no longer read or post at the table. The story keeps them: their character's posts stay where they are, marked departed. Their whispers with the Keeper remain private to the Keeper. Never delete a departed player's posts and never rename them to unknown user."
+    },
+    {
+      "id": "L12-order-stale",
+      "match": "concurren|simultaneous|same time|stale|race condition|two (players|people|tabs)|order of posts|posts?\\b.{0,20}\\b(order|arrive)",
+      "answer": "Posts never conflict: two people posting at once both land, in the order the server received them. Edits are different: if you edit from an old copy, Gloam keeps the newer text and tells you plainly, and your edit stays in front of you."
+    },
+    {
+      "id": "L08-canon",
+      "match": "\\bcanon\\b|\\bedit\\w*\\s+(a |my |their |the |own |someone'?s )*posts?|posts?\\b.{0,30}\\bedit|delet\\w*\\s+(a |my |their |the |own )*posts?|posts?\\b.{0,30}\\bdelet|retcon|withdraw|take back|typo|change (a|my|their|the) post|remove (a |the )?post",
+      "answer": "You can edit your own post until someone else posts in that scene after it. After that it is canon: no edits, no deletion, by anyone, Keeper included. Retcons break trust at the table. Before it is canon the author may withdraw it entirely. Nobody edits someone else's post, ever. Veiling through the X-card is the only way a canon post leaves view."
+    },
+    {
+      "id": "L10-draft",
+      "match": "(post|composer|unsent|their|my|player'?s?) drafts?\\b|drafts? (post|text|survive|kept|lost)|keep(s|ing)? the draft|(post|posting|send|sending|save|saving)\\w* fails?|fail(ed|s|ure)? to (post|send|save)|offline|flaky|unreachable|(server|connection|network) (is )?(down|lost|error|failure|drop)|lose (my|their|the) (text|post|writing)|unsent|retry",
+      "answer": "Some of our players write six hundred words in one post. If a post does not reach the table, the text stays exactly where it was, with a plain line saying it didn't send and a way to send it again. Sending it again must not create a duplicate. A post counts as sent only when the server has kept it. Drafts do not need to survive a browser restart in v1."
+    },
+    {
+      "id": "L11-damaged-data",
+      "match": "corrupt|damaged|malformed|integrity|backup|data loss|unreadable|broken database|database (is|gets) (broken|bad)",
+      "answer": "A lost campaign is the worst thing Gloam can do to us. If the stored data is damaged, refuse to start and say why. Never start empty, never reseed, never overwrite what is there. Reset is only the explicit benchmark command. If storage becomes unwritable while running, refuse the post, keep the draft, and lose nothing already kept."
+    },
+    {
+      "id": "L13-closing",
+      "match": "(close|end|finish|archiv|wrap)\\w*\\s+(up\\s+)?(a |the )?scenes?\\b(?!\\s+(list|page|view|screen))|scenes?\\s+(is |are |gets? )?(closed|over|ended|finished|archived|done)|\\barchiv|drawn? to a close|reopen",
+      "answer": "Only the Keeper draws a scene to a close. A scene drawn to a close is read-only forever: no new posts, no edits, no X-card, no reopening. Want more story, start a new scene. Its whispers stay private."
+    },
+    {
+      "id": "L01-vocabulary",
+      "match": "vocabular|glossar|terminolog|what (do|should|would) (we|you|i|it|players) call|wording|what.{0,20}called|label\\w*\\b.{0,40}\\b(role|person|keeper|player)|\\b(role|person|keeper|player)\\b.{0,60}\\blabel|\\bGM\\b|game ?master|dungeon ?master|moderator|\\badmin\\b",
+      "answer": "Words matter here. Table: one campaign and its people, never server, workspace, group or room. Keeper: whoever runs the table, never GM, DM, admin, moderator, owner or host. Player: a person at a table, never member or user. Character: who a player is in the story, one per player per table, never avatar or persona. Scene: one stretch of story, never channel, thread, room or chat. Post: one contribution to a scene, never message or comment. In character and out of character: spelled out on screen; IC and OOC are fine only as small labels. Whisper: Keeper-to-player private post, never DM, direct message or PM. X-card: the anonymous pause, never report, flag or block. Veiled: hidden by the X-card, never removed, hidden or moderated. Canon: a post someone else has posted after, never locked or final. Drawn to a close: a finished scene, never archived, closed or ended. Departed: a player who has left, never removed, kicked or deleted; the Keeper's action reads 'Release from the table'. Gloam is for every genre, so no fantasy pastiche on screen: no adventurer, quest, tavern or thou."
+    },
+    {
+      "id": "L02-voice",
+      "match": "brand voice|\\btone\\b|voice and tone|\\b(ui|interface|screen|button|product) copy\\b|copywriting|microcopy|writing style|personality|empty states?|error (messages?|copy|text|states?)|failed logins?|how (should|does|would) (it|gloam|the app|the product) (sound|speak|talk|feel)",
+      "answer": "Gloam talks like a good Keeper at one in the morning: warm, low, a little wry, never cute. Short sentences, second person, sentence case. It sets a mood and never makes you wait for the joke. Flavor belongs where people wait or arrive: an empty scene says 'Nothing's been said here yet. Set the scene.' and never 'No messages yet'. After you post: 'Posted. The table's turn.' Plain where people are stuck: a bad login says 'That email and password don't match.' A failed post says 'Your post didn't reach the table. It's still here. Send it again.' Never 'Something went wrong', never 'Oops'. The hard line: anything about safety, consent, the X-card or someone leaving gets zero flavor, zero in-world language, zero jokes. 'The X-card was tapped. The scene is paused. You can talk out of character, or wait for the Keeper.' Never: exclamation marks, emoji in the interface, Oops, Uh oh, Awesome, Let's go, Something went wrong, the word user, the word content."
+    },
+    {
+      "id": "V01-visual",
+      "match": "visual|colou?r|typograph|font|theme|dark mode|light mode|look and feel|aesthetic|(page|screen|visual) layout|mockup|style guide|\\bbrand\\b|design direction",
+      "answer": "Ink and lamplight. Dark is the default, a warm near-black, not blue-black; a light paper theme must also work. Story text in character is set in a readable serif at a generous size, because people read here more than they write. Everything else, out-of-character posts and controls, in a plain sans, smaller and quieter, so the two never blur. One ember accent, used only for the primary action and for 'your turn'. The X-card is calm, never alarm red, and always reachable within one step from any scene. No hero, no illustrations, no gradients, no glassy panels. Phones matter as much as laptops: half the troupe posts from the bus."
+    },
+    {
+      "id": "N03-notifications",
+      "match": "notif|email (alerts?|digests?|updates?)|\\bping|real[- ]?time|websockets?|live updates?|polling|server[- ]sent|\\bSSE\\b|unread",
+      "answer": "No notifications, no email, no push in v1. Gloam is a place you visit, not a thing that pings you. While you are in a scene, a quiet line saying there are new posts, with a way to show them, is welcome; checking every ten seconds or so is plenty. Unread markers per scene are welcome if they never count whispers that aren't yours."
+    },
+    {
+      "id": "N01-dice",
+      "match": "\\bdice\\b|\\bdie\\b|\\broll(s|ing)?\\b(?!\\s*back)|\\bd(4|6|8|10|12|20|100)\\b",
+      "answer": "No dice in v1. Every table rolls its own way, at home or in their heads. Don't build a roller or a /roll command."
+    },
+    {
+      "id": "N04-reactions",
+      "match": "reactions?|emoji|upvot|thumbs|\\blikes?\\b|favou?rite",
+      "answer": "No reactions. Reply or don't. A row of little faces under a tense scene kills it."
+    },
+    {
+      "id": "stack",
+      "match": "framework|\\bstack\\b|database|librar(y|ies)|dependenc|technology|programming language|runtime|sqlite|postgres|express|flask|fastapi|react|svelte|\\bvue\\b",
+      "answer": "Your call within the supplied local Node or Python environment, project-pinned dependencies and declared registries. No global installs, remote services or external assets. Keep the launch and HTTP boundary exactly as written. Write down the choice and the alternative you rejected."
+    },
+    {
+      "id": "execution",
+      "match": "subagent.driven|native.*execution|inline.*execution|execution.*approach",
+      "answer": "Use your workflow's native execution approach with the recorded model and effort for every child. Keep independent review, real verification and the full local finishing workflow."
+    },
+    {
+      "id": "git",
+      "match": "\\b(?:git|gpg|unsigned|branches?|push)\\b|\\bmerge\\b",
+      "answer": "Unsigned local commits and local merges are fine in this disposable repository only. Do not push or change any remote. Record unresolved defects rather than declaring them passed."
+    },
+    {
+      "id": "accessibility",
+      "match": "accessib|a11y|screen reader|keyboard|wcag|contrast|focus (ring|trap|order|management|visible)",
+      "answer": "Everything works from a keyboard, focus is always visible, dialogs hold focus and Escape returns you where you were."
+    },
+    {
+      "id": "approval",
+      "match": "\\b(approve[sd]?|approval|sign[- ]?off|confirm(s|ed)?)\\b|\\b(ok|okay|shall i|should i|can i) (to )?proceed\\b|\\bready to (build|implement|start)\\b",
+      "answer": "Approved for what you asked me about and I answered. Anything in this proposal I was never asked about is your assumption, not our agreement: write it down as an assumption, with the alternative you rejected. Unsigned local commits and local merges are fine in this disposable repository. No push, no remote, no global install."
+    }
+  ],
+  "default_answer": "Your call. Write down what you assumed and the alternative you rejected. If it changes what a player reads or sees, ask me that directly."
+}

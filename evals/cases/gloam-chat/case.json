@@ -1,0 +1,127 @@
+{
+  "id": "gloam-chat",
+  "track": "discovery",
+  "kind": "fullstack",
+  "description": "Gloam play-by-post chat: an underspecified brief whose real rules, vocabulary and voice live in the owner answers.",
+  "test_count": 23,
+  "verify": [
+    "true"
+  ],
+  "adapter": "grading/adapter-prompt.md",
+  "requirement_ids": [
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07",
+    "B08",
+    "B09",
+    "L01",
+    "L02",
+    "L03",
+    "L05",
+    "L07",
+    "L08",
+    "L09",
+    "L10",
+    "L11",
+    "L12",
+    "L13"
+  ],
+  "outcomes": [
+    {
+      "id": "brief",
+      "description": "Brief-level checks any implementation of the brief should pass",
+      "requirements": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B09"
+      ]
+    },
+    {
+      "id": "L01",
+      "description": "Owner vocabulary on screen",
+      "requirements": [
+        "L01"
+      ]
+    },
+    {
+      "id": "L02",
+      "description": "Owner voice: banned phrases, exclamation marks and emoji absent",
+      "requirements": [
+        "L02"
+      ]
+    },
+    {
+      "id": "L03",
+      "description": "Whispers only Keeper to player; never leak",
+      "requirements": [
+        "L03"
+      ]
+    },
+    {
+      "id": "L05",
+      "description": "X-card anonymous, pauses in-character posting, Keeper resumes, veils the pointed post",
+      "requirements": [
+        "L05"
+      ]
+    },
+    {
+      "id": "L07",
+      "description": "In character speaks as the own character; Keeper must name each in-character post",
+      "requirements": [
+        "L07"
+      ]
+    },
+    {
+      "id": "L08",
+      "description": "Edits only by the author and only until someone else posts after",
+      "requirements": [
+        "L08"
+      ]
+    },
+    {
+      "id": "L09",
+      "description": "Only the Keeper releases a player; access ends, posts stay",
+      "requirements": [
+        "L09"
+      ]
+    },
+    {
+      "id": "L10",
+      "description": "A failed post keeps the text, says so and resends exactly once",
+      "requirements": [
+        "L10"
+      ]
+    },
+    {
+      "id": "L11",
+      "description": "Damaged data refuses start; unwritable storage refuses the post and keeps earlier posts",
+      "requirements": [
+        "L11"
+      ]
+    },
+    {
+      "id": "L12",
+      "description": "Simultaneous posts all land in arrival order",
+      "requirements": [
+        "L12"
+      ]
+    },
+    {
+      "id": "L13",
+      "description": "Only the Keeper draws a scene to a close; then read-only",
+      "requirements": [
+        "L13"
+      ]
+    }
+  ]
+}

@@ -3,15 +3,45 @@ import json
 import os
 import platform
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import benchmark
 from browser_runtime import prepare_browser_check
 
 
 class BrowserRuntimeTests(unittest.TestCase):
+    @unittest.skipUnless(platform.system() == "Darwin" and os.environ.get("PLAYWRIGHT_MODULE"),
+                         "requires macOS and installed Playwright")
+    def test_codex_capability_brokers_fixed_native_checks_and_rejects_arbitrary_arguments(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            work = root / "work"
+            work.mkdir()
+            runtime = prepare_browser_check(root / "runtime", work, [], codex_sandbox=True)
+            self.assertEqual(runtime["enforcement"], "native_seatbelt_mcp_capability")
+            for key in ("command", "red_command"):
+                self.assertIn("sandbox-exec", Path(runtime[key]).read_text())
+                rejected = subprocess.run([runtime[key], "extra"], capture_output=True, check=False)
+                self.assertEqual(rejected.returncode, 64)
+            requests = [
+                {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26"}},
+                {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+                {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+                 "params": {"name": "check", "arguments": {"command": "touch outside"}}},
+            ]
+            probe = subprocess.run([sys.executable, runtime["mcp_bridge"]],
+                                   input="\n".join(json.dumps(value) for value in requests) + "\n",
+                                   capture_output=True, text=True, check=False, timeout=10)
+            responses = [json.loads(line) for line in probe.stdout.splitlines()]
+            self.assertEqual(probe.returncode, 0, probe.stderr)
+            self.assertEqual(responses[0]["result"]["serverInfo"]["name"], "factory-browser-capability")
+            self.assertEqual({value["name"] for value in responses[1]["result"]["tools"]}, {"check", "red_check"})
+            self.assertEqual(responses[2]["error"]["code"], -32602)
+
     @unittest.skipUnless(platform.system() == "Darwin", "requires macOS")
     def test_missing_runtime_does_not_create_destination(self):
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {"PLAYWRIGHT_MODULE": ""}):
@@ -120,6 +150,27 @@ test('important failure',()=>{
             self.assertIn(str(logs[0]), result.stdout)
             subprocess.run([runtime["command"]], check=False, capture_output=True, timeout=30)
             self.assertEqual(len(list((work / ".tmp/browser-check").glob("check-*.log"))), 2)
+
+    @unittest.skipUnless(platform.system() == "Darwin" and os.environ.get("PLAYWRIGHT_MODULE"),
+                         "requires macOS and installed Playwright")
+    def test_custom_operator_policy_outside_runtime_is_denied(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as policy_tmp:
+            root = Path(tmp).resolve()
+            policy = Path(policy_tmp).resolve() / "owner-policy.json"
+            policy.write_text("OWNER_SECRET")
+            work = root / "work"
+            work.mkdir()
+            args = benchmark.argparse.Namespace(operator_policy=str(policy), out=root / "out")
+            runtime = prepare_browser_check(root / "runtime", work, [benchmark.ROOT, args.out, *benchmark.policy_files(args)])
+            (work / "test-policy.cjs").write_text(
+                "const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');"
+                "test('operator policy is unreadable',()=>assert.throws(()=>fs.readFileSync("
+                + json.dumps(str(policy)) + "),e=>['EPERM','EACCES'].includes(e.code)));"
+            )
+            result = subprocess.run([runtime["command"]], capture_output=True, text=True, check=False, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("# pass 1", result.stdout)
+            self.assertNotIn("OWNER_SECRET", result.stdout)
 
     @unittest.skipUnless(platform.system() == "Darwin" and os.environ.get("PLAYWRIGHT_MODULE"),
                          "requires macOS and installed Playwright")

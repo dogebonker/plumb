@@ -41,15 +41,21 @@ Install them as a set: the skills share `factory-shared/` (gate rules, pack load
 }
 ```
 
+Approved gate documents and the active change's approved threat model are frozen against editing tools, so an agent cannot append progress and accidentally trigger reapproval. A full Write of the recorded approved bytes is allowed for an idempotent write or proven restore. Status and separate evidence files remain editable; an intentional gate revision must be authorized and opened first. This does not make editable status an approval authority.
+
 What it leaves to others:
 
-- It blocks but never changes `status.yaml`: after a hash mismatch, the gate skill it names reverts the gate and everything after it.
+- It blocks but never changes `status.yaml`: after a hash mismatch, the skill first checks for a proven incidental edit it can restore exactly; an intentional decision change reopens its gate and affected dependents. Interactive impact checks can retain unchanged compatible approvals; headless PR snapshots retain the strict chain.
 - A frozen signature changed inside an allowed file is caught by review's contract check, not by the hook.
 - It guards the editing tools only; shell commands that write files pass.
 
 Self-check: `python3 hooks/test_factory_gate.py`.
 
 ## Headless mode
+
+Every skill records token coverage under [per-skill accounting](factory-shared/gates.md#skill-token-accounting). Design books default off through task-local `design_lenses: []`; profile lists are opt-in candidates and task size caps the selected excerpt/reviewer cost. Correctness, required risk review and mechanical import/contract checks remain.
+
+The headless runner retains Claude stream evidence and its per-task/per-skill ledger under `.git/factory-usage/`, including failed attempts. Summarize it with `python3 <framework>/kit/usage.py report --ledger <clone>/.git/factory-usage/usage.jsonl`. Interactive skills use change/run-local ledgers. Shared-session attribution needs actual entry baselines and exit counters; missing or nested attribution is reported unknown. No extra model call or full retrospective is needed to produce the report. Receipts are measurements, not approval provenance or actual invoice dollars.
 
 `runner/factory_run.py` drives changes whose `mode` is `headless` through their pull request, one `factory/<slug>` branch and one pull request per change. On every pass it re-derives approvals from approvers' APPROVED reviews (`approve <gate>`, `sign off slice NN`) and resets any it cannot back, passes approvers' replies to a waiting change, and runs the next skill through a headless harness (default `claude -p`). Run one pass per cron tick or CI job, in a clone used only by the runner:
 
@@ -72,7 +78,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 
 ## Run one change
 
-`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices, its review and your sign-off, then the next milestone, then `/factory-reconcile` before merging. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step. Track standard in interactive mode runs `/factory-triage`, `/factory-plan`, then `/factory-build` through reconcile.
+`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices and independent review, then the next milestone, then `/factory-reconcile` with one final human sign-off before merging. Headless mode retains per-slice PR sign-off. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step. Track standard in interactive mode runs `/factory-triage`, `/factory-plan`, then `/factory-build` through reconcile.
 
 ## Skills
 
@@ -83,6 +89,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
 | `factory-build` | S1 | Packet, fresh executor, red then green check, mechanical checks per slice, a milestone's slices back to back |
 | `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), review agents with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes routed to the executor, regression proofs, approved-scope completion and final human sign-off; once per milestone |
+| `factory-code-review` | Standalone | Local/PR pre-release review: polish lenses, bundled bug scanners/checklist, Factory docs/ADRs/contracts/approval integrity, archgraph context, one verified report and explicitly authorized follow-through; no active change required |
 | `factory-plan` | S2 | Track standard, interactive: one discovery pass, the four gate documents drafted together, one approval |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
 | `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |

@@ -1,0 +1,124 @@
+{
+  "id": "contracts",
+  "kind": "contract",
+  "depends_on": [],
+  "owns": [
+    "apps/frontend/lib/content.ts",
+    "apps/frontend/lib/publishing.ts",
+    "apps/frontend/app/layout.tsx",
+    "apps/frontend/app/page.tsx",
+    "apps/frontend/app/globals.css"
+  ],
+  "reads": [
+    "apps/frontend/content/editorial.json",
+    "package-lock.json",
+    "package.json",
+    "apps/frontend/package.json",
+    "apps/frontend/tsconfig.json",
+    "apps/frontend/next.config.mjs",
+    "apps/frontend/eslint.config.mjs",
+    "docs/agents/admin/core.md",
+    "docs/agents/conventions.md",
+    "docs/agents/core.md",
+    "docs/agents/memory_maintenance.md",
+    "docs/agents/suggested_commands.md",
+    "docs/agents/task_completion.md",
+    "docs/agents/tech_stack.md"
+  ],
+  "interfaces": [
+    {
+      "path": "apps/frontend/lib/content.ts",
+      "symbol": "ContentEntry",
+      "signature": "{slug: string; title: string; description: string; sections: readonly {heading: string; body: string}[]; sources: readonly {label: string; url: string}[]; published: boolean}"
+    },
+    {
+      "path": "apps/frontend/lib/content.ts",
+      "symbol": "articles",
+      "signature": "readonly import(\"./content\").ContentEntry[]"
+    },
+    {
+      "path": "apps/frontend/lib/content.ts",
+      "symbol": "guides",
+      "signature": "readonly import(\"./content\").ContentEntry[]"
+    },
+    {
+      "path": "apps/frontend/lib/content.ts",
+      "symbol": "routes",
+      "signature": "readonly string[]"
+    },
+    {
+      "path": "apps/frontend/lib/publishing.ts",
+      "symbol": "publication",
+      "signature": "{origin: string | null; indexable: boolean}"
+    },
+    {
+      "path": "apps/frontend/lib/publishing.ts",
+      "symbol": "pageMetadata",
+      "signature": "(path: string, title: string, description: string) => import(\"next\").Metadata"
+    },
+    {
+      "path": "apps/frontend/app/layout.tsx",
+      "symbol": "metadata",
+      "signature": "import(\"next\").Metadata"
+    },
+    {
+      "path": "apps/frontend/app/layout.tsx",
+      "symbol": "default",
+      "signature": "(props: {children: import(\"react\").ReactNode}) => import(\"react\").JSX.Element"
+    },
+    {
+      "path": "apps/frontend/app/page.tsx",
+      "symbol": "default",
+      "signature": "() => import(\"react\").JSX.Element"
+    }
+  ],
+  "fr": [
+    {
+      "id": "C0-01",
+      "given": "the frozen content contract and default preview configuration",
+      "when": "the production home page is requested",
+      "then": "one English document, one main landmark and one H1 expose visible content",
+      "gate_id": "contracts-http",
+      "case_id": "C0-01"
+    },
+    {
+      "id": "C0-02",
+      "given": "the shared shell exists before feature implementations",
+      "when": "the production home page is inspected",
+      "then": "a skip link targets an existing landmark and navigation contains crawlable /blog and /guides anchors",
+      "gate_id": "contracts-http",
+      "case_id": "C0-02"
+    },
+    {
+      "id": "C0-03",
+      "given": "preview, explicit HTTPS publication, or indexing enabled with an invalid HTTP publication origin",
+      "when": "the home metadata is inspected in all three production builds",
+      "then": "preview and invalid-origin configuration are noindex without a canonical; valid HTTPS publication uses its exact canonical with no noindex; publication reads exactly BITX_MARKETING_PUBLIC_ORIGIN and BITX_MARKETING_INDEXING_ENABLED, and unknown pages are noindex with no canonical",
+      "gate_id": "contracts-http",
+      "case_id": "C0-03"
+    }
+  ],
+  "rules": {
+    "ids": [
+      "contract-no-app",
+      "root-no-features",
+      "blog-independent",
+      "guides-independent",
+      "discovery-independent",
+      "frontend-no-private-systems"
+    ],
+    "surfaces": []
+  },
+  "gates": [
+    "contracts-http",
+    "typecheck",
+    "lint"
+  ],
+  "budget": {
+    "tokens": 134680,
+    "retries": 0,
+    "review_passes": 1,
+    "review_tokens": 69162,
+    "seconds": 1024
+  }
+}

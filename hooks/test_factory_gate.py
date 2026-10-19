@@ -11,8 +11,11 @@ from factory_gate import GATES
 HOOK = Path(__file__).with_name("factory_gate.py")
 
 
-def run(root, file_path):
-    payload = json.dumps({"tool_name": "Edit", "tool_input": {"file_path": str(root / file_path)}, "cwd": str(root)})
+def run(root, file_path, content=None):
+    tool_input = {"file_path": str(root / file_path)}
+    if content is not None:
+        tool_input["content"] = content
+    payload = json.dumps({"tool_name": "Write" if content is not None else "Edit", "tool_input": tool_input, "cwd": str(root)})
     return subprocess.run([sys.executable, HOOK], input=payload, capture_output=True, text=True, check=False)
 
 
@@ -40,7 +43,7 @@ with tempfile.TemporaryDirectory() as tmp:
     lock = root / ".software-factory" / "factory.lock"
     lock.write_text("framework: { commit: " + "a" * 40 + ", installed: 2026-10-13 }\n")
 
-    # Gate documents are always editable; source edits wait for every gate.
+    # Pending gate documents remain editable; source edits wait for every gate.
     st.write_text(status(pending_product))
     assert run(root, ".software-factory/changes/demo/01-product.md").returncode == 0
     r = run(root, "src/a.ts")
@@ -62,6 +65,80 @@ with tempfile.TemporaryDirectory() as tmp:
     for allowed in ["src/a.ts", "src/a.test.ts", "src/c.ts"]:
         assert run(root, allowed).returncode == 0, allowed
     assert run(root, "src/b.ts").returncode == 2
+
+    # Resuming cannot enrich an approved document and accidentally revoke its approval.
+    approved_status = st.read_bytes()
+    for gate, doc in GATES:
+        path = f".software-factory/changes/demo/{doc}"
+        original = (change / doc).read_text()
+        r = run(root, path, original + "\nResume note: implementation continues.\n")
+        assert r.returncode == 2 and "approved document" in r.stderr, r.stderr
+        assert run(root, path).returncode == 2  # partial editing tools cannot redraft it either
+        assert run(root, path, original).returncode == 0  # exact bytes are idempotent
+        assert hashlib.sha256((change / doc).read_bytes()).hexdigest() == docs[gate]
+    assert st.read_bytes() == approved_status
+    assert run(root, "src/a.ts").returncode == 0
+    for evidence in ["research.md", "review.md", "supplement.md", "status.yaml"]:
+        assert run(root, f".software-factory/changes/demo/{evidence}").returncode == 0
+
+    # A deliberate revision opens only after the gate is made pending; hashes still gate source.
+    st.write_text(status([approved[0], *[(g, "pending", "null") for g, _ in GATES[1:]]], slices=building))
+    assert run(root, ".software-factory/changes/demo/02-architecture.md").returncode == 0
+    assert run(root, "src/a.ts").returncode == 2
+
+    # Security approval is reusable: keep its model frozen, including during later stage resumes.
+    model = root / ".software-factory/system/threat-model.md"
+    model.parent.mkdir(exist_ok=True)
+    model.write_text("# Threat model\nBoundary: authenticated API\n")
+    model_hash = hashlib.sha256(model.read_bytes()).hexdigest()
+    event = f'history:\n  - {{ at: now, step: factory-security, event: threat_model_approved, ref: "-", detail: "sha256 {model_hash}" }}\n'
+    st.write_text(status(approved, slices=building) + event)
+    r = run(root, ".software-factory/system/threat-model.md", model.read_text() + "\nResume note\n")
+    assert r.returncode == 2 and "approved document" in r.stderr, r.stderr
+    assert run(root, ".software-factory/system/threat-model.md", model.read_text()).returncode == 0
+    assert run(root, "src/a.ts").returncode == 0
+
+    # A genuinely approved security revision records its new digest before the exact full Write.
+    revised_model = model.read_text() + "Boundary: approved worker\n"
+    revised_hash = hashlib.sha256(revised_model.encode()).hexdigest()
+    revision = f'  - {{ at: later, step: factory-security, event: threat_model_approved, ref: "-", detail: "sha256 {revised_hash}" }}\n'
+    st.write_text(status(approved, slices=building) + event + revision)
+    assert run(root, ".software-factory/system/threat-model.md", revised_model).returncode == 0
+    assert run(root, ".software-factory/system/threat-model.md", model.read_text()).returncode == 2
+    assert run(root, ".software-factory/system/threat-model.md").returncode == 2
+
+    # Interactive impact checks can retain compatible architecture/security after a product correction.
+    # The hook still waits for actual approval of each changed document, not another architecture approval.
+    original_product = (change / "01-product.md").read_text()
+    original_interface = (change / "03-interface.md").read_text()
+    changed = [approved[0], approved[1], ("interface", "pending", "null"), approved[3]]
+    changed[0] = ("product", "pending", "null")
+    st.write_text(status(changed, slices=building) + event)
+    assert run(root, ".software-factory/changes/demo/01-product.md").returncode == 0
+    (change / "01-product.md").write_text(original_product + "Example: remainder is shown in the invoice currency.\n")
+    changed[0] = ("product", "approved", hashlib.sha256((change / "01-product.md").read_bytes()).hexdigest())
+    st.write_text(status(changed, slices=building) + event)
+    r = run(root, "src/a.ts")
+    assert r.returncode == 2 and "interface gate" in r.stderr and "architecture gate" not in r.stderr, r.stderr
+    assert run(root, ".software-factory/changes/demo/02-architecture.md").returncode == 2
+    assert run(root, ".software-factory/changes/demo/03-interface.md").returncode == 0
+    (change / "03-interface.md").write_text(original_interface + "Response: remaining_invoice_amount\n")
+    changed[2] = ("interface", "approved", hashlib.sha256((change / "03-interface.md").read_bytes()).hexdigest())
+    st.write_text(status(changed, slices=building) + event)
+    assert run(root, "src/a.ts").returncode == 0
+    architecture_line = next(line for line in status(approved).splitlines() if line.startswith("  architecture:"))
+    assert architecture_line in st.read_text() and st.read_text().endswith(event)
+    assert hashlib.sha256(model.read_bytes()).hexdigest() == model_hash
+    (change / "01-product.md").write_text(original_product)
+    (change / "03-interface.md").write_text(original_interface)
+
+    st.write_text(status(approved, slices=building, branch="factory/other") + event)
+    assert run(root, ".software-factory/system/threat-model.md").returncode == 0  # another branch cannot freeze it
+    st.write_text(status(approved, slices=building))
+    assert run(root, ".software-factory/system/threat-model.md").returncode == 0  # initial draft
+    st.write_text(status(approved, slices=building) + event + "reconciled: true\n")
+    assert run(root, ".software-factory/system/threat-model.md").returncode == 0
+    st.write_text(status(approved, slices=building))
 
     # A milestone: while slice 2 builds, green slice 1's files are closed; at review time, with nothing
     # building, the green slices' files are open.
@@ -93,6 +170,10 @@ with tempfile.TemporaryDirectory() as tmp:
     (change / "03-interface.md").write_text("# interface, edited\n")
     r = run(root, "src/a.ts")
     assert r.returncode == 2 and "03-interface.md changed" in r.stderr, r.stderr
+    # Accidental enrichment is recoverable from proven approved bytes, without new approval.
+    assert run(root, ".software-factory/changes/demo/03-interface.md", "# interface\n").returncode == 0
+    (change / "03-interface.md").write_text("# interface\n")
+    assert run(root, "src/a.ts").returncode == 0
 
     # A change that touches UI needs the design file; DESIGN.md itself is always editable.
     st.write_text(status(approved, slices=building).replace("feature: demo", "feature: demo\nui: true"))

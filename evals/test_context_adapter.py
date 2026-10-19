@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import benchmark
 import context_adapter
 
 
@@ -96,6 +97,28 @@ const assert=require('assert'),fs=require('fs'),http=require('http'),net=require
                                     check=False, capture_output=True, text=True, timeout=45)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("BROWSER_LOOPBACK_ISOLATED", result.stdout)
+
+    @unittest.skipUnless(platform.system() == "Darwin" and shutil.which("sandbox-exec") and shutil.which("node"),
+                         "requires macOS sandbox-exec/node")
+    def test_policy_and_report_secrets_outside_home_are_denied(self):
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as policy_tmp:
+            root = Path(tmp).resolve()
+            source, destination, work = self.fixture(root)
+            policy = Path(policy_tmp).resolve() / "owner-policy.json"
+            policy.write_text("OWNER_SECRET")
+            args = benchmark.argparse.Namespace(operator_policy=str(policy), out=Path(policy_tmp).resolve() / "out")
+            args.out.mkdir()
+            secrets = benchmark.secret_files(args.out, benchmark.policy_files(args))
+            for secret in secrets:
+                secret.write_text("OWNER_SECRET")
+                self.assertFalse(secret.is_relative_to(Path.home()))
+            _, provenance = context_adapter.prepare(source, destination, work, secrets)
+            for secret in secrets:
+                with self.subTest(secret=secret.name):
+                    result = subprocess.run([shutil.which("sandbox-exec"), "-f", provenance["sandbox_profile"], "/bin/cat", str(secret)],
+                                            capture_output=True, text=True, check=False)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn("OWNER_SECRET", result.stdout)
 
     @unittest.skipUnless(platform.system() == "Darwin" and shutil.which("sandbox-exec") and shutil.which("node"),
                          "requires macOS sandbox-exec/node")

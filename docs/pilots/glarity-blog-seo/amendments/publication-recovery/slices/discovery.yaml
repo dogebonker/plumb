@@ -1,0 +1,93 @@
+{
+  "id": "discovery",
+  "kind": "feature",
+  "depends_on": [
+    "contracts"
+  ],
+  "owns": [
+    "apps/frontend/app/sitemap.ts",
+    "apps/frontend/app/robots.ts"
+  ],
+  "reads": [
+    "apps/frontend/content/editorial.json",
+    "package-lock.json",
+    "package.json",
+    "apps/frontend/package.json",
+    "apps/frontend/tsconfig.json",
+    "apps/frontend/next.config.mjs",
+    "apps/frontend/eslint.config.mjs",
+    "apps/frontend/lib/content.ts",
+    "apps/frontend/lib/publishing.ts",
+    "apps/frontend/app/layout.tsx",
+    "apps/frontend/app/page.tsx",
+    "apps/frontend/app/globals.css",
+    "docs/agents/admin/core.md",
+    "docs/agents/conventions.md",
+    "docs/agents/core.md",
+    "docs/agents/memory_maintenance.md",
+    "docs/agents/suggested_commands.md",
+    "docs/agents/task_completion.md",
+    "docs/agents/tech_stack.md"
+  ],
+  "interfaces": [
+    {
+      "path": "apps/frontend/app/sitemap.ts",
+      "symbol": "default",
+      "signature": "() => import(\"next\").MetadataRoute.Sitemap"
+    },
+    {
+      "path": "apps/frontend/app/robots.ts",
+      "symbol": "default",
+      "signature": "() => import(\"next\").MetadataRoute.Robots"
+    }
+  ],
+  "fr": [
+    {
+      "id": "SEO-01",
+      "given": "preview or explicit publication configuration",
+      "when": "robots.txt is requested",
+      "then": "pages remain crawlable for noindex discovery; only publication references the configured HTTPS sitemap",
+      "gate_id": "discovery-http",
+      "case_id": "SEO-01"
+    },
+    {
+      "id": "SEO-02",
+      "given": "the frozen shared inventory of four entries, home and two indexes",
+      "when": "sitemap.xml is requested in both modes",
+      "then": "preview has no URLs; publication contains exactly seven canonical URLs once each and no invented lastmod",
+      "gate_id": "discovery-http",
+      "case_id": "SEO-02"
+    },
+    {
+      "id": "SEO-03",
+      "given": "the independently built discovery slice and shared home",
+      "when": "home is requested in both modes",
+      "then": "preview is noindex without an inferred canonical and explicit publication is indexable at the configured canonical",
+      "gate_id": "discovery-http",
+      "case_id": "SEO-03"
+    }
+  ],
+  "rules": {
+    "ids": [
+      "contract-no-app",
+      "root-no-features",
+      "blog-independent",
+      "guides-independent",
+      "discovery-independent",
+      "frontend-no-private-systems"
+    ],
+    "surfaces": []
+  },
+  "gates": [
+    "discovery-http",
+    "typecheck",
+    "lint"
+  ],
+  "budget": {
+    "tokens": 450000,
+    "retries": 1,
+    "review_passes": 2,
+    "review_tokens": 150000,
+    "seconds": 1500
+  }
+}

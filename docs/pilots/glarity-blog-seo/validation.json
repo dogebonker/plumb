@@ -1,0 +1,24 @@
+{
+  "status": "valid",
+  "plan_sha256": "dfd5835434b9016842642a8dbac5b3a97e0e2b3b6aa5682487b65add9f4a12f6",
+  "base_commit": "d39b64d28e863aada0c2b27defc6df7ddb208453",
+  "original_main": "fbb2e4fa6161456a3e9365333942e7f1551150fa",
+  "approval": "approved_as_amended_by_explicit_user_instruction",
+  "frozen_case_ids": [
+    "C0-01",
+    "C0-02",
+    "C0-03",
+    "BLOG-01",
+    "BLOG-02",
+    "BLOG-03",
+    "GUIDES-01",
+    "GUIDES-02",
+    "GUIDES-03",
+    "SEO-01",
+    "SEO-02",
+    "SEO-03"
+  ],
+  "approval_event_ref": "native:user_reply:call_608c51dcbd6f4a768c726b321517b8ac:0",
+  "original_plan_sha256": "71ce4d90f3bdde848a93d98f52e61f290cce709e2fc3a41e099b50df0723d35e",
+  "amendment_event_ref": "native:user_message:remove-serena-2026-10-19"
+}

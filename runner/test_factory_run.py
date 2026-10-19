@@ -13,8 +13,8 @@ from factory_run import (
     home_problem,
     missing_framework,
     new_head_trusted,
-    only_factory,
     next_skill,
+    only_factory,
     parse_status,
     triage_skips,
     unmigrated,
@@ -324,6 +324,70 @@ with tempfile.TemporaryDirectory() as tmp:
     git("commit", "-qm", "legacy")
     assert unmigrated(repo, "HEAD")
 
+# An interface-only revision preserves upstream reviews and the approved security baseline.
+with tempfile.TemporaryDirectory() as tmp:
+    repo = Path(tmp)
+
+    def git(*args):
+        return subprocess.run(["git", "-c", "commit.gpgsign=false", "-C", str(repo), *args],
+                              capture_output=True, text=True, check=True).stdout.strip()
+
+    git("init", "-q", "-b", "factory/demo")
+    git("config", "user.email", "t@t")
+    git("config", "user.name", "t")
+    change = ".software-factory/changes/demo"
+    (repo / change).mkdir(parents=True)
+    for gate, doc in factory_run.GATES:
+        (repo / change / doc).write_text(f"# {gate}\n")
+    threat_path = ".software-factory/system/threat-model.md"
+    (repo / threat_path).parent.mkdir(parents=True)
+    threat = b"# Threat model\nExisting authentication and trust boundaries.\n"
+    (repo / threat_path).write_bytes(threat)
+    threat_hash = hashlib.sha256(threat).hexdigest()
+    history = ("history:\n  - { at: 2026-10-10T09:00:00Z, step: factory-security, "
+               f'event: threat_model_approved, ref: "-", detail: "sha256 {threat_hash}" }}\n')
+    status = STATUS.format(p=PENDING).replace(
+        "slices: []", "slices:\n  - { id: 1, name: implementation, state: pending, head_commit: null }") + history
+    status_path = repo / change / "status.yaml"
+    status_path.write_text(status)
+    git("add", ".")
+    git("commit", "-qm", "planning and security baseline")
+    baseline = git("rev-parse", "HEAD")
+    reviews = [{"login": "alice", "state": "APPROVED", "body": f"approve {gate}",
+                "commit": baseline, "at": "2026-10-10T10:00:00Z"} for gate, _ in factory_run.GATES]
+    approvals = approver_reviews(reviews, {"alice"})
+    status, notes = verify(repo, "HEAD", change, status, approvals, set())
+    original_gates = parse_status(status)["gates"]
+    upstream_lines = [line for line in status.splitlines() if line.startswith(("  product:", "  architecture:"))]
+    assert all(g["state"] == "approved" for g in original_gates.values()), notes
+    status_path.write_text(status)
+    git("commit", "-qam", "record review-backed approvals")
+    threat_history = git("log", "--format=%H", "--", threat_path)
+
+    (repo / change / "03-interface.md").write_text("# interface\nAdd an optional display label.\n")
+    git("commit", "-qam", "adjust interface only")
+    revised = git("rev-parse", "HEAD")
+    status, notes = verify(repo, "HEAD", change, status, approvals, set())
+    assert notes == [f"{gate} reset to pending: no matching approval" for gate in ("interface", "slices")], notes
+    gates = parse_status(status)["gates"]
+    assert all(gates[g] == original_gates[g] for g in ("product", "architecture"))
+    assert all(line in status.splitlines() for line in upstream_lines)
+    assert next_skill(parse_status(status)) == "factory-interface"
+
+    for gate, expected_skill in (("interface", "factory-slices"), ("slices", "factory-build")):
+        reviews.append({**reviews[0], "body": f"approve {gate}", "commit": revised,
+                        "at": "2026-10-10T11:00:00Z"})
+        status, notes = verify(repo, "HEAD", change, status, approver_reviews(reviews, {"alice"}), set())
+        assert notes == [f"{gate} approved by alice"], notes
+        gates = parse_status(status)["gates"]
+        assert all(gates[g] == original_gates[g] for g in ("product", "architecture"))
+        assert all(line in status.splitlines() for line in upstream_lines)
+        assert gates["slices"]["state"] == ("pending" if gate == "interface" else "approved")
+        assert next_skill(parse_status(status)) == expected_skill
+        assert status.endswith(history)
+        assert hashlib.sha256((repo / threat_path).read_bytes()).hexdigest() == threat_hash
+        assert git("log", "--format=%H", "--", threat_path) == threat_history
+
 # The cache lives under HOME, so HOME must be absolute and not /.
 for home, ok in [("/", False), ("relative", False), ("", False), ("/Users/someone", True)]:
     with patch.dict("os.environ", {"HOME": home}):
@@ -375,7 +439,9 @@ with tempfile.TemporaryDirectory() as tmp:
     with patch.object(factory_run, "pull_request", return_value=([start, approve], [])), \
             patch.object(factory_run, "harness_pass", side_effect=harness), \
             patch.object(factory_run, "FRAMEWORK", Path(tmp) / "framework"):
-        factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+        outcome = factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+        assert outcome["status"] == "progress", outcome
+        assert outcome["after"] == git("rev-parse", "HEAD")
     assert len(harness_heads) == 1
     assert heads["factory/demo"] == git("rev-parse", "HEAD")
 
@@ -387,7 +453,8 @@ with tempfile.TemporaryDirectory() as tmp:
     with patch.object(factory_run, "pull_request", return_value=([start, approve], [])), \
             patch.object(factory_run, "harness_pass", side_effect=harness), \
             patch.object(factory_run, "FRAMEWORK", Path(tmp) / "framework"):
-        factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+        outcome = factory_run.pass_change(repo, "factory/demo", status_path, {"alice"}, "unused", "/{skill} {slug}", 30, heads)
+        assert outcome["status"] == "blocked", outcome
     assert len(harness_heads) == 1
 # Failed setup never starts the harness; failed and timed-out work stays recoverable.
 with tempfile.TemporaryDirectory() as tmp:
@@ -408,6 +475,10 @@ with tempfile.TemporaryDirectory() as tmp:
     calls = []
     def failing_setup(cmd, work, timeout):
         calls.append(cmd)
+        entries = [__import__('json').loads(line) for line in
+                   (repo / '.git/factory-usage/usage.jsonl').read_text().splitlines()]
+        assert entries[-1]['skill'] == 'runner-setup' and entries[-1]['tokens'] is None
+        assert entries[-1]['invocation'] == work.parent.name + '-setup'
         (work / "code").write_text("dirty")
         (work / "untracked").write_text("recover")
         return 7
@@ -424,6 +495,13 @@ with tempfile.TemporaryDirectory() as tmp:
     assert len(list((repo / ".git/factory-recovery").glob("*/work"))) == 2
     # Managed harness cannot publish; the runner publishes clean successful commits only.
     def successful_harness(cmd, work, timeout):
+        entries = [__import__('json').loads(line) for line in
+                   (repo / '.git/factory-usage/usage.jsonl').read_text().splitlines()]
+        assert entries[-1]['tokens'] is None and entries[-1]['invocation'] == work.parent.name
+        (work.parent / 'usage-stream.jsonl').write_text(__import__('json').dumps({
+            'type': 'result', 'session_id': 'observed-session', 'modelUsage': {
+                'model': {'inputTokens': 10, 'cacheReadInputTokens': 20,
+                          'cacheCreationInputTokens': 3, 'outputTokens': 4}}}) + '\n')
         def work_git(*args):
             return subprocess.check_output(["git", "-c", "commit.gpgsign=false", "-C", str(work), *args], text=True).strip()
         work_git("config", "user.email", "test@example.com")
@@ -467,5 +545,13 @@ with tempfile.TemporaryDirectory() as tmp:
     recovery = list((repo / ".git/factory-recovery").glob("*/work"))
     assert len(recovery) == 4
     assert any((work / "partial-clone").exists() for work in recovery)
+
+# Provider receipts survive all outcomes, including unknown unsupported harness usage.
+    receipts = [__import__('json').loads(line) for line in
+                (repo / '.git/factory-usage/usage.jsonl').read_text().splitlines()]
+    assert len({r['invocation'] for r in receipts if r['skill'] != 'runner-setup'}) == 5
+    assert sum(r['tokens'] or 0 for r in receipts) == 37
+    assert any(r['tokens'] is None and r['observed_tokens'] == 37 for r in receipts)
+    assert len(list((repo / '.git/factory-usage').glob('*/usage-stream.jsonl'))) == 2
 
 print("factory_run: all checks passed")

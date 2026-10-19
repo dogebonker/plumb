@@ -7,6 +7,8 @@ argument-hint: "<task description>"
 
 # Factory triage
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Task: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -32,6 +34,7 @@ Done when you can name the modules in scope and all three commands.
 - **Run command.** For each module a user runs (an app, a service, a CLI): the command that starts it locally, or for a CLI the command that invokes it, and for a server the local URL it serves. A library records `none`. Review's runtime checks and reconcile's acceptance step use them.
 - **UI.** The change touches UI when it changes files of a module with front-end dependencies (react, next, vue, svelte, solid, angular), templates, or styles. Note whether a design file exists (gates.md, Load a change).
 - **Lens profile.** One of `<kit>/profiles/`: `domain-core` for core business logic with invariants, `crud-service` for thin create-read-update-delete over storage, `legacy` for code without tests that is risky to change. Pick from what the code shows.
+- **Task size and optional design books.** Apply packs.md Pick to the observed footprint. Default `design_lenses: []`; record only an actual user selection. Risk and size are separate: a tiny money change still gets required money/security checks without a book panel. Reassess size from the slice plan without reopening approved decisions.
 
 Done when every module has a language, a language pack, a BDD state and a run command or `none`, every money signal has a location, and a profile is proposed. When `.software-factory/system/lenses.yaml` exists, note where your findings differ from it.
 
@@ -47,6 +50,8 @@ Done when every module has a language, a language pack, a BDD state and a run co
 Pick the track from what the code shows, not from how the task is worded.
 
 ## 4. Confirm with the user
+
+Follow gates.md **Explain questions and decisions**: explain the practical reason for the proposed track and any real choice, with a concrete example where useful. Keep the existing intake questions; do not turn detected facts or unchanged approvals into additional decisions.
 
 Ask in one message:
 
@@ -95,6 +100,8 @@ feature: <slug>
 task: "<the task in one line>"
 track: standard             # small | standard | critical
 track_proposed: standard    # the track triage recommended, kept when the user chose another
+task_size: medium           # small | medium | large; footprint, independent of risk track
+design_lenses: []           # explicit task-local opt-in pack names; absent also means none
 factory_dir: committed      # committed | ignored
 branch: <branch from 5.2>
 change_base_commit: <sha>

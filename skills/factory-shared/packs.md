@@ -4,9 +4,11 @@ How a factory skill loads a lens or a language pack. `<kit>` and `<project>` are
 
 ## Pick
 
-- **Lenses.** The repository profile is `profile` in `.software-factory/system/lenses.yaml`; its lenses per step are in `<kit>/profiles/<profile>.yaml`. One agent loads at most two lenses in any step, in the profile's order; the interface challenge panel gives each reviewer a single lens.
-- **Pattern map.** `gang-of-four` is no lens and no profile loads it. Review reads it only on the trigger smells of [../factory-review/review-agents.md](../factory-review/review-agents.md), Design and reuse.
-- **Language pack.** Each module's `pack` in `lenses.yaml` names `<kit>/languages/<pack>.yaml`: an `index` pack and optional extra `rules` packs. They load in packets, in the interface panel's APoSD reviewer, and as rubric in review.
+- **Design lenses are opt-in.** `design_lenses` in this task's `status.yaml` lists the explicitly selected book pack names, default `[]`, including on older changes where the field is absent. The profile's lists are candidates, not automatic loads; a pin, repository profile, task size or critical risk track never opts in. This covers Refactoring.Guru, APoSD, Clean Architecture and other book rubrics. Required security/money review, tests and mechanical import/contract checks remain independent.
+- **Task size controls cost, not consent.** Record `task_size` from the actual planned footprint: small = up to three source/test files in one module with no public-contract change; medium = a bounded feature or one changed public contract; large = more than ten source/test files, three or more modules, or several new public contracts. Small/medium: no unsolicited lens question. Large: recommend at most one relevant lens with a reason in the existing plan summary, default off. Honor explicit user selection at any size; never create a separate approval gate or repeat the offer on resume.
+- **Load only selected applicable excerpts.** Small: one selected lens, `nano`; medium: one selected lens, `mini`; large: at most two selected lenses, `mini`. Full books require an explicit deep-review request. More selected names than the cap: use the highest-priority relevant selection and defer the rest visibly; do not launch extra panels. APoSD fits public-interface changes, Clean Architecture fits changed module/import boundaries, Refactoring.Guru fits an actual refactor/smell. The general reviewer carries selected review lenses; one optional design reviewer handles selected interface challenges, never one agent per book. Keep selection in task metadata/evidence, not approved gate documents.
+- **Pattern map.** `gang-of-four` is no default lens. Only a selected Refactoring.Guru review with a concrete matching smell may read its relevant row; no standalone pattern survey or agent.
+- **Language pack.** Each module's `pack` in `lenses.yaml` names `<kit>/languages/<pack>.yaml`: an index and applicable extra rules. Read the index plus one or two relevant rules; mechanical lint owns everything it can enforce. No APoSD opt-in is needed for language correctness.
 
 ## Check the pin
 
@@ -20,12 +22,12 @@ A pin approves a pack's content, so it follows a read: `/factory-packs` shows wh
 
 ## Load
 
-- A lens: `<pack>/<name>.<size>.md`, or `<pack>/<name>.md` at full size. Size by role: `nano` in packets, `mini` in gates and review, full for APoSD.
+- A selected lens: `<pack>/<name>.<size>.md`, using the task-size cap above. Reuse the same loaded excerpt within the invocation; do not reread a full book to apply one rule. Packets carry selected rule references only; no copied whole rubrics.
 - A language pack: `<pack>/SKILL.md` for the index and each rules pack. The executor reads the index, then only the one or two rules the slice needs. It applies them to the code the slice writes, leaves rules the module's linter already enforces to the linter, and skips rules that need a newer language version than the module's `language_version`.
 - The pattern map: `<pack>/SKILL.md`.
 - Any other pack: the files the calling skill names, under `<pack>`.
 
-Done when each lens and language pack of the step is loaded or reported to the user as skipped, with the reason.
+Done when selected applicable lenses and language rules are loaded or their unavailability is recorded. Unselected books are intentionally off, not a missing dependency or a report item per book. Do not pin-check, fetch or read them.
 
 ## Simplification ladder
 

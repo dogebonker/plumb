@@ -6,9 +6,229 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import ClassVar
 from unittest.mock import patch
 
 import benchmark
+
+
+class ClaudeCommandTests(unittest.TestCase):
+    def test_unlimited_actor_omits_caps_on_initial_and_resume(self):
+        args = argparse.Namespace(claude="claude", model="model", until_complete=True, effort="low")
+        for resume in (False, True):
+            cmd = benchmark.command(args, {"factory": Path("factory")}, "factory", Path("settings"), "session", resume, -1)
+            self.assertNotIn("--max-turns", cmd)
+            self.assertNotIn("--max-budget-usd", cmd)
+            self.assertEqual(cmd[cmd.index("--effort") + 1], "low")
+
+    def test_context_trial_protects_custom_operator_policy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            args = argparse.Namespace(out=root / "out", model="model", operator_policy=str(root / "external-policy.json"))
+            Path(args.operator_policy).write_text('{"persona":"Operator","answers":[]}')
+            paths = {name: root / name for name in ("factory", "superpowers", "context-mode")}
+            with patch("benchmark.prepare_context", side_effect=ValueError("stop before invocation")) as prepare, \
+                    self.assertRaisesRegex(ValueError, "stop before invocation"):
+                benchmark.trial(args, benchmark.CASES / "csv-targets", "factory-context", 0, paths)
+            protected = prepare.call_args.args[3]
+            for secret in benchmark.secret_files(args.out, benchmark.policy_files(args)):
+                self.assertIn(secret, protected)
+            self.assertIn(args.out / "case-snapshots", protected)
+            self.assertIn(args.out / "trials", protected)
+
+    def test_bounded_defaults_and_adapter_effort(self):
+        args = argparse.Namespace(claude="claude", model="model")
+        cmd = benchmark.command(args, {"factory": Path("factory")}, "factory", Path("settings"), "session", False, 5)
+        self.assertEqual(cmd[cmd.index("--max-turns") + 1], "60")
+        self.assertEqual(cmd[cmd.index("--max-budget-usd") + 1], "5")
+        self.assertEqual(cmd[cmd.index("--effort") + 1], "high")
+        args.until_complete, args.effort = True, "medium"
+        cmd = benchmark.command(args, {}, "adapter", Path("settings"), "session", False, 5)
+        self.assertNotIn("--max-turns", cmd)
+        self.assertIn("--max-budget-usd", cmd)
+        self.assertEqual(cmd[cmd.index("--effort") + 1], "medium")
+
+
+class CodexIntegrationTests(unittest.TestCase):
+    def test_unlimited_invocation_does_not_read_controller_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            script = ("import json,sys,time; assert sys.stdin.read()==''; time.sleep(.15); "
+                      "print(json.dumps({'type':'turn.completed','usage':{}}))")
+            run = benchmark.invoke([sys.executable, "-c", script], root, root / "turn", None)
+            self.assertEqual(run["returncode"], 0)
+            self.assertFalse(run["timeout"])
+            self.assertEqual(run["events"][-1]["type"], "turn.completed")
+
+    def test_only_completed_root_agent_message_is_structured_response(self):
+        message = json.dumps({"state": "complete", "question": "", "recommended_answer": "", "summary": "Done"})
+        raw = [{"type": "thread.started", "thread_id": "actual-id"},
+               {"type": "item.completed", "item": {"type": "agent_message", "text": "Intermediate"}},
+               {"type": "item.completed", "item": {"type": "command_execution", "text": message}},
+               {"type": "item.completed", "item": {"type": "agent_message", "text": message}},
+               {"type": "turn.completed", "usage": {"input_tokens": 99}}]
+        adapted, session = benchmark.codex_events(raw)
+        self.assertEqual(session, "actual-id")
+        self.assertEqual(benchmark.response(adapted)["summary"], "Done")
+        self.assertEqual(raw[-1]["type"], "turn.completed")
+        self.assertIsNone(benchmark.response(benchmark.codex_events(raw[:-1])[0]))
+        self.assertIsNone(benchmark.response(benchmark.codex_events(raw + [{"type": "turn.failed"}])[0]))
+
+    def test_codex_browser_surface_uses_only_declared_mcp_capabilities(self):
+        prompt = benchmark.codex_prompt(benchmark.CASES / "support-dashboard", "factory",
+                                        {"factory": Path("/factory"), "superpowers": Path("/superpowers")},
+                                        "/immutable/check", "/immutable/red")
+        self.assertIn("mcp__benchmark_browser__check with zero arguments", prompt)
+        self.assertIn("mcp__benchmark_browser__red_check with zero arguments", prompt)
+        self.assertIn("Never run /immutable/check or /immutable/red through the shell", prompt)
+        self.assertIn("Pass this mapping to every child", prompt)
+        paths = {"factory": Path("/factory"), "superpowers": Path("/superpowers")}
+        pinned = {("initial_prompt", "factory"): "f0881d8561008674a2d526bfff47ae0c7d0f6c1b4cd29be6a58f578457eef2dd",
+                  ("initial_prompt", "superpowers"): "b533e179ef3e2ce41c12fc6f450eacf5040a0ee4e2c5ae1e6de947d36e17bbfc",
+                  ("codex_prompt", "factory"): "c93750b9fe401a722d922575b07ad0558eeefc9a4c9b87f12fcec0423959e129",
+                  ("codex_prompt", "superpowers"): "d451c3d3c2dac66fe6f18f3b3b12e5a89d1a7e72d6150b078890c8b3949eeaf4"}
+        for (name, arm), digest in pinned.items():
+            build = getattr(benchmark, name)
+            text = build(benchmark.CASES / "support-fullstack", arm, paths, "/immutable/check", "/immutable/red")
+            self.assertEqual(benchmark.hashlib.sha256(text.encode()).hexdigest(), digest, f"{name}/{arm} changed for a non-discovery case")
+            text = build(benchmark.CASES / "gloam-chat", arm, paths, "/immutable/check", "/immutable/red")
+            for coaching in ("same neutral requirements", "DECISIONS.md", "FR/NFR", "negotiated away", "for fixture checks"):
+                self.assertNotIn(coaching, text, f"{name}/{arm} coaches a discovery arm")
+            self.assertIn((benchmark.CASES / "gloam-chat" / "task.md").read_text(), text)
+
+    def test_codex_unknown_coverage_is_not_free(self):
+        record = benchmark.codex_accounting({"accounting_complete": False, "totals": {"input_tokens": 9}, "modeled_api_usd": None})
+        self.assertIsNone(record["tokens"])
+        self.assertIsNone(record["cost_usd"])
+        self.assertIsNone(record["actual_invoice_usd"])
+
+    def test_codex_policy_failure_never_invokes_model(self):
+        self.run_codex_trial(admission_failure=True)
+
+    def test_codex_until_complete_resumes_actual_thread_and_ignores_repair_cap(self):
+        self.run_codex_trial(admission_failure=False)
+
+    def test_factory_product_acceptance_waits_for_reconcile_without_repair_charge(self):
+        self.run_codex_trial(admission_failure=False, finishing=True)
+
+    def test_changed_prepared_policy_is_rejected_on_every_resume(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {name: root / name for name in ("factory", "superpowers")}
+            for path in paths.values():
+                path.mkdir()
+            args = argparse.Namespace(out=root / "output", timeout=60, budget_usd=5,
+                                      max_questions=0, repair_rounds=0, harness="codex", until_complete=True,
+                                      codex="codex", effort="high", model="gpt-6.1-sol")
+            args.out.mkdir()
+            def prepare(binary, work, runtime, *unused, **kwargs):
+                runtime.mkdir()
+                prepared = {"binary": "trusted", "isolation_evidence": [{"passed": True}], "limitations": []}
+                benchmark.write_json(runtime / "codex-prepared.json", prepared)
+                return prepared
+            failed = {"returncode": 1, "timeout": False, "seconds": .1, "events": []}
+            with patch("codex_adapter.prepare", side_effect=prepare), patch("codex_adapter.command", return_value=["unused"]), patch("benchmark.invoke", return_value=failed):
+                first = benchmark.trial(args, benchmark.CASES / "csv-targets", "factory", 0, paths)
+            trusted_hash = first["codex_prepared_sha256"]
+            prepared_file = Path(first["runtime_root"]) / "codex/codex-prepared.json"
+            changed = json.loads(prepared_file.read_text())
+            changed["binary"] = "tampered"
+            benchmark.write_json(prepared_file, changed)
+            args.resume_trial = True
+            for _ in range(2):
+                with patch("benchmark.invoke") as invoke, patch("codex_adapter.command") as command:
+                    resumed = benchmark.trial(args, benchmark.CASES / "csv-targets", "factory", 0, paths)
+                invoke.assert_not_called()
+                command.assert_not_called()
+                self.assertEqual(resumed["codex_prepared_sha256"], trusted_hash)
+                self.assertFalse(resumed["measurement_valid"])
+            shutil.rmtree(first["runtime_root"])
+
+    def test_accepted_product_mutated_during_finish_resume_needs_fresh_acceptance(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {name: root / name for name in ("factory", "superpowers")}
+            for path in paths.values():
+                path.mkdir()
+            args = argparse.Namespace(out=root / "output", timeout=60, budget_usd=5,
+                                      max_questions=0, repair_rounds=0, harness="codex", until_complete=True,
+                                      codex="codex", effort="high", model="gpt-6.1-sol")
+            args.out.mkdir()
+            def prepare(binary, work, runtime, *unused, **kwargs):
+                runtime.mkdir()
+                prepared = {"binary": "trusted", "isolation_evidence": [{"passed": True}], "limitations": []}
+                benchmark.write_json(runtime / "codex-prepared.json", prepared)
+                return prepared
+            def event(state):
+                body = {"state": state, "question": "", "recommended_answer": "", "summary": "Done"}
+                return {"returncode": 0, "timeout": False, "seconds": .1, "events": [
+                    {"type": "thread.started", "thread_id": "actual-thread"},
+                    {"type": "item.completed", "item": {"type": "agent_message", "text": json.dumps(body)}},
+                    {"type": "turn.completed"}]}
+            quality = {"accepted": True, "tests": 9, "failures": 0, "errors": 0, "skipped": 0}
+            with patch("codex_adapter.prepare", side_effect=prepare), patch("codex_adapter.command", return_value=["unused"]), \
+                 patch("codex_adapter.collect_usage", return_value={}), patch("benchmark.invoke", return_value=event("complete")), \
+                 patch("benchmark.grade", return_value=(quality, "")):
+                first = benchmark.trial(args, benchmark.CASES / "csv-targets", "superpowers", 0, paths)
+            self.assertEqual(first["status"], "accepted")
+            args.resume_trial = True
+            def mutate_and_block(cmd, work, artifact, timeout):
+                (work / "targets.py").write_text("raise RuntimeError('unfinished change')")
+                return event("blocked")
+            with patch("codex_adapter.command", return_value=["unused"]), patch("codex_adapter.collect_usage", return_value={}), \
+                 patch("benchmark.invoke", side_effect=mutate_and_block), patch("benchmark.grade") as grade:
+                resumed = benchmark.trial(args, benchmark.CASES / "csv-targets", "superpowers", 0, paths)
+            grade.assert_not_called()
+            self.assertEqual(resumed["status"], "incomplete")
+            self.assertIsNone(resumed["final_quality"])
+            self.assertIsNone(resumed["manual_workflow_review"])
+            self.assertIsNone(resumed["price_per_accepted_application_estimate"])
+            self.assertEqual(resumed["initial_quality"], quality)
+            self.assertEqual(resumed["acceptance_history"][0]["quality"], quality)
+            self.assertEqual(len(resumed["invocations"]), 2)
+            self.assertFalse(resumed["workflow_complete"])
+            shutil.rmtree(first["runtime_root"])
+
+    def run_codex_trial(self, admission_failure, finishing=False):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {name: root / name for name in ("factory", "superpowers")}
+            for path in paths.values():
+                path.mkdir()
+            args = argparse.Namespace(out=root / "output", timeout=.001, budget_usd=.001,
+                                      max_questions=0, repair_rounds=0, harness="codex", until_complete=True,
+                                      codex="codex", effort="high", model="gpt-6.1-sol")
+            args.out.mkdir()
+            prepared = {"isolation_evidence": [{"passed": True}], "limitations": []}
+            complete = json.dumps({"state": "complete", "question": "", "recommended_answer": "", "summary": "Done"})
+            raw = [{"type": "thread.started", "thread_id": "actual-thread"},
+                   {"type": "item.completed", "item": {"type": "agent_message", "text": complete}},
+                   {"type": "turn.completed"}]
+            run = {"returncode": 0, "timeout": False, "seconds": .1, "events": raw}
+            quality = {"accepted": True, "tests": 9, "failures": 0, "errors": 0, "skipped": 0}
+            usage = {"accounting_complete": True, "totals": {"input_tokens": 100, "output_tokens": 10},
+                     "modeled_api_usd": .1, "records": [{"model": args.model, "effort": "high"}], "problems": []}
+            with patch("codex_adapter.prepare", side_effect=ValueError("denied") if admission_failure else None, return_value=prepared), \
+                 patch("codex_adapter.command", return_value=["codex", "exec"]) as command, \
+                 patch("codex_adapter.collect_usage", return_value=usage), \
+                 patch("benchmark.invoke", side_effect=[dict(run), dict(run)]) as invoke, \
+                 patch("benchmark.grade", side_effect=[(quality if finishing else {**quality, "accepted": False}, "repair"), (quality, "")]), \
+                 patch("benchmark.workflow_evidence", side_effect=[{"workflow_complete": False}, {"workflow_complete": True}, {"workflow_complete": True}] if finishing else None, return_value={"workflow_complete": True}):
+                record = benchmark.trial(args, benchmark.CASES / "csv-targets", "factory", 0, paths)
+            if admission_failure:
+                invoke.assert_not_called()
+                self.assertFalse(record["measurement_valid"])
+                self.assertEqual(record["stop_reason"], "preflight failed")
+            else:
+                self.assertEqual(record["status"], "accepted")
+                self.assertEqual(record["repair_rounds"], 0 if finishing else 1)
+                self.assertEqual(record["workflow_finish_rounds"], 1 if finishing else 0)
+                if finishing:
+                    self.assertIn("WORKFLOW FINISH REQUEST", command.call_args_list[1].args[1])
+                self.assertEqual(command.call_args_list[1].args[2], "actual-thread")
+                self.assertEqual(invoke.call_args_list[0].args[3], float("inf"))
+                self.assertEqual(record["cost_usd"], .1)
+            shutil.rmtree(record["runtime_root"])
 
 
 class AccountingTests(unittest.TestCase):
@@ -101,8 +321,8 @@ with socket.socket() as connection:
 
     def test_each_baseline_fails_and_reference_passes(self):
         for case_json in sorted(benchmark.CASES.glob("*/case.json")):
-            if json.loads(case_json.read_text()).get("kind") == "browser":
-                continue  # Browser baseline/oracle proof lives in check_cases.py.
+            if json.loads(case_json.read_text()).get("kind") in {"browser", "fullstack"}:
+                continue  # Browser/fullstack baseline and oracle proof lives in check_cases.py.
             with self.subTest(case=case_json.parent.name), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 case = case_json.parent
@@ -186,6 +406,86 @@ with socket.socket() as connection:
 
 
 class SnapshotTests(unittest.TestCase):
+    def framework(self, root):
+        repository = root / "repository"
+        shared = repository / "skills" / "factory-shared"
+        shared.mkdir(parents=True)
+        (shared / "gates.md").write_text("Gate rules.\n")
+        (repository / "bin").mkdir()
+        shutil.copy2(benchmark.ROOT / "bin" / "factory-packs-fetch", repository / "bin")
+        shutil.copytree(benchmark.ROOT / "hooks", repository / "hooks", ignore=benchmark.IGNORED)
+        kit = repository / "kit"
+        kit.mkdir()
+        name = "a-philosophy-of-software-design"
+        staging = root / "book"
+        staging.mkdir()
+        for tier in ["full", "mini", "nano"]:
+            folder = staging / tier
+            folder.mkdir()
+            (folder / "SKILL.md").write_text(tier + " ~/.software-factory/user/ ~/.software-factory/packs/\n")
+        (staging / "full" / "SKILL.md").chmod(0o755)
+        for command in [["init", "-q"], ["add", "-f", "."]]:
+            subprocess.run(["git", "-C", str(staging), *command], check=True, capture_output=True)
+        pin = subprocess.check_output(["git", "-C", str(staging), "write-tree"], text=True).strip()
+        shutil.rmtree(staging / ".git")
+        bundle = kit / "packs" / f"{name}@{pin}"
+        bundle.parent.mkdir()
+        shutil.copytree(staging, bundle)
+        (kit / "packs.lock.yaml").write_text(
+            f"packs:\n  {name}: {{ source: ciembor/agent-rules-books, path: {name}, hash: {pin} }}\n")
+        output = root / "out"
+        output.mkdir()
+        return repository, bundle, pin, argparse.Namespace(out=output, superpowers=None, context_mode=None)
+
+    def test_book_bundle_available_with_empty_cache_and_unchanged_bytes_and_modes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repository, bundle, pin, args = self.framework(root)
+            with patch("benchmark.ROOT", repository), patch("benchmark.Path.home", return_value=root / "empty-home") as home:
+                paths, provenance = benchmark.snapshots(args)
+                home.assert_not_called()  # bundled books never consult global skills or pack caches
+            snapshot = paths["factory"]
+            for relative in ("hooks/factory_gate.py", "bin/factory-packs-fetch"):
+                self.assertEqual((snapshot / relative).read_bytes(), (repository / relative).read_bytes())
+            self.assertFalse((snapshot / "hooks/hooks.json").exists(), "runtime files must not auto-register gates")
+            help_run = subprocess.run([sys.executable, str(snapshot / "hooks/factory_gate.py"), "repair-check", "--help"],
+                                      cwd=root, capture_output=True, text=True, check=False)
+            self.assertEqual(help_run.returncode, 0, help_run.stderr)
+            self.assertIn("--checkpoint {edit,complete}", help_run.stdout)
+            fetch = benchmark.runpy.run_path(str(snapshot / "bin/factory-packs-fetch"))
+            self.assertIn("pins", fetch)
+            with patch.dict("os.environ", {"HOME": str(root / "empty-home")}):
+                fetched = subprocess.run([sys.executable, str(snapshot / "bin/factory-packs-fetch"),
+                                          str(snapshot / "kit/packs.lock.yaml")], cwd=root,
+                                         capture_output=True, text=True, check=False)
+            self.assertEqual(fetched.returncode, 0, fetched.stderr)
+            self.assertIn("bundled", fetched.stdout)
+            copied = paths["factory"] / "packs" / bundle.name
+            for tier in ["full", "mini", "nano"]:
+                original = bundle / tier / "SKILL.md"
+                self.assertEqual((copied / tier / "SKILL.md").read_bytes(), original.read_bytes())
+                self.assertEqual((paths["factory"] / "kit" / "packs" / bundle.name / tier / "SKILL.md").read_bytes(),
+                                 original.read_bytes())
+            self.assertEqual((copied / "full" / "SKILL.md").stat().st_mode & 0o777, 0o755)
+            entry = provenance["installed_packs"]["a-philosophy-of-software-design"]
+            self.assertEqual(entry["source_kind"], "bundled")
+            self.assertEqual(entry["pin"], pin)
+            self.assertEqual(Path(entry["path"]), bundle)
+            self.assertEqual(provenance["skipped_packs"], [])
+
+    def test_required_book_missing_or_corrupt_aborts_preparation(self):
+        for defect in ["missing", "changed"]:
+            with self.subTest(defect=defect), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                repository, bundle, _pin, args = self.framework(root)
+                if defect == "missing":
+                    shutil.rmtree(bundle)
+                else:
+                    (bundle / "nano" / "SKILL.md").write_text("corrupt")
+                with patch("benchmark.ROOT", repository), patch("benchmark.Path.home", return_value=root / "empty-home"), \
+                        self.assertRaisesRegex(ValueError, "book bundle.*a-philosophy-of-software-design"):
+                    benchmark.snapshots(args)
+
     def test_synthetic_operator_exception_is_copied_and_recorded_without_changing_original(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -194,6 +494,9 @@ class SnapshotTests(unittest.TestCase):
             shared.mkdir(parents=True)
             original = shared / "gates.md"
             original.write_text("Original gate rules.\n")
+            (repository / "bin").mkdir()
+            shutil.copy2(benchmark.ROOT / "bin" / "factory-packs-fetch", repository / "bin")
+            shutil.copytree(benchmark.ROOT / "hooks", repository / "hooks", ignore=benchmark.IGNORED)
             kit = repository / "kit"
             kit.mkdir()
             (kit / "packs.lock.yaml").write_text("packs:\n  lens: { source: o/r, path: lens, hash: " + "a" * 40 + " }\n"
@@ -229,7 +532,7 @@ class SnapshotTests(unittest.TestCase):
             self.assertIn(marker, provenance["adaptations"]["files"])
             self.assertIn(marker, json.loads((output / "provenance.json").read_text())["adaptations"]["files"])
             # The snapshot is the dev_path a trial's factory.lock names, so it has a HEAD for <running>.
-            head = subprocess.run(["git", "-C", str(paths["factory"]), "rev-parse", "HEAD"], capture_output=True, text=True)
+            head = subprocess.run(["git", "-C", str(paths["factory"]), "rev-parse", "HEAD"], capture_output=True, text=True, check=False)
             self.assertEqual(head.returncode, 0, head.stderr)
 
 
@@ -250,6 +553,21 @@ class RegradeTests(unittest.TestCase):
         benchmark.write_json(artifact / "result.json", record)
         benchmark.write_json(out / "summary.json", {"model": "claude-sonnet-5-5", "trials": [record], "provenance": {}})
         return out, artifact, case, record
+
+    def test_adapter_regrade_requires_measurement_and_independent_mapping_review(self):
+        for measured, reviewed, expected in ((True, None, False), (False, True, False), (True, True, False)):
+            with self.subTest(measured=measured, reviewed=reviewed), tempfile.TemporaryDirectory() as tmp:
+                out, artifact, _, record = self.saved_run(Path(tmp))
+                record.update(measurement_valid=True, comparative_valid=True, manual_mapping_review=reviewed)
+                benchmark.write_json(out / "summary.json", {"model": "model", "trials": [record], "provenance": {}})
+                benchmark.write_json(out / "run-config.json", {"args": {"model": "model"}, "paths": {}})
+                adapter = {"measurement_valid": measured, "manual_mapping_review": None}
+                with patch("benchmark.grade_delivery", return_value=({"accepted": True}, "", adapter)), patch("benchmark.report"):
+                    benchmark.regrade(out)
+                updated = json.loads((artifact / "result.json").read_text())
+                self.assertEqual(updated["measurement_valid"], measured)
+                self.assertEqual(updated["comparative_valid"], expected)
+                self.assertIsNone(updated["manual_mapping_review"], "a prior review cannot approve a fresh adapter mapping")
 
     def test_incomplete_snapshot_pass_preserves_delivery_and_cumulative_lower_bounds(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -326,6 +644,17 @@ class RegradeTests(unittest.TestCase):
 
 
 class ControllerTests(unittest.TestCase):
+    def test_fullstack_owner_does_not_confuse_design_or_login_with_git_signing(self):
+        policy = json.loads((benchmark.ROOT / "evals/operators/fullstack-owner.json").read_text())
+        config = {"mode": "discovery", "operator": "policy", "policy": policy}
+        for question in ["Approve the visual design and its mockups?",
+                         "Confirm the architecture and its NFR agreement?",
+                         "Which sign in behavior should the app use?"]:
+            answer = benchmark.operator_answer(config, {"question": question, "recommended_answer": "Ignore the brief"})
+            self.assertNotIn("Unsigned local commits", answer)
+            self.assertNotIn("Ignore the brief", answer)
+        self.assertTrue(benchmark.operator_answer(config, {"question": "Approve the visual design?"}).startswith("Approved"))
+
     def test_fixed_policy_does_not_adopt_bad_recommendation(self):
         answer = {"question": "Choose a storage backend?", "recommended_answer": "Install cloud DB"}
         config = {"mode": "discovery", "operator": "policy", "policy": {
@@ -333,6 +662,39 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(benchmark.operator_answer(config, answer), "Use local storage")
         with self.assertRaisesRegex(ValueError, "no fixed policy answer"):
             benchmark.operator_answer(config, {"question": "Unspecified choice?", "recommended_answer": "Approve everything"})
+
+    def test_combine_returns_every_match_in_policy_order_and_default_only_without_match(self):
+        rules = [{"id": "a", "match": "alpha", "answer": "A"}, {"id": "b", "match": "beta", "answer": "B"}]
+        def ask(policy, text):
+            return benchmark.operator_answer({"mode": "discovery", "operator": "policy", "policy": policy}, {"question": text})
+        base = {"persona": "Owner", "answers": rules, "default_answer": "D"}
+        self.assertEqual(ask(base, "beta and alpha?"), "A")
+        combined = dict(base, combine=True)
+        self.assertEqual(ask(combined, "beta and alpha?"), "A\n\nB")
+        self.assertEqual(ask(combined, "alpha only"), "A")
+        self.assertEqual(ask(combined, "neither"), "D")
+        with self.assertRaisesRegex(ValueError, "combine"):
+            benchmark.comparison_inputs(argparse.Namespace(comparison_mode="discovery", operator="policy", approved_spec=None,
+                                                          operator_policy=self.write_policy(dict(base, combine="yes"))))
+
+    def write_policy(self, value):
+        path = Path(tempfile.mkdtemp()) / "policy.json"
+        path.write_text(json.dumps(value))
+        return str(path)
+
+    def test_gloam_score_maps_combined_answers_to_rule_ids(self):
+        import gloam_score
+        policy = {"answers": [{"id": "L03-whispers", "answer": "Whisper rule."}, {"id": "N01-dice", "answer": "No dice."},
+                              {"id": "stack", "answer": "Your call."}]}
+        policy["answers"].append({"id": "L05-xcard", "answer": "X-card rule."})
+        decisions = [{"question": "whispers and dice?", "answer": "Whisper rule.\n\nNo dice.", "after_delivery": False},
+                     {"question": "stack?", "answer": "Your call.", "after_delivery": False},
+                     {"question": "x-card, now that it is built?", "answer": "X-card rule.", "after_delivery": True}]
+        result = gloam_score.score_trial(policy, decisions)
+        self.assertEqual(result["revealed"], ["L03-whispers", "N01-dice"], "a question after delivery is not discovery")
+        self.assertEqual((result["revealed_count"], result["questions"], result["questions_before_delivery"], result["questions_per_rule"]), (2, 3, 2, 1.0))
+        self.assertEqual(result["question_log"][1]["rules"], ["stack"])
+        self.assertEqual(result["question_log"][2], {"question": "x-card, now that it is built?", "rules": ["L05-xcard"], "after_delivery": True})
 
     def test_comparison_inputs_are_required(self):
         with self.assertRaisesRegex(ValueError, "approved spec"):
@@ -655,6 +1017,267 @@ class ControllerTests(unittest.TestCase):
             self.assertIn(runtime["command"], calls[-1][-1])
             self.assertIn("Do not weaken any sandbox", calls[-1][-1])
 
+    def test_discovery_arm_never_sees_owner_answers_or_test_feedback(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict("os.environ", {"PLAYWRIGHT_MODULE": "/module"}):
+            root = Path(temporary)
+            plugin = root / "factory"
+            (plugin / ".claude-plugin").mkdir(parents=True)
+            (plugin / ".claude-plugin/plugin.json").write_text('{"name":"factory"}')
+            runtime = {"command": str(root / "browser-check"), "sha256": {}}
+            args = argparse.Namespace(out=root / "output", timeout=60, budget_usd=5, max_questions=1, repair_rounds=3,
+                                      claude="claude", model="claude-sonnet-5-5", until_complete=True)
+            policy = root / "operator-policy.json"
+            policy.write_text("owner-only answers")
+            args.operator_policy = str(policy)
+            args.comparison = {"mode": "discovery", "operator": "policy", "input_hashes": {}, "valid_decision_protocol": True,
+                               "policy": {"persona": "Wren", "answers": [{"match": "voice", "answer": "OWNER-ONLY ANSWER"}]}}
+            args.out.mkdir()
+            init = {"type": "system", "subtype": "init", "model": args.model, "plugins": [{"name": "factory"}], "mcp_servers": []}
+            complete = {"state": "complete", "question": "", "recommended_answer": "", "summary": "Done"}
+            responses = [[], [init, {"type": "result", "structured_output": complete}]]
+            calls = []
+
+            def fake_invoke(cmd, work, artifact, timeout):
+                calls.append(cmd)
+                return {"returncode": 0, "timeout": False, "seconds": 0.1, "events": responses.pop(0)}
+
+            failing = {"accepted": False, "tests": 22, "failures": 3, "errors": 0, "skipped": 0}
+            adapter = {"valid": True, "seconds": 0.5, "cost_usd": 0.2}
+            with patch("browser_runtime.prepare_browser_check", return_value=runtime) as browser_prepare, patch("benchmark.invoke", side_effect=fake_invoke), \
+                    patch("benchmark.grade_delivery", return_value=(failing, "HIDDEN CHECK: tapper email leaked", adapter)):
+                result = benchmark.trial(args, benchmark.CASES / "gloam-chat", "factory", 0, {"factory": plugin})
+            self.assertEqual(result["repair_rounds"], 0)
+            self.assertIn(str(policy), browser_prepare.call_args.args[2])
+            self.assertFalse(result["measurement_valid"], "unverified adapter accounting cannot yield a valid comparison")
+            self.assertIsNone(result["manual_mapping_review"])
+            self.assertFalse(result["comparative_valid"])
+            self.assertIn("forced to 0", result["repair_policy"])
+            self.assertIn("no test feedback", result["stop_reason"])
+            self.assertEqual(len(calls), 2)
+            prompts = " ".join(" ".join(cmd) for cmd in calls)
+            for leaked in ("OWNER-ONLY ANSWER", "FIXED OPERATOR PERSONA", "HIDDEN CHECK", "same neutral requirements"):
+                self.assertNotIn(leaked, prompts)
+            self.assertEqual(result["adapter_runs"], [adapter])
+            self.assertIsNone(result["cost_usd"])  # the arm reported none; adapter cost never joins the arm's
+
+
+    def discovery_trial(self, root, responses, deliveries, evidence=None):
+        plugin = root / "factory"
+        (plugin / ".claude-plugin").mkdir(parents=True, exist_ok=True)
+        (plugin / ".claude-plugin/plugin.json").write_text('{"name":"factory"}')
+        args = argparse.Namespace(out=root / "output", timeout=60, budget_usd=5, max_questions=5, repair_rounds=3,
+                                  claude="claude", model="claude-sonnet-5-5", until_complete=True)
+        args.comparison = {"mode": "discovery", "operator": "policy", "input_hashes": {}, "valid_decision_protocol": True,
+                           "policy": {"persona": "Wren", "answers": [{"match": "x-card", "answer": "OWNER-ONLY ANSWER"}]}}
+        args.out.mkdir()
+        calls = []
+
+        def fake_invoke(cmd, work, artifact, timeout):
+            calls.append(cmd)
+            return {"returncode": 0, "timeout": False, "seconds": 0.1, "events": responses.pop(0)}
+
+        with patch.dict("os.environ", {"PLAYWRIGHT_MODULE": "/module"}), \
+                patch("browser_runtime.prepare_browser_check", return_value={"command": str(root / "browser-check"), "sha256": {}}), \
+                patch("benchmark.invoke", side_effect=fake_invoke), patch("benchmark.grade_delivery", side_effect=deliveries), \
+                patch("benchmark.workflow_evidence", side_effect=evidence, return_value={"workflow_complete": True}):
+            return benchmark.trial(args, benchmark.CASES / "gloam-chat", "factory", 0, {"factory": plugin}), calls
+
+    def test_discovery_finish_request_hides_acceptance_and_tags_later_questions(self):
+        init = {"type": "system", "subtype": "init", "model": "claude-sonnet-5-5", "plugins": [{"name": "factory"}], "mcp_servers": []}
+        result = lambda state, question="": {"type": "result", "structured_output": {
+            "state": state, "question": question, "recommended_answer": "", "summary": "Done"}}
+        responses = [[], [init, result("question", "Is the x-card anonymous?")], [result("complete")],
+                     [result("question", "Should the x-card show who tapped?")], [result("complete")]]
+        accepted = {"accepted": True, "tests": 23, "failures": 0, "errors": 0, "skipped": 0}
+        with tempfile.TemporaryDirectory() as temporary:
+            record, calls = self.discovery_trial(Path(temporary), responses, [(accepted, "", None)] * 2,
+                                                 [{"workflow_complete": False}, {"workflow_complete": True}, {"workflow_complete": True}])
+        self.assertEqual(record["status"], "accepted")
+        finish = calls[3][-1]
+        self.assertIn("SHARED WORKFLOW FINISH REQUEST", finish)
+        self.assertNotIn("acceptance", finish)
+        self.assertEqual([d["after_delivery"] for d in record["decisions"]], [False, True])
+
+    def test_failed_adapter_stops_without_charging_the_arm(self):
+        init = {"type": "system", "subtype": "init", "model": "claude-sonnet-5-5", "plugins": [{"name": "factory"}], "mcp_servers": []}
+        complete = {"type": "result", "structured_output": {"state": "complete", "question": "", "recommended_answer": "", "summary": "Done"}}
+        failed = {"accepted": False, "adapter_failed": True, "attributable_to_arm": False, "reason": "adapter timed out"}
+        with tempfile.TemporaryDirectory() as temporary:
+            record, calls = self.discovery_trial(Path(temporary), [[], [init, complete]], [(failed, "unused", {"seconds": 1})])
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(record["stop_reason"], "adapter failed; grading is not attributable to the arm: adapter timed out")
+        self.assertEqual(record["repair_rounds"], 0)
+
+    def test_arm_cannot_read_the_owner_policy_or_run_records(self):
+        policy = benchmark.ROOT / "evals/operators/gloam-owner.json"
+        out = Path("/runs/out")
+        with patch.dict("os.environ", {"PLAYWRIGHT_MODULE": "/module"}):
+            config = benchmark.settings(Path("/work"), {"factory": Path("/factory")}, "factory", out, browser=True, hidden=[str(policy)])
+        denied_reads = config["sandbox"]["filesystem"]["denyRead"]
+        for path in [policy, benchmark.ROOT / "docs", out / "run-config.json", out / "provenance.json", out / "summary.json"]:
+            self.assertTrue(any(str(path).startswith(denied) for denied in denied_reads), path)
+        self.assertIn(f"Read(/{policy})", config["permissions"]["deny"])
+        self.assertIn(f"Read(/{benchmark.ROOT / 'docs'}/**)", config["permissions"]["deny"])
+        self.assertIn(f"Read(/{out / 'run-config.json'})", config["permissions"]["deny"])
+        codex_protected = []
+
+        def capture(binary, work, runtime, active, protected, *rest, **options):
+            codex_protected.append(protected)
+            raise ValueError("captured")
+
+        with tempfile.TemporaryDirectory() as temporary, patch("codex_adapter.prepare", side_effect=capture), \
+                patch.dict("os.environ", {"PLAYWRIGHT_MODULE": "/module"}):
+            root = Path(temporary)
+            paths = {name: root / name for name in ("factory", "superpowers")}
+            for path in paths.values():
+                path.mkdir()
+            args = argparse.Namespace(out=root / "out", timeout=60, budget_usd=5, max_questions=0, repair_rounds=0, harness="codex",
+                                      codex="codex", effort="high", model="gpt-6.1-sol", operator_policy=str(policy))
+            args.out.mkdir()
+            record = benchmark.trial(args, benchmark.CASES / "csv-targets", "factory", 0, paths)
+            shutil.rmtree(record["runtime_root"])
+            work = root / "delivered"
+            work.mkdir()
+            benchmark.grade_delivery(args, benchmark.CASES / "gloam-chat", work, root / "grade-0", paths)
+        self.assertEqual(len(codex_protected), 2, "the Codex arm and the Codex adapter")
+        for protected in codex_protected:
+            for path in [policy.resolve(), args.out / "run-config.json", args.out / "provenance.json", args.out / "summary.json",
+                         args.out / "blind-review-key.json"]:
+                self.assertIn(path, protected)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "superpowers/.claude-plugin").mkdir(parents=True)
+            out = root / "out"
+            with patch("benchmark.snapshots", return_value=({}, {})), patch("benchmark.trial", return_value={"interrupted": False}), \
+                    patch("benchmark.report"), patch("benchmark.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "1.0", "")):
+                benchmark.main(["run", "--superpowers", str(root / "superpowers"), "--model", "claude-sonnet-5-5", "--out", str(out),
+                                "--cases", "csv-targets", "--repeats", "1", "--operator-policy", str(policy)])
+            answers = [rule["answer"] for rule in json.loads(policy.read_text())["answers"]]
+            for name in ["run-config.json", "provenance.json"]:
+                text = (out / name).read_text()
+                self.assertIn(benchmark.hashlib.sha256(policy.read_bytes()).hexdigest(), text)
+                self.assertFalse([answer for answer in answers if answer in text], name + " leaks owner answers")
+
+
+class AdapterTests(unittest.TestCase):
+    COMPLETE: ClassVar[dict] = {"returncode": 0, "timeout": False, "seconds": 0.1,
+                "events": [{"type": "system", "subtype": "init", "model": "claude-sonnet-5-5", "plugins": [], "mcp_servers": []},
+                           {"type": "result", "structured_output": {"state": "complete", "question": "", "recommended_answer": "", "summary": "Mapped"}}]}
+
+    def run_adapter(self, edits, run=COMPLETE):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict("os.environ", {"PLAYWRIGHT_MODULE": "/module"}):
+            root = Path(temporary)
+            work = root / "work"
+            shutil.copytree(benchmark.CASES / "gloam-chat" / "oracle", work)
+            for path in ["qa/mapping.py", "qa/ui.json", "benchmark.sh"]:
+                (work / path).unlink()
+            (work / "node_modules/pkg").mkdir(parents=True)
+            (work / "node_modules/pkg/index.js").write_text("module.exports = 1")
+            args = argparse.Namespace(out=root / "out", timeout=60, budget_usd=5, claude="claude", model="claude-sonnet-5-5")
+            seen = {}
+
+            def adapter_agent(cmd, copy, artifact, timeout):
+                seen["prompt"], seen["contract"], seen["max_turns"] = cmd[-1], (copy / "qa/contract.md").is_file(), "--max-turns" in cmd
+                for path, text in edits.items():
+                    (copy / path).parent.mkdir(parents=True, exist_ok=True)
+                    (copy / path).write_text(text)
+                return json.loads(json.dumps(run))
+
+            def graded(case, product, artifact):
+                seen["graded"] = (product / "qa/mapping.py").read_text()
+                return {"accepted": True}, ""
+
+            with patch("benchmark.invoke", side_effect=adapter_agent), patch("benchmark.grade", side_effect=graded) as grade:
+                quality, _, adapter = benchmark.grade_delivery(args, benchmark.CASES / "gloam-chat", work, root / "trial/grade-0", {"factory": root / "factory"})
+            self.assertEqual(seen["prompt"], (benchmark.CASES / "gloam-chat/grading/adapter-prompt.md").read_text())
+            self.assertTrue(seen["contract"])
+            self.assertFalse(seen["max_turns"], "Claude and Codex adapters share one cap: time, not turns")
+            self.assertEqual(sorted(str(path.relative_to(work)) for path in work.rglob("*") if path.is_file()),
+                             ["DECISIONS.md", "index.html", "node_modules/pkg/index.js", "server.py"],
+                             "the adapter works on a copy; the delivered product is untouched")
+            return quality, adapter, seen, (root / "trial/grade-0-adapter/adapter.diff").read_text() if adapter.get("diff") else "", grade
+
+    def assert_not_attributable(self, quality, adapter, grade, reason):
+        grade.assert_not_called()
+        self.assertFalse(quality["accepted"])
+        self.assertTrue(quality["adapter_failed"])
+        self.assertFalse(quality["attributable_to_arm"])
+        self.assertIn(reason, quality["reason"])
+        self.assertEqual(adapter["adapter_failed"], quality["reason"])
+
+    def test_adapter_writing_only_qa_files_is_graded_on_its_copy(self):
+        quality, adapter, seen, diff, grade = self.run_adapter({"qa/mapping.py": "def handle(request, product): pass\n", "benchmark.sh": "#!/bin/sh\n"})
+        self.assertTrue(quality["accepted"])
+        self.assertIsNone(adapter["adapter_failed"])
+        self.assertEqual(adapter["changed_paths"], ["benchmark.sh", "qa/mapping.py"])
+        self.assertIn("+def handle(request, product): pass", diff)
+        self.assertEqual(seen["graded"], "def handle(request, product): pass\n")
+        grade.assert_called_once()
+
+    def test_unverified_or_contaminated_adapter_is_not_graded(self):
+        for init in (None, {"type": "system", "subtype": "init", "plugins": ["foreign"], "mcp_servers": []}):
+            run = {**self.COMPLETE, "events": ([init] if init else []) + [self.COMPLETE["events"][-1]]}
+            quality, adapter, _, _, grade = self.run_adapter({"qa/mapping.py": "pass\n"}, run)
+            self.assert_not_attributable(quality, adapter, grade, "isolation")
+
+    def test_unknown_adapter_accounting_is_not_zero_or_valid(self):
+        quality, adapter, _, _, _ = self.run_adapter({"qa/mapping.py": "pass\n"})
+        self.assertTrue(quality["accepted"])
+        self.assertIsNone(adapter["cost_usd"])
+        self.assertFalse(adapter["measurement_valid"])
+        self.assertFalse(adapter["model_policy_valid"])
+        self.assertIsNone(adapter["manual_mapping_review"])
+
+    def test_observed_adapter_model_and_accounting_control_measurement(self):
+        usage = {field: 1 for field in benchmark.TOKEN_FIELDS}
+        for model, expected in (("claude-sonnet-5-5", True), ("unexpected-model", False)):
+            events = json.loads(json.dumps(self.COMPLETE["events"]))
+            events[-1].update(modelUsage={model: usage}, total_cost_usd=.05)
+            quality, adapter, _, _, _ = self.run_adapter({"qa/mapping.py": "pass\n"}, {**self.COMPLETE, "events": events})
+            self.assertTrue(quality["accepted"])
+            self.assertEqual(adapter["measurement_valid"], expected)
+            self.assertEqual(adapter["model_policy_valid"], expected)
+            self.assertEqual(adapter["cost_usd"], .05)
+            self.assertIn("provider effort is not observed", adapter["effort_policy_evidence"])
+
+    def test_adapter_diff_guard_rejects_a_product_file_change(self):
+        quality, adapter, _seen, diff, grade = self.run_adapter({"qa/mapping.py": "def handle(request, product): pass\n",
+                                                                "server.py": "print('patched product')\n"})
+        self.assert_not_attributable(quality, adapter, grade, "changed product files: server.py")
+        self.assertIn("+print('patched product')", diff)
+
+    def test_adapter_diff_guard_rejects_a_dependency_change(self):
+        quality, adapter, _seen, diff, grade = self.run_adapter({"node_modules/pkg/index.js": "module.exports = 2"})
+        self.assert_not_attributable(quality, adapter, grade, "node_modules/pkg/index.js")
+        self.assertIn("Dependency file node_modules/pkg/index.js changed", diff)
+
+    def test_failed_or_blocked_adapter_is_not_the_arms_failure(self):
+        blocked = {**self.COMPLETE, "events": [self.COMPLETE["events"][0], {"type": "result", "structured_output": {
+            "state": "blocked", "question": "", "recommended_answer": "", "summary": "cannot seed"}}]}
+        does_not_start = json.dumps({"product_starts": False, "evidence": "$ sh benchmark.sh start\nError: Cannot find module 'express'"})
+        starts = json.dumps({"product_starts": True, "evidence": ""})
+        for run, report, reason in [({**self.COMPLETE, "returncode": 1}, does_not_start, "exited 1"),
+                                    ({**self.COMPLETE, "timeout": True}, does_not_start, "timed out"),
+                                    (blocked, None, "reported blocked: cannot seed"), (blocked, starts, "reported blocked: cannot seed"),
+                                    (blocked, json.dumps({"product_starts": False, "evidence": " "}), "reported blocked")]:
+            edits = {"qa/mapping.py": "def handle(request, product): pass\n", **({"qa/report.json": report} if report else {})}
+            quality, adapter, _, _, grade = self.run_adapter(edits, run)
+            self.assert_not_attributable(quality, adapter, grade, reason)
+
+    def test_product_that_does_not_start_is_the_arms_failure(self):
+        blocked = {**self.COMPLETE, "events": [self.COMPLETE["events"][0], {"type": "result", "structured_output": {
+            "state": "blocked", "question": "", "recommended_answer": "", "summary": "the product does not start"}}]}
+        report = json.dumps({"product_starts": False, "evidence": "$ sh benchmark.sh start\nError: Cannot find module 'express'"})
+        quality, adapter, _, _, grade = self.run_adapter({"benchmark.sh": "#!/bin/sh\n", "qa/report.json": report}, blocked)
+        grade.assert_not_called()
+        self.assertIsNone(adapter["adapter_failed"])
+        self.assertFalse(quality["accepted"])
+        self.assertTrue(quality["attributable_to_arm"])
+        self.assertIn("Cannot find module", quality["evidence"])
+        self.assertEqual((quality["tests"], quality["failures"]), (23, 23))
+        self.assertFalse(any(row["passed"] for row in quality["requirements"].values()))
+        self.assertFalse(any(outcome["accepted"] for outcome in quality["outcomes"]))
+
 
 class CommandTests(unittest.TestCase):
     def test_blind_browser_review_copies_images_and_preserves_labels_and_notes(self):
@@ -710,11 +1333,28 @@ class CommandTests(unittest.TestCase):
             root = Path(temporary)
             work = root / "work"
             work.mkdir()
-            names = ["index.html", "styles.css", "app.js", "tickets.json", "logo.svg"]
+            names = ["index.html", "styles.css", "app.js", "tickets.json", "logo.svg", "requirements-dev.txt", "uv.lock"]
             for name in [*names, "test_generated.cjs", "test_existing.cjs"]:
                 (work / name).write_text(name)
+            cache = work / ".mypy_cache"
+            cache.mkdir()
+            (cache / "source.json").write_text("generated cache")
             benchmark.copy_product(work, root / "source", source_only=True)
             self.assertEqual(sorted(path.name for path in (root / "source").iterdir()), sorted(names))
+
+    def test_grading_prerequisite_failure_retains_nested_artifact_receipts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            work = root / "work"
+            work.mkdir()
+            artifact = root / "nested/grade"
+            with patch("benchmark.grading_sandbox", side_effect=ValueError("missing grading runtime")):
+                quality, text = benchmark.grade(benchmark.CASES / "support-dashboard", work, artifact)
+            self.assertFalse(quality["accepted"])
+            self.assertIsNone(quality["tests"])
+            self.assertEqual(text, "missing grading runtime")
+            self.assertEqual(artifact.with_suffix(".txt").read_text(), text)
+            self.assertEqual(json.loads(artifact.with_suffix(".json").read_text()), quality)
 
     def test_browser_oracle_can_write_artifacts_under_home(self):
         with tempfile.TemporaryDirectory(prefix="factory-grade-home-", dir=Path.home()) as output, tempfile.TemporaryDirectory() as temporary:

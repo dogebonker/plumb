@@ -1,0 +1,4 @@
+interface:
+  display_name: "Factory Code Review"
+  short_description: "Polish, defect hunting and Factory conformance"
+  default_prompt: "Use $factory-code-review for a pre-release defect, polish and Factory intent review of this branch."

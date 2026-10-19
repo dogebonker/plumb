@@ -1,0 +1,26 @@
+{
+  "persona": "Owner of a local support desk for two organizations. I want a complete, calm and professional product with a real backend and durable data. I judge both workflows against the same support-fullstack brief and its independently tested FR/NFR outcomes.",
+  "answers": [
+    {
+      "match": "\\b(?:approve|approval|confirm|sign off)\\b",
+      "answer": "Approved for this local benchmark only when the proposal preserves the entire shared support-fullstack brief. Proceed with the proposed compatible local stack and professional neutral visual direction; capture the proposed mockups through the supplied browser capability. Record the FR/NFR agreement, alternatives, trade-offs and exclusions. No requirement may be relaxed or replaced, and no global installation, remote service, remote Git action or production change is approved."
+    },
+    {
+      "match": "framework|stack|database|library|dependencies|technology",
+      "answer": "Choose and justify a stack supported by the supplied local Node/Python environment. Use project-pinned dependencies and the declared registries. Preserve every FR/NFR, HTTP and launch boundary in the shared brief. No global installations, remote services or external product assets. Record the alternatives, trade-offs and decisions in DECISIONS.md."
+    },
+    {
+      "match": "subagent.driven|native.*execution|inline.*execution|execution.*approach",
+      "answer": "Use the workflow's native execution approach that best completes this task with the supplied Codex capabilities. Keep the recorded model and effort for all children. Preserve independent review, real verification and the full local finishing workflow."
+    },
+    {
+      "match": "\\b(?:git|gpg|unsigned|branches?|push)\\b|\\bmerge\\b.*\\bbranch\\b|\\bbranch\\b.*\\bmerge\\b",
+      "answer": "Unsigned local commits and local merges are authorized only in this disposable benchmark repository. Do not push or change any remote. Sign off local milestones when the agreed requirements and recorded verification are satisfied; record unresolved defects rather than declaring them passed."
+    },
+    {
+      "match": "design|brand|visual|color|typography|style",
+      "answer": "Use the shared professional neutral support-operations direction: readable hierarchy, restrained color, familiar controls and consistent desktop/mobile behavior. Record the visual decisions. Preserve accessibility, keyboard support and all required viewport checks."
+    }
+  ],
+  "default_answer": "Proceed and approve local decisions within the unchanged shared support-fullstack brief. Every listed FR/NFR remains mandatory; no extra feature may replace it. Record measurable agreements, decisions, alternatives and exclusions. Keep unresolved contradictions visible and return blocked if the brief cannot resolve them. These are synthetic local benchmark answers and authorize no production or remote action."
+}

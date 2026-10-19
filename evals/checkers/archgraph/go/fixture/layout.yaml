@@ -1,0 +1,4 @@
+version: 1
+layers: ["domain/**", "adapters/**"]
+forbid:
+  - { id: domain-not-to-adapters, from: "domain/**", to: "adapters/**" }

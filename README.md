@@ -1,134 +1,163 @@
-![Software Engineering Is Becoming Factory Engineering — Zach Lloyd, CEO of Warp](assets/banner.svg)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/readme-hero-dark.svg">
+    <img src="assets/readme-hero-light.svg" alt="Software Factory — a workflow from intent through checks to review" width="100%">
+  </picture>
+</p>
 
-# Software Factory
+<p align="center">
+  <strong>From a brief to a reviewed change.</strong><br>
+  Agree on the product. Freeze the contracts. Build against checks.<br>
+  Keep the intent visible all the way to the final diff.
+</p>
 
-Agent skills that turn a plain-language request into shipped, reviewed code in any repository. Agents ask the questions a senior engineer would, write the plan down, build it test-first and get it reviewed. You approve the plan and sign off the result.
+<p align="center">
+  <a href="#start-a-change">Get started</a> ·
+  <a href="#review-a-branch-or-pr">Review a branch</a> ·
+  <a href="#what-makes-it-a-factory">How it works</a> ·
+  <a href="#results-so-far">Results</a> ·
+  <a href="#documentation">Documentation</a>
+</p>
 
-## How it works
+Software Factory is a set of agent skills, versioned documents and execution tools for software development. It asks the questions that change the product, turns the answers into contracts, and coordinates implementation, independent review and acceptance.
 
-![The factory loop](assets/loop.svg)
+On the standard track, you approve one plan and sign off the result. Agents handle the build and scoped repair work between those decisions. Changed promises, security decisions and missing authority come back to you.
 
-1. **Triage.** You describe the task in plain words. The factory picks how much process it needs.
-2. **Plan.** It asks the questions that change the product: who uses it, who may see what, what happens when things fail, what things are called, how the product should sound. Then it writes one plan and asks for one approval.
-3. **Build.** An agent builds each slice test-first: a failing test, then the code.
-4. **Review.** Independent reviewers and an acceptance check look at the result. Fixes go back to the builder.
-5. **Reconcile.** What shipped folds back into the living docs: decisions, constraints and the glossary. You sign off.
+**Status:** experimental. The existing workflow is implemented; the new swarm has not completed its end-to-end pilot. [Current capabilities ↓](#current-capabilities)
 
-## Tracks
+## Start a change
 
-Process scales to risk.
+The primary setup is **Claude Code**, with **Git** and **Python 3.10+**. PR and headless workflows also use the GitHub CLI. Project runtimes and checks come from your repository.
 
-```mermaid
-flowchart TD
-  T[New task] --> Q{How risky?}
-  Q -->|rename, copy, config| A[Trivial: straight to an agent]
-  Q -->|a few files, no new interface| B[Small: slices, build, review]
-  Q -->|new endpoint, screen or product| C[Standard: one plan, one approval, build, one review]
-  Q -->|money, existing sign-in or permissions, data migrations| D[Critical: four separate gates, extra reviewers]
+```sh
+git clone https://github.com/dogebonker/software-factory.git
+cd software-factory
+./bin/factory-install HEAD
+
+mkdir -p "$HOME/.claude/skills"
+ln -s "$PWD/skills/factory-init" "$HOME/.claude/skills/factory-init"
+ln -s "$PWD/skills/factory-upgrade" "$HOME/.claude/skills/factory-upgrade"
 ```
 
-On the critical track, the interface gets its own gate: you draft the signatures, review lenses challenge them, you decide, and the stubs freeze before anything is built.
-
-![Interface Design gate](assets/interface-gate.svg)
-
-## Hard gates
-
-An approval is tied to a hash of the document it approves. Edit the document afterwards and that approval, and everything after it, reverts. Until the plan is approved, a hook blocks edits to source files.
-
-```mermaid
-stateDiagram-v2
-  [*] --> Pending
-  Pending --> Drafting: agent writes the plan
-  Drafting --> Approved: your approval + document hash
-  Approved --> Drafting: document edited after approval
-  Approved --> [*]: build starts
-```
-
-## Review
-
-Scripts first, agents second, you last. Anything a script can check never costs a model call.
-
-![Review pipeline](assets/review.svg)
-
-## Why these choices
-
-The full log, with costs and trade-offs, is [docs/DECISIONS.md](docs/DECISIONS.md).
-
-**Process**
-
-| Choice | Why | Instead of |
-| --- | --- | --- |
-| One plan, one approval (standard track) | The questions find the rules; six separate gates mostly added waiting | Four gates for everything (kept for critical) |
-| A fixed discovery checklist | Bugs ship in the rules nobody asked about: who sees what, edits, failures, vocabulary, voice | Free-form brainstorming |
-| Tracks by risk | A typo fix and a payout change shouldn't cost the same | One process for every task |
-| Approval tied to a document hash | A chat "looks good" lets an unfinished plan slip into code | Approval by convention |
-| Slices, tracer bullet first | A thin end-to-end slice surfaces integration problems on day one | Building layer by layer |
-| Test fails before the code | A test that never failed proves nothing | Tests written after the code |
-| Constraints registry | Every requirement ends in a test, a lint rule, a monitor or a named human check | Requirements as prose |
-
-**Files and memory**
-
-| Choice | Why | Instead of |
-| --- | --- | --- |
-| Skills plus files | The same loop runs in Claude Code, Codex or OpenCode, on a laptop or a server | A hosted platform |
-| Decisions in git | Plans, ADRs and constraints get diffed and reviewed in pull requests like code | Decisions in chat |
-| [Pond](https://github.com/tenequm/pond) for recall | Every session is searchable across repositories, so nothing relies on someone writing a lesson down | Hand-written lesson files |
-| Packs pinned by hash | Upstream packs move weekly; an update never lands mid-feature | Tracking latest |
-
-**Review and quality**
-
-| Choice | Why | Instead of |
-| --- | --- | --- |
-| Scripts before agents | Import direction, signatures and dead code are facts, not judgment calls | More review agents |
-| One review pass, one fix batch | A converging multi-round reviewer burned tokens for little gain | Reviewing until clean |
-| Built on `/polish` | It already validates every finding against the code and treats diffs as untrusted | A reviewer from scratch |
-| [Cloudflare security-audit](https://github.com/cloudflare/security-audit-skill) + five scanners | Its evidence bar matches ours; the large catalogs were mostly offensive or failed a full read | Big security skill catalogs |
-| DESIGN.md + mechanical de-slop | Models judge design near chance, so they answer closed questions against the product's own file | Generic design skills |
-| Voice from the design file | Brand voice belongs to the product; a neutral default erases it | A fixed neutral tone |
-| Own CI measurement | Savings must beat the 9–31% run-to-run noise measured on the same repository | ci-speedup's success-only sample |
-| Measured retro | Lessons need outside evidence in two changes; memory that keeps everything gets worse | Free-form lesson files |
-
-**Design knowledge**
-
-| Choice | Why | Instead of |
-| --- | --- | --- |
-| APoSD as the spine | Interfaces are cheap to change now and expensive later | Reviewing implementation only |
-| [Book lenses](https://github.com/ciembor/agent-rules-books) by profile, two per step | Books disagree; loading all of them is noise | One big rulebook |
-| BDD examples everywhere, Gherkin only where it exists | A concrete example is the cheapest way to catch a misread requirement; adding a test framework is the repo owner's call | Gherkin everywhere |
-| [Money pack](https://github.com/nbailo/financial-engineering-skills) only where money moves | Noise in a CRUD panel, the most valuable reviewer in a payout worker | Always on |
-| Language packs per module ([React](https://github.com/vercel-labs/agent-skills), [Rust](https://github.com/leonardomso/rust-skills), [Go](https://github.com/cxuu/golang-skills), [Python](https://github.com/trailofbits/skills)) | Books decide boundaries, packs decide idiom; lint-able rules go to the linter | One generic style guide |
-| FDA for new frontends | Colocated domains with explicit public entries; existing conventions still win | FSD or feature folders by default |
-| [Ponytail](https://github.com/DietrichGebert/ponytail) prune job | Agents add code; a scheduled, behavior-preserving prune pushes back | Ad-hoc cleanup |
-| DRY, SOLID, YAGNI, KISS with a written order | They conflict. YAGNI and KISS win, DRY waits for the third copy, SOLID stays at module boundaries | Principles applied by habit |
-| Gang of Four map behind a smell | A pattern fits only when its smell is in the code. Required patterns breed pattern-itis | Patterns as a checklist |
-
-## Quick start
-
-```bash
-~/Work/software-factory/bin/factory-install HEAD
-ln -sf ~/Work/software-factory/skills/factory-init ~/Work/software-factory/skills/factory-upgrade ~/.claude/skills/
-```
-
-Then, in the repository you want to change:
+Then open the repository you want to change in Claude Code:
 
 ```text
 /factory-init
-/factory-triage <the task in plain words>
+/factory-triage Add a CSV export for the current filtered table
 ```
 
-Follow the hand-offs. The factory stops only when it needs your answer.
+Init pins the framework and links its skills into that project. Enable the editing hook when init offers it; it guards the harness’s editing tools against unapproved or out-of-scope changes. Existing installations use `/factory-upgrade`; [installation details](skills/README.md#install) cover setup and development links.
 
-## Learn more
+The skills use the open Agent Skills format. Automatic project linking currently targets Claude Code; other clients need manual integration. The standalone review skill also includes Codex metadata.
 
-- [skills/README.md](skills/README.md): every skill, the hard-gate hook and the headless runner
-- [kit/README.md](kit/README.md): the shared kit, packs and layouts
-- [docs/DESIGN.md](docs/DESIGN.md) and [docs/DECISIONS.md](docs/DECISIONS.md): why it works this way
-- [CHANGELOG.md](CHANGELOG.md): what changed
+## What makes it a factory
 
-## Credits
+### The questions become contracts
 
-The four-gate idea comes from Dex Horthy and [HumanLayer](https://www.humanlayer.com/), from the talk [Why Software Factories Fail](https://www.youtube.com/watch?v=Ib5GBkD555M). Memory across projects comes from [Pond](https://github.com/tenequm/pond).
+Who can export the table? Does the export include only visible rows? What happens if the data changes halfway through? These answers become requirements, examples and interface promises before implementation starts.
 
-## License
+The standard-track loop:
 
-[MIT](LICENSE). Bundled book rubrics keep their upstream [MIT notice](kit/packs/LICENSE.agent-rules-books). Other third-party packs keep their own licenses.
+<p align="center">
+  <img src="assets/loop.svg" alt="Triage, plan and human approval; test-first build, independent review and repairs; final sign-off and living documentation" width="760">
+</p>
+
+| Stage | What it leaves behind |
+| --- | --- |
+| **Plan** | Product rules, examples, architecture decisions, interfaces and scoped slices |
+| **Build** | Tests, implementation and recorded verification for each slice |
+| **Review** | Mechanical results, independently validated findings and acceptance evidence |
+| **Reconcile** | The shipped decisions, constraints and vocabulary folded into living docs |
+
+Questions carry examples and trade-offs. Flow and boundary choices get a diagram when it helps. A small interface change does not automatically reopen compatible architecture or security decisions.
+
+<details>
+<summary><strong>How much process does a task get?</strong></summary>
+
+| Track | Typical work | Process |
+| --- | --- | --- |
+| Trivial | A rename, copy change or one-line configuration edit | Direct execution |
+| Small | A few files, no new interface | Slices, build and review |
+| Standard | A feature, endpoint, screen or new interface | One combined plan, one approval, implementation and review |
+| Critical | Money, existing access rules or migrations | Separate gates, explicit budgets and applicable risk reviews |
+
+Risk controls verification. Design-book lenses are opt-in and sized to the task; required correctness, architecture, security and money checks remain.
+
+</details>
+
+### Architecture becomes something you can check
+
+A constraint names its enforcement: a test, lint rule, architecture rule, monitor or human check. Accepted ADRs carry the same mapping. Review can cite **ADR 0007** with the same intent as a requirement ID or frozen signature.
+
+Selected layout checkers enforce import boundaries. [Archgraph](https://github.com/dogebonker/archgraph) can supply cross-stack rules, blast radius and reading order; the repository stays readable beyond that initial context. Missing tools and incomplete graph coverage stay explicit.
+
+Approved documents are bound to exact hashes. When installed, the editing hook protects them and the current slice's allowed files. Supplemental evidence lives separately. Compatible unchanged approvals survive a revision; changed contracts need their actual decision. [Authority and limits](skills/README.md#hard-gates)
+
+### Review checks both the code and its intent
+
+Scanners and project checks run first. Reviewers inspect the behavior behind the contracts, trace side-effect ordering and validate findings against the code. Acceptance tries agreed examples on the running product.
+
+A bounded review exercise caught a float conversion against an integer-money ADR and stayed silent on the conforming version. Its cost and limitations are [published](docs/research/intent-review-2026-10-19.md). That is a small behavioral check, not proof of general review quality.
+
+## Review a branch or PR
+
+You can use the review layer without starting a Factory change:
+
+```text
+/factory-code-review origin/main review
+```
+
+Pass a PR URL to review a pull request, or name code and documentation paths to narrow the scope. In Codex, invoke `$factory-code-review` with the same request in prose.
+
+The [review skill](skills/factory-code-review/SKILL.md) combines:
+
+- **Polish:** cleanliness, design/reuse, efficiency and side-effect gating.
+- **Defect hunting:** installed scanners and the bug-review checklist, with concrete failure scenarios, severity and effort.
+- **Factory conformance:** docs, accepted ADRs, standing constraints, frozen contracts, ownership and approval integrity.
+
+One shared packet and one deduplicated report. Small reviews stay lean; large reviews can split into four lanes. Fixes and PR posting follow explicit authorization. No new planning ceremony is required.
+
+## Current capabilities
+
+| Capability | Where it stands |
+| --- | --- |
+| Skills, versioned plans, editing hook, test-first slices and independent review | Implemented; primary project setup is Claude Code |
+| Standalone code review | Implemented for local work and PRs |
+| Headless runner | Implemented for a dedicated clone, with actual GitHub approver checks |
+| Signed GitHub/Linear wake-ups | Local receiver and durable queue implemented; live subscriptions require setup |
+| Sonnet workers, mechanical gates and Opus review | Experimental v2 controller; Glarity pilot not merged |
+| Mid-build replanning | Budgeted v2 host checkpoint; proposals hold changed contracts for a decision |
+| Durable event-by-event v2 resume and Linear ticket admission | Pending integration |
+| Shared Pond/archgraph context gateway | Design only |
+
+The [v2 controller](docs/FACTORY_V2.md) isolates slice work in separate worktrees and gates scope, frozen tests, types, lint, architecture and declared exports before Opus review. The [event-driven extension](docs/FACTORY_EVENTS.md) describes wake-ups, replanning, outcome metrics and the remaining integration work.
+
+## Results so far
+
+The sequential Factory trailed both controls in the published **20-task, three-arm benchmark**:
+
+| Arm | Accepted tasks |
+| --- | ---: |
+| Bare agent | **14 / 20** |
+| Agent + a good CLAUDE.md | **14 / 20** |
+| Sequential Factory | **9 / 20** |
+
+These results do not measure the new swarm. Quality, tokens and wall time are reported separately; Factory's incomplete cost accounting stays unknown. Raw artifacts were later deleted, which limits independent re-audit. [Full table, protocol and limitations →](docs/research/real-pr-benchmark-2026-10-19.md)
+
+The next outcome is a merged, observed feature: **escaped defects per feature, time to recovery and adoption**, alongside cost and time. The [Glarity pilot report](docs/pilots/glarity-blog-seo/outcomes.md) currently records those outcomes as pending, not zero.
+
+## Documentation
+
+| Start here | Read for |
+| --- | --- |
+| [Skills](skills/README.md) | Commands, installation, hooks and headless operation |
+| [Kit](kit/README.md) | Layouts, adapters, principles and pinned packs |
+| [Design](docs/DESIGN.md) · [Decisions](docs/DECISIONS.md) | The specification and the reasoning behind it |
+| [Factory v2](docs/FACTORY_V2.md) · [Events and context](docs/FACTORY_EVENTS.md) | Experimental execution and the next integrations |
+| [Benchmark](docs/research/real-pr-benchmark-2026-10-19.md) · [Changelog](CHANGELOG.md) | Measurements and changes |
+
+## Built on
+
+The four-gate approach draws from Dex Horthy and [HumanLayer](https://www.humanlayer.com/), including [Why Software Factories Fail](https://www.youtube.com/watch?v=Ib5GBkD555M). [Pond](https://github.com/tenequm/pond) supplies cross-session recall; [archgraph](https://github.com/dogebonker/archgraph) supplies architecture evidence. The standalone review adapts the user-supplied polish and bug-review workflows. Pinned third-party packs retain their own attribution.
+
+[MIT](LICENSE). Bundled book rubrics retain their upstream [MIT notice](kit/packs/LICENSE.agent-rules-books).

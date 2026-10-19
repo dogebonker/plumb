@@ -2,6 +2,10 @@
 
 The factory's own evals (design: `docs/research/evals-selection.md`).
 
+[Historical feature PR benchmark](REAL_PR_BENCHMARK.md) compares a bare agent,
+a frozen good CLAUDE.md, and that same guide plus Factory on real merged PR tasks.
+Quality determines the result; tokens and wall time are reported separately.
+
 [Factory versus Superpowers](BENCHMARK.md) measures product quality, completion time,
 token usage and repair work on matched changes, with isolated skills and hidden tests.
 Choose execution with a shared approved spec or discovery with an independent fixed
@@ -23,3 +27,5 @@ evals/checkers/run.sh
 It needs network access, plus `node`/`npm`, `uv` or `python3`, `go` and `cargo`. A stack whose toolchain is missing is skipped. Each tool is installed at its pin into a temp directory, and logs go there too. It prints one line per checker and exits non-zero if any expectation fails.
 
 Benchmark grading requires macOS native sandbox support and fails closed without it. Python completion receipts reject early exits and stdout score spoofing; same-interpreter deliberate test tampering remains a documented review requirement. See [BENCHMARK.md](BENCHMARK.md) for the exact isolation and evidence limits.
+
+For the Codex-only full-stack trial, use the `support-fullstack` case and `benchmark.py run --harness codex --model gpt-6.1-sol --effort high --until-complete`, supplying the pinned Superpowers directory, output directory, fixed operator policy and installed Playwright module. See [BENCHMARK.md](BENCHMARK.md#codex-only-full-stack-comparison) for launch boundaries, completion, resume and estimated-cost accounting. Historical Claude cases and defaults remain available.

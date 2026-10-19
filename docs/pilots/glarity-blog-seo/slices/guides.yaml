@@ -1,0 +1,107 @@
+{
+  "id": "guides",
+  "kind": "feature",
+  "depends_on": [
+    "contracts"
+  ],
+  "owns": [
+    "apps/frontend/app/guides/"
+  ],
+  "reads": [
+    "apps/frontend/content/editorial.json",
+    "package-lock.json",
+    "package.json",
+    "apps/frontend/package.json",
+    "apps/frontend/tsconfig.json",
+    "apps/frontend/next.config.mjs",
+    "apps/frontend/eslint.config.mjs",
+    "apps/frontend/lib/content.ts",
+    "apps/frontend/lib/publishing.ts",
+    "apps/frontend/app/layout.tsx",
+    "apps/frontend/app/page.tsx",
+    "apps/frontend/app/globals.css",
+    "docs/agents/admin/core.md",
+    "docs/agents/conventions.md",
+    "docs/agents/core.md",
+    "docs/agents/memory_maintenance.md",
+    "docs/agents/suggested_commands.md",
+    "docs/agents/task_completion.md",
+    "docs/agents/tech_stack.md"
+  ],
+  "interfaces": [
+    {
+      "path": "apps/frontend/app/guides/page.tsx",
+      "symbol": "default",
+      "signature": "() => import(\"react\").JSX.Element"
+    },
+    {
+      "path": "apps/frontend/app/guides/page.tsx",
+      "symbol": "metadata",
+      "signature": "import(\"next\").Metadata"
+    },
+    {
+      "path": "apps/frontend/app/guides/[slug]/page.tsx",
+      "symbol": "default",
+      "signature": "(props: {params: Promise<{slug: string}>}) => Promise<import(\"react\").JSX.Element>"
+    },
+    {
+      "path": "apps/frontend/app/guides/[slug]/page.tsx",
+      "symbol": "generateMetadata",
+      "signature": "(props: {params: Promise<{slug: string}>}) => Promise<import(\"next\").Metadata>"
+    },
+    {
+      "path": "apps/frontend/app/guides/[slug]/page.tsx",
+      "symbol": "generateStaticParams",
+      "signature": "() => readonly {slug: string}[]"
+    }
+  ],
+  "fr": [
+    {
+      "id": "GUIDES-01",
+      "given": "two published curated network guides in frozen editorial.json",
+      "when": "the guide index is requested",
+      "then": "both guide titles and detail anchors are visible",
+      "gate_id": "guides-http",
+      "case_id": "GUIDES-01"
+    },
+    {
+      "id": "GUIDES-02",
+      "given": "published guides with distinct frozen content and references",
+      "when": "each guide is requested in preview and publication modes",
+      "then": "complete visible headings/body/source links, distinct metadata, truthful breadcrumbs and a related blog article provide an educational next step",
+      "gate_id": "guides-http",
+      "case_id": "GUIDES-02"
+    },
+    {
+      "id": "GUIDES-03",
+      "given": "a slug absent from the frozen published inventory",
+      "when": "that guide route is requested",
+      "then": "HTTP 404 is returned",
+      "gate_id": "guides-http",
+      "case_id": "GUIDES-03"
+    }
+  ],
+  "rules": {
+    "ids": [
+      "contract-no-app",
+      "root-no-features",
+      "blog-independent",
+      "guides-independent",
+      "discovery-independent",
+      "frontend-no-private-systems"
+    ],
+    "surfaces": []
+  },
+  "gates": [
+    "guides-http",
+    "typecheck",
+    "lint"
+  ],
+  "budget": {
+    "tokens": 450000,
+    "retries": 1,
+    "review_passes": 2,
+    "review_tokens": 150000,
+    "seconds": 1500
+  }
+}

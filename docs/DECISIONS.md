@@ -422,3 +422,117 @@ No maintained, licensed Gang of Four rule set exists: `ciembor/agent-rules-books
 **Why.** The four principles conflict: without a written order, a DRY or SOLID finding can push an abstraction that YAGNI and KISS reject. A written order and a diff-level test make the findings repeatable. Mandatory patterns produce pattern-itis and contradict YAGNI and KISS, so the map treats patterns as a suggestion behind a smell.
 
 **Cost.** The pack is Factory's to maintain: an edit renames its folder to the new tree hash and updates the lock and the `kit/packs/README.md` table in the same commit, and `/factory-packs` reports it as gone upstream until that commit reaches `main`. Removing the old Near-duplicates rubric line means a second copy of code is no longer a review finding.
+
+
+## 41. Resume approved stages without rewriting or reapproval
+
+**Decision.** Approved gate documents and a change's approved threat model keep their exact bytes. The editing hook blocks routine rewrites and accepts a full Write only when its result matches the recorded digest; pending drafts, status and separate evidence remain editable. Supplemental research, explanations and implementation findings do not reopen architecture or security decisions. A resume selects unfinished work, reuses applicable threat-model approval, and drafts/approves only pending gate documents. Proven agent-only incidental edits can be restored from the exact approved snapshot without changing approval records; user edits and uncertain provenance are preserved.
+
+New standard interactive plan approvals authorize bounded implementation/review/acceptance repair rounds until required proof passes or a real blocker remains. Each round batches validated defects, retains RED/GREEN history, checks affected reviewers and reruns current acceptance. It does not repeat an unchanged whole panel or stop at an arbitrary repair count. Older explicit limits, manual pauses, headless approval provenance and final actual human sign-off remain. Material promise, contract, scope and security-outcome changes still require the concrete decision to be approved.
+
+**Why.** Replaying completed planning and adding detail to approved architecture changed its hash and caused unnecessary downstream approvals; the threat-model step also always drafted and asked again. Standard review's one-repair limit turned repairable implementation failures into another human hand-off.
+
+**Cost.** Hash checks stay exact, without semantic hashing or automatic reapproval. Hook enforcement covers editing tools, not shell writes or the truth of editable approval metadata. Skill-driven resume and security applicability still require judgment. This amends decisions 36 and 38 and the standard-track repair limit, without changing initial discovery or approval authority.
+
+
+## 42. Reapprove changed decisions and explain the actual choice
+
+**Decision.** Interactive revisions compare the exact before/after delta against existing product, architecture, interface, slice and security decisions. A compact impact note binds its compatibility reasons to the examined hashes/source; changed or contradicted gates reopen, while byte-identical compatible gates retain their approval records. Uncertain impact falls back to conservative invalidation. Supplementary interface fields do not get copied into approved architecture simply to make it match a later stage. Affected callers/tests/reviews/acceptance are reverified even when their governing architecture/security approvals remain valid. Completed parents stay locked; resolved send-back markers clear without another retained-gate approval. Headless PR snapshot authority is unchanged.
+
+Question stages retain their existing scope and batching. Explain a meaningful choice with the user consequence, one concrete example, a recommendation and the alternatives' trade-offs. Use a small flow/state/sequence sketch or comparison table when it helps explain a relationship. Revisions show the actual changed decision, unchanged approvals and automatic checks; factual progress and explanatory follow-ups continue without another approval request. Ask for a user example only when missing context changes the decision.
+
+**Why.** Pond session `15ba6cc4-cbac-42ed-a8b8-2e11185c0927` records the Glarity payment-widget flow saying architecture had nothing to change but needed reapproval because product reopened. The next step copied two response-field notes into architecture (`85df03db`, `2dd2159d` in Glarity). This was approval noise from stage-wide invalidation. The user values the questions and wants better explanations/visuals around meaningful decisions.
+
+**Cost.** Compatibility is an evidence-backed workflow judgment, not semantic hashing or automatic approval of changed bytes. A model match alone does not prove unchanged security exposure. Existing closed-schema, money, storage, access and budget promises must still be examined, and actual contradictions require their decision to be revisited. This narrows decision 41's interactive chain reset; live agent behavior is not established by model-free regressions.
+
+
+## 43. Cheap default review, explicit books and measured skill usage
+
+**Decision.** Task-local `design_lenses: []` defaults all design-book rubrics off, including Refactoring.Guru, APoSD and Clean Architecture. Profiles advertise candidates rather than activate them. Task footprint is separate from risk: small/medium work gets no unsolicited lens question; large work may recommend one within the existing plan summary. Explicit selection loads one nano excerpt for small tasks, one mini for medium, at most two mini for large. The existing general reviewer carries selected review lenses, with at most one optional interface-design reviewer. Full books need an explicit deep-review request. Required tests, contract/import checks, independent correctness review and security/money coverage remain.
+
+Every named skill invocation registers provider-backed token coverage per task. `kit/usage.py` records disjoint token classes, model, invocation, cumulative-resume high-water deltas and nested-attribution gaps. Headless Claude streaming evidence is retained outside the disposable harness clone on success, failure and interruption. Shared-session interactive measurements require actual entry baselines plus exit counters; otherwise attribution remains unknown. Reports expose per-skill invocation counts, measured classes and unknowns without additional model calls or mandatory retro. Actual dollars/call counts are not inferred from tokens. The former guessed multi-million-token budgets are retired.
+
+**Why.** The user wants cheap, consistent steps instead of thorough stages skipped for cost. Automatic full APoSD panels and always-loaded book rubrics increased context and orchestration without per-task cost evidence. Measurement must show failed attempts and missing attribution, not reward skipping work.
+
+**Cost.** Optional design critique can miss maintainability advice; the concise general review and executable checks remain the baseline. Token counters are observed provider telemetry, not a billing invoice or proof of correctness. Claude collection is implemented first; unsupported providers and nested skill splits stay explicit gaps. No matched live run or measured savings is claimed. This amends decisions 36/40's default rubric loads while retaining pinned availability and prior approval behavior.
+
+
+## 44. ADRs declare enforcement like standing constraints
+
+**Decision.** Every newly drafted or touched ADR carries `Enforced by`: a named architecture/lint rule, test, monitor or `human-verified`. Placement/import decisions use the chosen layout checker; behavioral decisions reuse their source constraint's enforcement and ID. Legacy missing lines read as human-verified until reconciliation drafts an explicit line. Named definitions must exist at source HEAD before reconciliation completes; missing execution is not green.
+
+**Why.** A standing Decision without enforcement can silently outlive its implementation. This extends decision 5's constraint-to-check mapping to ADRs.
+
+**Cost.** The conductor maps names to trusted existing commands; lexical definition checks do not prove that a test captures every implication of a Decision. No hook or workflow state is added.
+
+
+## 45. Accepted ADRs anchor review and constrain pending plans
+
+**Decision.** An accepted ADR whose Decision contradicts a changed line is an ordinary numbered review anchor, tagged `[adr/NNNN]`, with the existing severity ladder. Its named enforcement runs mechanically before model review. Draft Decisions and Frozen contracts are compared with accepted ADRs and SYS rows; a contradiction must name its proposed supersession or become an Open question, included in the approval summary. Only actual user answers enter pending drafts and their approval hashes. Approved documents stay unchanged.
+
+**Why.** Conformance review cannot rescue a plan that silently contradicts standing intent.
+
+**Cost.** Standard planning uses its existing conductor's bounded read rather than an extra fresh-agent call; the independent post-build reviewer remains. Critical planning can reuse a fresh panel. Small track checks only Covers/SYS references mechanically. None of these checks proves arbitrary semantic equivalence.
+
+
+## 46. Pinned archgraph supplies cross-stack checks and review reading order
+
+**Decision.** TypeScript, Python and Go may select archgraph on their Pattern line, pinned to published source commit `49464a7ec19fe8402b4258e751f7ba050c6eff19`. Native clean/planted fixtures prove import-rule enforcement. It supplements an already selected stack checker unless the Layout Decision chooses otherwise. Blast radius and ordered context seed the existing reviewer; every reviewable diff file remains covered and the full repository remains readable. Public-surface evidence helps only explicitly selected lenses.
+
+**Why.** Importers and public boundaries are useful context that need not be rediscovered through a whole-repository read. This extends decision 29 without changing module ownership or review authority.
+
+**Cost.** Native collection is experimental; incomplete surface coverage requires the existing search/manual fallback. Plain `check` fails forbidden edges, while cycle regressions require graph comparison. Missing tools are disclosed skips with the pinned install command, never clean results. No pack, MCP server or native parser is added to Factory.
+
+
+## 47. Reconciliation reports ADR drift as a held decision
+
+**Decision.** Reconcile runs named enforcement at HEAD and one bounded fresh read for human-verified accepted ADRs, only when such ADRs exist. `drift.md` records every accepted ADR, source/evidence and held gaps. Drift is decided at the existing consolidated final question: a new code change, ADR supersession, or explicit acceptance with a reason. The pass does not repair code or rewrite ADRs. Repeated evidenced drift across two changes supports a proposed mechanical enforcement.
+
+**Why.** Shipping a new feature should expose standing decisions that no longer describe the code, rather than silently refreshing their prose.
+
+**Cost.** The human-only read consumes the current reconcile allocation; it creates no new budget. Green tests establish tested outcomes, not the whole meaning of an ADR. Missing evidence remains unverified even if accepted by the user.
+
+
+## 48. Retro attributes defects to the stage that produced them
+
+**Decision.** M12 joins unique review/acceptance defects with their approved anchors and actual reconciliation decisions. It separates wrong gate documents, silent gate documents, changed interfaces and build nonconformance, reports unknown attribution, and normalizes by slices using the existing trend rule. The stage with the most evidenced wrong/silent defects becomes a review-budget proposal; only the user decides adoption.
+
+**Why.** Finding tags describe what was noticed; they do not identify which stage needs better review. This extends decision 24.
+
+**Cost.** Attribution requires evidence of the approved line and later decision, not a model's guess. Sparse history stays inconclusive. No new metric-classification agent or automatic budget change is introduced.
+
+
+## 49. Authenticated events wake approved work
+
+**Decision.** A local GitHub/Linear HMAC receiver durably deduplicates and coalesces wake-ups into SQLite before acknowledgment. Operator routes bind provider identities, dedicated clone, human approvers and a bounded continuation chain. The existing headless runner re-fetches actual PR authority and reports structured progress/wait/failure. Only verified changed-head progress continues automatically. Concurrent events cannot reset step limits or immediately retry preceding ambiguous failures. Interrupted running jobs remain parked for recovery.
+
+**Why.** Already-approved projects should advance on events without an operator invoking each step. Authentication proves event origin, never approval of issue prose or new work.
+
+**Cost.** Production ingress/subscriptions/secrets, canonical Linear dependency admission, common legacy/v2 locking and durable v2 resume remain separate integrations. Existing runner publication policy remains; no live service is configured here. Queue chain bounds are not token caps or exactly-once external effects.
+
+
+## 50. Re-evaluate contracts after integration without silently changing them
+
+**Decision.** V2 plans can opt into an approved `replan_budget` and trusted callback after each accepted local slice integration. It receives exact bindings, accepted commits and a bounded diff summary, records actual Opus native usage, and returns continue or at most three proposed slice deltas. A proposal pauses before later dispatch while retaining integrated commits and already-paid parallel outputs. It never rewrites frozen contracts, widens ownership, resets retries or grants approval. Compatible architecture/security decisions remain reusable.
+
+**Why.** Missing work emerges during implementation; recording it before the next frontier is cheaper than reviewing a feature against an incomplete plan at the end.
+
+**Cost.** Replan calls consume the existing feature and Opus-share limits; no automatic free call is added. The host must provide sandbox/timeout enforcement and native provider execution. Cross-run recovery needs a durable resume protocol before tickets can dispatch v2 slices independently.
+
+
+## 51. Judge the factory by observed post-merge outcomes
+
+**Decision.** M13 records confirmed escaped defects per fully observed merged feature; M14 records detection-to-recovery with unresolved incidents right-censored; M15 records adoption against an explicit successful event and eligible population. Stable incident IDs, merge attribution, declared windows and evidence support counts. Unmerged/unobserved features and missing analytics remain unknown. Compare quality separately from cost and time against the same-window control, including agent plus good CLAUDE.md.
+
+**Why.** Gate failures show what checks caught; defects found after merge show what the factory missed. The historical sequential Factory result remains below its control and is not rewritten to justify the new design.
+
+**Cost.** The helper validates supplied observations, not their external completeness. Production collection and a shipped observed pilot are still required. Adoption definitions belong to the product, not a generic automation default.
+
+
+## 52. Retro may deprecate; shared context preserves provenance
+
+**Decision.** Retro proposes improvement, creation, consolidation or deprecation using evidence, named consumers, replacement/migration and rollback. Human approval adopts the change; inactivity alone is insufficient, and historical framework pins remain intact. The proposed Pond-facing gateway reuses current retrieval tools and archgraph, gives workers/reviewers/a future Slack client the same bounded context schema, and separates authenticated read access from typed-entry proposals and external mutations.
+
+**Why.** Skills and derived memory need a retirement path, while every consumer needs the same current decisions and navigation cues.
+
+**Cost.** The gateway is a design, not an enabled MCP write endpoint or Slack bot. Project substring search is not tenant authorization; server-side scoped access and freshness/provenance are required. Raw transcripts remain historical evidence, never approval authority.

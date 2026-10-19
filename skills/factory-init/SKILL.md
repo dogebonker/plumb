@@ -7,6 +7,8 @@ argument-hint: "[commit, tag or dev_path]"
 
 # Factory init
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Framework: $ARGUMENTS (empty: ask in step 2)
 
 Init makes a repository a factory project: `.software-factory/` with its `factory.lock` and `principles.md`, and the locked framework's skills linked into it ([../factory-shared/gates.md](../factory-shared/gates.md), Paths). It runs before a lock exists, so it does not resolve `<kit>`. `<framework_repo>` is `framework_repo` in `~/.software-factory/user/config.yaml`; when it is missing, ask for the path to the factory checkout. To change the framework of a project that has a lock, use `/factory-upgrade`.

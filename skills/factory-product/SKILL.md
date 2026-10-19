@@ -7,6 +7,8 @@ argument-hint: "[slug]"
 
 # Factory product
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -83,6 +85,8 @@ Work the Rules section as Example Mapping: every rule gets at least one requirem
 When `ui` is `true` in `status.yaml`, ask the user once whether this change needs mockup screenshots: worth it for a new screen or flow, rarely for a tweak to an existing one. A yes also agrees to the one-time Playwright download that capturing needs. Yes: once Rules and examples are drafted, follow the `mockups` mode of [../factory-ui-ux/SKILL.md](../factory-ui-ux/SKILL.md) for this slug. No: a sketch or ASCII under Mockups, with "screenshots declined".
 
 ## 4. Walk the human through it
+
+Use gates.md **Explain questions and decisions**: keep the existing questions, ground each in one user example and the consequence of each option, and use the existing mockup or a small flow sketch for multi-step behavior. A corrected example does not automatically reopen unchanged architecture/security; apply Change impact.
 
 Go rule by rule. For each: read back the rule and its examples, with the mockup screenshots that show them, ask for the missing or surprising case, and fold the answer in. A change to a rule that a mockup shows updates the mockup. Then ask the open questions one at a time.
 

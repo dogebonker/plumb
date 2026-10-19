@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">Software Factory</title>
+  <desc id="hero-desc">An industrial wordmark beside an abstract assembly line. Specification, checks, and review form three stations along a continuous rail.</desc>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#272F2A" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="460" fill="#171C1A"/>
+  <path d="M48 40H1152M48 420H1152" stroke="#444C46"/>
+  <path d="M48 34V46M1152 34V46M48 414V426M1152 414V426" stroke="#F4F1E8"/>
+  <g fill="#F4F1E8" font-family="Arial, Helvetica, sans-serif" font-weight="900">
+    <text x="57" y="170" font-size="116" letter-spacing="-7">SOFTWARE</text>
+    <text x="53" y="308" font-size="156" letter-spacing="-9">FACTORY<tspan fill="#F57B51">.</tspan></text>
+  </g>
+  <g aria-hidden="true">
+    <rect x="916" y="73" width="216" height="240" fill="url(#grid)"/>
+    <path d="M916 73H1132V313H916Z" fill="none" stroke="#444C46"/>
+    <path d="M904 73H928M916 61V85M1120 313H1144M1132 301V325" stroke="#F4F1E8"/>
+    <path d="M916 121H1012V193H1084V265H1132" fill="none" stroke="#F4F1E8" stroke-width="2"/>
+    <path d="M964 73V121M1012 193H916M1084 265V313" fill="none" stroke="#444C46" stroke-width="2"/>
+    <rect x="946" y="103" width="36" height="36" fill="#171C1A" stroke="#F4F1E8" stroke-width="2"/>
+    <path d="M964 112V130M955 121H973" stroke="#F4F1E8" stroke-width="2"/>
+    <path d="M1012 169L1036 193L1012 217L988 193Z" fill="#F57B51"/>
+    <rect x="1066" y="247" width="36" height="36" fill="#F4F1E8"/>
+    <path d="M1075 265L1082 272L1094 258" fill="none" stroke="#171C1A" stroke-width="2"/>
+    <circle cx="916" cy="121" r="4" fill="#F4F1E8"/>
+    <circle cx="1132" cy="265" r="4" fill="#F4F1E8"/>
+  </g>
+  <path d="M68 375H1132" fill="none" stroke="#444C46" stroke-width="2"/>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="24" letter-spacing="2" fill="#F4F1E8">
+    <rect x="65" y="354" width="131" height="42" fill="#171C1A"/>
+    <text x="65" y="383">SPEC</text>
+    <rect x="485" y="354" width="187" height="42" fill="#171C1A"/>
+    <path d="M497 365L507 375L497 385L487 375Z" fill="#F57B51"/>
+    <text x="524" y="383">CHECKS</text>
+    <rect x="962" y="354" width="173" height="42" fill="#171C1A"/>
+    <text x="971" y="383">REVIEW</text>
+  </g>
+  <path d="M277 370L282 375L277 380M768 370L773 375L768 380" fill="none" stroke="#F4F1E8" stroke-width="1.5"/>
+</svg>

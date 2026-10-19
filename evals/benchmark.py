@@ -1,13 +1,15 @@
-"""Run isolated Claude Code workflow trials; never infer human follow-up savings."""
+"""Run isolated workflow trials; never infer human follow-up savings."""
 
 import argparse
 import ast
+import difflib
 import hashlib
 import json
 import os
 import platform
 import random
 import re
+import runpy
 import shlex
 import shutil
 import signal
@@ -69,11 +71,22 @@ def comparison_inputs(args):
             raise ValueError("operator policy requires a fixed persona")
         if not isinstance(value.get("answers", []), list) or not isinstance(value.get("default_answer", ""), str):
             raise ValueError("policy answers must be a list and default_answer a string")
+        if not isinstance(value.get("combine", False), bool):
+            raise ValueError("policy combine must be a boolean")
         for rule in value.get("answers", []):
             if not isinstance(rule, dict) or not isinstance(rule.get("match"), str) or not isinstance(rule.get("answer"), str) or not rule["answer"].strip():
                 raise ValueError("policy answers must be nonempty strings")
             re.compile(rule["match"], re.IGNORECASE)
     return result
+
+
+def public_comparison(comparison):
+    """What may be written where actors could read it: everything but the owner's answers, whose hash stays in input_hashes."""
+    return {key: value for key, value in comparison.items() if key != "policy"}
+
+
+def policy_files(args):
+    return [path for path in [getattr(args, "operator_policy", None)] if path]
 
 
 def operator_answer(config, question):
@@ -85,9 +98,9 @@ def operator_answer(config, question):
             raise ValueError("human answer cannot be empty")
         return answer
     policy = config.get("policy", {})
-    for rule in policy.get("answers", []):
-        if re.search(rule["match"], question["question"], re.IGNORECASE):
-            return rule["answer"]
+    matched = [rule["answer"] for rule in policy.get("answers", []) if re.search(rule["match"], question["question"], re.IGNORECASE)]
+    if matched:
+        return "\n\n".join(matched) if policy.get("combine") else matched[0]
     if policy.get("default_answer"):
         return policy["default_answer"]
     if config["mode"] == "execution":
@@ -163,18 +176,37 @@ def snapshots(args):
     write_json(factory / ".claude-plugin" / "plugin.json", {"name": "factory", "version": "0.0.0", "description": "Pinned local Factory benchmark snapshot"})
     shutil.copytree(ROOT / "skills", factory / "skills", ignore=IGNORED)
     shutil.copytree(ROOT / "kit", factory / "kit", ignore=IGNORED)
-    packs = factory / "packs"  # the pinned packs from the operator's pack cache, which trials may not read
+    shutil.copytree(ROOT / "hooks", factory / "hooks", ignore=IGNORED)
+    shutil.copytree(ROOT / "bin", factory / "bin", ignore=IGNORED)
+    packs = factory / "packs"  # actors only read frozen packs, never the operator's cache
     packs.mkdir()
     skipped = []
-    pack_hashes = re.findall(r"^  ([\w-]+):.*?hash: ([\w]+)", (factory / "kit" / "packs.lock.yaml").read_text(), re.MULTILINE)
+    pack_tools = runpy.run_path(str(ROOT / "bin" / "factory-packs-fetch"))
     pack_provenance = {}
-    for name, expected in pack_hashes:
-        source = Path.home() / ".software-factory" / "packs" / f"{name}@{expected}"
-        if not source.is_dir():
+    for name, pin in pack_tools["pins"](factory / "kit" / "packs.lock.yaml").items():
+        expected = pin["hash"]
+        bundled = pin.get("source") == "ciembor/agent-rules-books"
+        if bundled and pin.get("path") != name:
+            raise ValueError(f"Required book bundle {name} has an unexpected source path; restore kit/packs.lock.yaml.")
+        source = ((ROOT / "kit" / "packs") if bundled else (Path.home() / ".software-factory" / "packs")) / f"{name}@{expected}"
+        if bundled:
+            try:
+                pack_tools["check_bundle"](factory / "kit" / "packs" / source.name, expected)
+            except (pack_tools["Failed"], OSError) as error:
+                raise ValueError(f"Required book bundle {name}@{expected} is missing or invalid: {error}. "
+                                 "Restore the pinned kit/packs bundle before preparing a benchmark.") from error
+        elif not source.is_dir():
             skipped.append({"pack": name, "reason": "not in pack cache"})
             continue
-        shutil.copytree(source, packs / source.name, ignore=IGNORED, symlinks=True)
-        pack_provenance[name] = {"path": str(source), "sha256": tree_hash(source), "pin": expected}
+        frozen_source = factory / "kit" / "packs" / source.name if bundled else source
+        shutil.copytree(frozen_source, packs / source.name, ignore=None if bundled else IGNORED, symlinks=True)
+        if bundled:
+            try:
+                pack_tools["check_bundle"](packs / source.name, expected)
+            except (pack_tools["Failed"], OSError) as error:
+                raise ValueError(f"Copied book bundle {name}@{expected} failed verification: {error}") from error
+        pack_provenance[name] = {"path": str(source), "sha256": tree_hash(frozen_source), "pin": expected,
+                                 "source_kind": "bundled" if bundled else "cache"}
     (factory / "user").mkdir()  # an empty user layer: the trial never reads the operator's ~/.software-factory/user/
     replacements = {"~/.software-factory/user/": str(factory / "user") + "/", "~/.software-factory/packs/": str(packs) + "/"}
     adapted = []
@@ -194,7 +226,7 @@ def snapshots(args):
             adapted.append(str(skill.relative_to(factory)) + ": automated benchmark invocation enabled")
     for folder in [factory / "skills", factory / "kit"]:
         for file in folder.rglob("*"):
-            if file.is_file():
+            if file.is_file() and not file.is_relative_to(factory / "kit" / "packs"):
                 try:
                     original = file.read_text()
                 except UnicodeError:
@@ -235,12 +267,20 @@ def arm_order(repeat, context=False):
     return arms if repeat % 2 == 0 else list(reversed(arms))
 
 
-def settings(work, paths, arm, out, browser=False, browser_command=None, red_command=None):
+def secret_files(out, hidden=()):
+    """Run records, the operator policy and the blind key stay out of every actor's reach, in every harness."""
+    return [out / name for name in ("run-config.json", "provenance.json", "summary.json", "blind-review-key.json")] + [
+        Path(path).resolve() for path in hidden]
+
+
+def settings(work, paths, arm, out, browser=False, browser_command=None, red_command=None, hidden=()):
     denied_plugins = [str(path) for name, path in paths.items()
                       if name not in ({"factory", "context-mode"} if arm == "factory-context" else {arm})]
     active = [path for name, path in paths.items()
               if name in ({"factory", "context-mode"} if arm == "factory-context" else {arm})]
-    protected = [CASES, out / "case-snapshots", out / "trials", *(Path(path) for path in denied_plugins)]
+    protected = [CASES, out / "case-snapshots", out / "trials", ROOT / "docs", ROOT / "evals" / "operators",
+                 *(Path(path) for path in denied_plugins)]
+    secrets = secret_files(out, hidden)
     read_rule = lambda path: f"Read(/{path}/**)"  # absolute paths require two leading slashes
     edit_rule = lambda path: f"Edit(/{path}/**)"  # Edit rules also govern Write and NotebookEdit
     return {"autoMemoryEnabled": False, "disableBundledSkills": True, "claudeMdExcludes": ["**"],
@@ -250,6 +290,7 @@ def settings(work, paths, arm, out, browser=False, browser_command=None, red_com
                                        *(["mcp__plugin_context-mode_context-mode__*"] if arm == "factory-context" else []),
                                        *([read_rule(Path(os.environ["PLAYWRIGHT_MODULE"]))] if browser else [])],
                             "deny": ["AskUserQuestion", "WebFetch", "WebSearch", *(read_rule(path) for path in protected),
+                                     *(f"Read(/{path})" for path in secrets),
                                      edit_rule(ROOT), edit_rule(out), *(edit_rule(path) for path in active),
                                      *([edit_rule(Path(browser_command).parent)] if browser_command else []),
                                      *([edit_rule(Path(os.environ["PLAYWRIGHT_MODULE"]))] if browser else [])]},
@@ -258,14 +299,14 @@ def settings(work, paths, arm, out, browser=False, browser_command=None, red_com
                         "excludedCommands": [str(command) for command in [browser_command, red_command] if command],
                         "filesystem": {"allowWrite": [str(work)], "denyWrite": [str(ROOT), str(out),
                                                               *([str(Path(browser_command).parent)] if browser_command else [])],
-                                       "denyRead": [str(path) for path in protected] + [str(Path.home() / ".software-factory"), 
+                                       "denyRead": [str(path) for path in [*protected, *secrets]] + [str(Path.home() / ".software-factory"),
                                                     str(Path.home() / ".agents" / "skills"), str(Path.home() / ".claude" / "skills")]},
                         "network": {"allowedDomains": ["127.0.0.1", "localhost"] if browser else [],
                                     "allowLocalBinding": browser, "strictAllowlist": True}}}
 
 
 def command(args, paths, arm, config, session, resume, remaining_budget, prompt=None, init=False):
-    plugins = [paths["factory"] if arm.startswith("factory") else paths["superpowers"]]
+    plugins = [] if arm == "adapter" else [paths["factory"] if arm.startswith("factory") else paths["superpowers"]]
     servers = {}
     if arm == "factory-context":
         plugins.append(paths["context-mode"])
@@ -274,10 +315,13 @@ def command(args, paths, arm, config, session, resume, remaining_budget, prompt=
             server["args"] = [argument.replace("${CLAUDE_PLUGIN_ROOT}", str(paths["context-mode"])) for argument in server["args"]]
             server.setdefault("env", {})["CLAUDE_PLUGIN_ROOT"] = str(paths["context-mode"])
         servers = {f"plugin_context-mode_{name}": server for name, server in servers.items()}
+    unlimited_actor = arm != "adapter" and getattr(args, "until_complete", False)
     cmd = [args.claude, "--print", "--model", args.model, "--setting-sources", "", "--strict-mcp-config",
            "--mcp-config", json.dumps({"mcpServers": servers}), "--settings", str(config), "--permission-mode", "dontAsk",
            "--output-format", "stream-json", "--verbose", "--forward-subagent-text", "--include-hook-events",
-           "--max-turns", "60", "--max-budget-usd", str(remaining_budget), "--effort", "high", "--no-chrome",
+           *([] if arm == "adapter" or unlimited_actor else ["--max-turns", "60"]),
+           *([] if unlimited_actor else ["--max-budget-usd", str(max(0, remaining_budget))]),
+           "--effort", getattr(args, "effort", "high"), "--no-chrome",
            "--resume" if resume else "--session-id", session]
     for plugin in plugins:
         cmd.extend(["--plugin-dir", str(plugin), "--add-dir", str(plugin)])
@@ -300,7 +344,8 @@ def invoke(cmd, work, artifact, timeout):
         env.pop(key, None)
     try:
         with (artifact.with_suffix(".jsonl")).open("w") as stdout, (artifact.with_suffix(".stderr")).open("w") as stderr:
-            process = subprocess.Popen(cmd, cwd=work, stdout=stdout, stderr=stderr, text=True, env=env, start_new_session=True)
+            process = subprocess.Popen(cmd, cwd=work, stdin=subprocess.DEVNULL,
+                                       stdout=stdout, stderr=stderr, text=True, env=env, start_new_session=True)
             try:
                 pending = b""
                 terminal = None
@@ -334,7 +379,7 @@ def invoke(cmd, work, artifact, timeout):
                         if process.poll() is not None:
                             code = process.returncode
                             break
-                        if time.monotonic() - started >= timeout:
+                        if timeout is not None and time.monotonic() - started >= timeout:
                             timed_out = True
                             os.killpg(process.pid, signal.SIGKILL)
                             code = process.wait()
@@ -363,6 +408,39 @@ def invoke(cmd, work, artifact, timeout):
             invalid_lines += 1
     return {"returncode": code, "timeout": timed_out, "seconds": time.monotonic() - started,
             "events": events, "invalid_lines": invalid_lines, "interrupted": interrupted}
+
+
+def codex_events(events):
+    """Adapt only root CLI messages in memory; retain the original JSONL unchanged."""
+    session, message, failed, terminal = None, None, False, False
+    for event in events:
+        if event.get("type") == "thread.started":
+            session = event.get("thread_id")
+        elif event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message":
+            message = event["item"].get("text")
+        elif event.get("type") in {"turn.failed", "error"}:
+            failed = True
+        elif event.get("type") == "turn.completed":
+            terminal = True
+    adapted = [{"type": "result", "result": message or "", "is_error": failed,
+                "subtype": "success" if terminal and not failed else "error"}] if terminal or failed else []
+    return adapted, session
+
+
+def codex_accounting(observed, partial=False):
+    known = observed.get("accounting_complete", False) and not partial
+    totals = observed.get("totals", {})
+    classes = {"inputTokens": totals.get("input_tokens"), "outputTokens": totals.get("output_tokens"),
+               "cacheReadInputTokens": totals.get("cached_input_tokens"),
+               "cacheCreationInputTokens": totals.get("cache_write_input_tokens")}
+    models = sorted({r.get("model") for r in observed.get("records", []) if r.get("model")})
+    return {"models": models, "model_usage": {model: {"canonicalModel": model} for model in models},
+            "token_classes": classes if known else {key: None for key in classes},
+            "tokens": totals.get("input_tokens", 0) + totals.get("output_tokens", 0) if known else None,
+            "cost_usd": observed.get("modeled_api_usd") if known else None,
+            "estimated_api_usd": observed.get("modeled_api_usd") if known else None,
+            "actual_invoice_usd": None, "accounting_scope": "deduplicated per-response root and child usage; API price estimate, not invoice",
+            "usage_coverage": observed.get("problems", [])}
 
 
 def accounting(events, partial=False):
@@ -447,12 +525,13 @@ def copy_product(work, destination, source_only=False):
     destination.mkdir(parents=True)
     for file in work.rglob("*"):
         relative = file.relative_to(work)
-        if any(part in {".git", ".software-factory", ".factory", ".claude", ".tmp", "__pycache__", "node_modules", ".venv", "docs"} for part in relative.parts):
+        if any(part in {".git", ".software-factory", ".factory", ".claude", ".codex", ".tmp", ".benchmark-data", "__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "node_modules", ".venv", "docs"} for part in relative.parts):
             continue
         if file.is_symlink():
             raise ValueError(f"product symlink cannot be graded safely: {relative}")
         if file.is_file() and not file.name.startswith("test") and (file.suffix in {
-                ".py", ".html", ".css", ".js", ".mjs", ".cjs", ".json", ".svg", ".png", ".jpg", ".webp", ".woff2"} or
+                ".py", ".html", ".css", ".js", ".mjs", ".cjs", ".json", ".ts", ".tsx", ".jsx", ".sh", ".sql", ".toml", ".lock", ".svg", ".png", ".jpg", ".webp", ".woff2"} or
+                (file.name.startswith("requirements") and file.suffix in {".txt", ".in"}) or
                 (not source_only and file.suffix not in {".md", ".yaml", ".yml", ".pyc"})):
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -508,6 +587,9 @@ def grading_sandbox(product, temporary, case, artifact, browser):
 
 def grade(case, work, artifact):
     metadata = json.loads((case / "case.json").read_text())
+    if metadata.get("kind") == "fullstack":
+        from fullstack_runtime import grade_fullstack
+        return grade_fullstack(case, work, artifact)
     browser = metadata.get("kind") == "browser"
     trusted = [] if browser else [case / "fixture" / "test_existing.py", case / "grading" / "test_acceptance.py"]
     expected = metadata["test_count"] if browser else sum(sum(
@@ -552,9 +634,169 @@ def grade(case, work, artifact):
         except (ValueError, subprocess.TimeoutExpired, OSError) as error:
             output = str(error)
             result["error"] = output
+    artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.with_suffix(".txt").write_text(output)
     write_json(artifact.with_suffix(".json"), result)
     return result, output
+
+
+
+def graded_files(work):
+    """The product exactly as the grader copies it, path -> bytes."""
+    with tempfile.TemporaryDirectory(prefix="factory-graded-") as temporary:
+        root = Path(temporary) / "product"
+        copy_product(work, root)
+        return {str(file.relative_to(root)): file.read_bytes() for file in root.rglob("*") if file.is_file()}
+
+
+def dependency_files(work):
+    """Installed dependency trees the grader copies beside the product, path -> digest or link target."""
+    found = {}
+    for directory, names, files in os.walk(work):
+        names[:] = [name for name in names if name not in {".git", ".tmp", ".benchmark-data", "__pycache__", ".cache", ".vite"}]
+        if not {"node_modules", ".venv"} & set(Path(directory).relative_to(work).parts):
+            continue
+        for name in files + [name for name in names if (Path(directory) / name).is_symlink()]:
+            path = Path(directory) / name
+            found[str(path.relative_to(work))] = "link:" + os.readlink(path) if path.is_symlink() else hashlib.sha256(path.read_bytes()).hexdigest()
+    return found
+
+
+def run_adapter(args, case, work, root, artifact, paths):
+    """A fresh agent maps a copy of the delivered product to the QA contract; it may write only qa/** and benchmark.sh."""
+    metadata = json.loads((case / "case.json").read_text())
+    codex = getattr(args, "harness", "claude") == "codex"
+    started = time.monotonic()
+    copy = root / "work"
+    shutil.copytree(work, copy, symlinks=True, ignore=shutil.ignore_patterns(".tmp"))
+    (copy / "qa").mkdir(exist_ok=True)
+    for name in ("contract.md", "qa_proxy.py"):
+        shutil.copy2(case / "grading" / name, copy / "qa" / name)
+    prompt = (case / metadata["adapter"]).read_text()
+    artifact.mkdir(parents=True, exist_ok=True)
+    record = {"prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(), "harness": getattr(args, "harness", "claude"),
+              "model": args.model, "effort": getattr(args, "effort", "high"), "artifact": str(artifact),
+              "manual_mapping_review": None}
+    try:
+        before, dependencies = graded_files(copy), dependency_files(copy)
+    except ValueError as error:
+        return copy, {**record, "error": str(error), "measurement_valid": False, "seconds": time.monotonic() - started}
+    events = []
+    if codex:
+        from codex_adapter import collect_usage, prepare
+        from codex_adapter import command as codex_command
+        protected = [ROOT, args.out / "case-snapshots", args.out / "trials", *paths.values(), *secret_files(args.out, policy_files(args))]
+        try:
+            prepared = prepare(args.codex, copy, root / "codex", [], protected, args.model, args.effort)
+            run = invoke(codex_command(prepared, prompt), copy, artifact / "adapter", args.timeout)
+            events, session = codex_events(run.pop("events"))
+            observed = collect_usage(session, artifact / "adapter-usage") if session else {}
+            record["effort_policy_valid"] = bool(observed.get("records")) and all(r.get("effort") == record["effort"] for r in observed["records"])
+            record.update(run, isolation={"verified": bool(prepared["isolation_evidence"]) and all(p["passed"] for p in prepared["isolation_evidence"]),
+                                          "model": args.model, "probes": prepared["isolation_evidence"]},
+                          **codex_accounting(observed, partial=run["timeout"]))
+        except (ValueError, OSError, subprocess.SubprocessError) as error:
+            record["error"] = f"adapter policy admission failed: {error}"
+    else:
+        config = artifact / "adapter-settings.json"
+        write_json(config, settings(copy, paths, "adapter", args.out, browser=True, hidden=policy_files(args)))
+        run = invoke(command(args, paths, "adapter", config, str(uuid.uuid4()), False, args.budget_usd, prompt), copy, artifact / "adapter", args.timeout)
+        events = run.pop("events")
+        record.update(run, isolation=isolation(events, []), **accounting(events, partial=run["timeout"]))
+        record["effort_policy_valid"] = True
+        record["effort_policy_evidence"] = "configured CLI --effort; provider effort is not observed"
+    record["model_policy_valid"] = bool(record.get("model_usage")) and all(
+        name == args.model or usage.get("canonicalModel") == args.model
+        for name, usage in (record.get("model_usage") or {}).items())
+    record["measurement_valid"] = (record.get("isolation", {}).get("verified") is True
+                                   and record["isolation"].get("model") == args.model
+                                   and record["model_policy_valid"] and record.get("effort_policy_valid", not codex)
+                                   and record.get("tokens") is not None and record.get("cost_usd") is not None
+                                   and not record.get("timeout") and not record.get("interrupted") and not record.get("error"))
+    record["response"] = response(events)
+    try:  # The adapter's verdict on the product, in a file so both harnesses' fixed response schemas stay unchanged.
+        report = json.loads((copy / "qa" / "report.json").read_text())
+        record["report"] = report if isinstance(report, dict) else None
+    except (OSError, ValueError):
+        record["report"] = None
+    try:
+        after, dependencies_after = graded_files(copy), dependency_files(copy)
+    except ValueError as error:
+        return copy, {**record, "error": str(error), "measurement_valid": False, "seconds": time.monotonic() - started}
+    changed = sorted(path for path in before.keys() | after.keys() if before.get(path) != after.get(path))
+    changed_dependencies = sorted(path for path in dependencies.keys() | dependencies_after.keys()
+                                  if dependencies.get(path) != dependencies_after.get(path))
+    patch = []
+    for path in changed:
+        old, new = before.get(path, b""), after.get(path, b"")
+        try:
+            patch.extend(difflib.unified_diff(old.decode().splitlines(True), new.decode().splitlines(True),
+                                              f"a/{path}" if path in before else "/dev/null", f"b/{path}" if path in after else "/dev/null"))
+        except UnicodeDecodeError:
+            patch.append(f"Binary file {path} changed\n")
+    patch.extend(f"Dependency file {path} changed\n" for path in changed_dependencies)
+    (artifact / "adapter.diff").write_text("".join(line if line.endswith("\n") else line + "\n" for line in patch))
+    outside = [path for path in changed if path != "benchmark.sh" and not path.startswith("qa/")] + changed_dependencies
+    record.update(changed_paths=changed + changed_dependencies, product_paths_changed=outside,
+                  diff=str(artifact / "adapter.diff"), seconds=time.monotonic() - started)
+    record["measurement_valid"] = record["measurement_valid"] and not outside
+    return copy, record
+
+
+def product_does_not_start(adapter):
+    """The adapter's evidence that the delivered product cannot start, or None."""
+    report = adapter.get("report") or {}
+    evidence = report.get("evidence")
+    return evidence.strip() if report.get("product_starts") is False and isinstance(evidence, str) and evidence.strip() else None
+
+
+def adapter_failure(adapter):
+    """Why an adapter run cannot stand for the arm's product, or None."""
+    state = (adapter.get("response") or {}).get("state")
+    if adapter.get("error"):
+        return adapter["error"]
+    if adapter.get("timeout"):
+        return "adapter timed out"
+    if adapter.get("returncode"):
+        return f"adapter exited {adapter['returncode']}"
+    if adapter.get("isolation", {}).get("verified") is not True:
+        return "adapter isolation unverified or contaminated: " + adapter.get("isolation", {}).get("reason", "policy probes absent or failed")
+    if adapter["product_paths_changed"]:
+        return "adapter changed product files: " + ", ".join(adapter["product_paths_changed"])
+    if state != "complete" and not product_does_not_start(adapter):
+        return f"adapter reported {state or 'no valid response'}: " + (adapter.get("response") or {}).get("summary", "")
+    return None
+
+
+def grade_delivery(args, case, work, artifact, paths):
+    """Grade what the arm delivered. Adapter cases grade a copy after a fresh agent writes the QA adapter."""
+    metadata = json.loads((case / "case.json").read_text())
+    if not metadata.get("adapter"):
+        return (*grade(case, work, artifact), None)
+    root = Path(tempfile.mkdtemp(prefix="fb-adapter-", dir="/tmp")).resolve()
+    try:
+        copy, adapter = run_adapter(args, case, work, root, artifact.with_name(artifact.name + "-adapter"), paths)
+        adapter["adapter_failed"] = adapter_failure(adapter)
+        if adapter["adapter_failed"]:
+            feedback = "Adapter failed; grading is not attributable to the arm: " + adapter["adapter_failed"]
+            quality = {"accepted": False, "adapter_failed": True, "attributable_to_arm": False, "reason": adapter["adapter_failed"],
+                       "tests": 0, "failures": 0, "errors": 0, "skipped": 0, "expected_tests": metadata["test_count"]}
+            artifact.with_suffix(".txt").write_text(feedback)
+            return quality, feedback, adapter
+        if evidence := product_does_not_start(adapter):
+            # The arm delivered a product that does not start: every check fails, and that is the arm's result.
+            feedback = "The delivered product does not start: " + evidence
+            ids = metadata.get("requirement_ids", [])
+            quality = {"accepted": False, "attributable_to_arm": True, "product_starts": False, "evidence": evidence,
+                       "tests": metadata["test_count"], "failures": metadata["test_count"], "errors": 0, "skipped": 0,
+                       "expected_tests": metadata["test_count"],
+                       "requirements": {identifier: {"passed": False, "checks": []} for identifier in ids},
+                       "outcomes": [{**outcome, "accepted": False} for outcome in metadata.get("outcomes", [])]}
+            artifact.with_suffix(".txt").write_text(feedback)
+            return quality, feedback, adapter
+        return (*grade(case, copy, artifact), adapter)
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
 
 
 def workflow_evidence(work, arm, case):
@@ -577,6 +819,7 @@ def workflow_evidence(work, arm, case):
 def initial_prompt(case, arm, paths, browser_command=None, red_command=None):
     entry = "factory:factory-triage" if arm.startswith("factory") else "superpowers:using-superpowers"
     skill = paths["factory"] / "skills" / "factory-triage" / "SKILL.md" if arm.startswith("factory") else paths["superpowers"] / "skills" / "using-superpowers" / "SKILL.md"
+    discovery = json.loads((case / "case.json").read_text()).get("track") == "discovery"
     verify = str(browser_command) if browser_command else shlex.join(json.loads((case / "case.json").read_text())["verify"])
     browser_note = (f"Browser verification command: run exactly {browser_command}, with no arguments, prefixes, suffixes, pipes or redirects. "
                     "It runs node --test over test*.cjs in this workspace inside a separate native sandbox. "
@@ -593,41 +836,78 @@ def initial_prompt(case, arm, paths, browser_command=None, red_command=None):
                     "ctx_index and ctx_search when available; ToolSearch may discover deferred tools. Preserve raw test evidence: "
                     "a retrieval summary is not verification proof. The exact browser checker still runs directly through Bash.\n") if arm == "factory-context" else ""
     return f"""This is an isolated, synthetic local benchmark with a recorded operator, not production approval.
-Task (the same neutral requirements are given to every workflow):
+{"Task:" if discovery else "Task (the same neutral requirements are given to every workflow):"}
 {(case / 'task.md').read_text()}
 Start by invoking Skill {entry}; if the skill is unavailable, read {skill}. Follow its full applicable workflow and all handoffs until local completion, including review and, for Factory, reconcile. Do not replace this with a code-only pass.
-Operator policy: no external network, remote git operations, dependency installations, production changes. Local research worktrees are permitted only under this workspace’s .tmp directory; keep research read-only and remove them when finished. Localhost serving and browser checks are permitted for browser cases. This fresh repository is already isolated. Unsigned synthetic local commits are permitted. Keep workflow documents locally; never alter skill/kit snapshots or original source directories. Report unavailable optional lenses/tools as skipped; do not install them. Propose any kit updates locally. All subagents must inherit the requested model. Use {verify} for fixture checks. There is no extra linter/typechecker configured. For browser cases, an installed Playwright module is provided through PLAYWRIGHT_MODULE; use the provided browser verification command without installing dependencies. Browser imports in Context Mode's Bun JavaScript runtime are not supported by this adapter.
+Operator policy: no external network, remote git operations, dependency installations, production changes. Local research worktrees are permitted only under this workspace’s .tmp directory; keep research read-only and remove them when finished. Localhost serving and browser checks are permitted for browser cases. This fresh repository is already isolated. Unsigned synthetic local commits are permitted. Keep workflow documents locally; never alter skill/kit snapshots or original source directories. Report unavailable optional lenses/tools as skipped; do not install them. Propose any kit updates locally. All subagents must inherit the requested model. {"" if discovery else f"Use {verify} for fixture checks. "}There is no extra linter/typechecker configured. For browser cases, an installed Playwright module is provided through PLAYWRIGHT_MODULE; use the provided browser verification command without installing dependencies. Browser imports in Context Mode's Bun JavaScript runtime are not supported by this adapter.
 {browser_note}{context_note}
 Whenever the workflow requires a user choice or approval, stop and return the question plus a specific recommended answer; never answer it yourself. Do not use AskUserQuestion (print mode). Return exactly ONE JSON object, without commentary outside it, with these keys: {{"state":"question|complete|blocked","question":"...","recommended_answer":"...","summary":"..."}}. Complete means the full local workflow has finished; blocked means a bounded obstruction, not a pending agent. Wait for every agent you start to finish before returning. A handoff to the next skill continues automatically unless it requires a user answer. Every controller reply is a simulated operator answer, valid only inside this synthetic repository; the copied Factory gate rules explicitly permit forwarding it verbatim to step agents.
 """
 
 
+def codex_prompt(case, arm, paths, browser_command=None, red_command=None):
+    factory = arm.startswith("factory")
+    entry = paths["factory"] / "skills/factory-triage/SKILL.md" if factory else paths["superpowers"] / "skills/using-superpowers/SKILL.md"
+    fullstack = json.loads((case / "case.json").read_text()).get("kind") == "fullstack"
+    discovery = json.loads((case / "case.json").read_text()).get("track") == "discovery"
+    coaching = "" if discovery else "Record stack choices, rationale, explicit FR/NFR agreements, exclusions and unresolved assumptions in DECISIONS.md. Requirements in the shared task cannot be negotiated away. "
+    dependency = ("Project-scoped pinned dependency setup is permitted from registry.npmjs.org, pypi.org and files.pythonhosted.org. No global installations, remote databases or external product services." if fullstack else "No dependency installations or external network.")
+    return f"""You are the root Codex CLI agent in a disposable local benchmark repository.
+Read and apply the pinned workflow entry {entry}. Follow every applicable stage, review and finish; Factory must reconcile. Continue handoffs automatically, stopping only at unanswered user decisions.
+TASK:\n{(case / 'task.md').read_text()}
+TOOL ADAPTATION: Skill/invokeSkill means read the named pinned SKILL.md and execute its instructions; there is no installed Claude Skill tool. Agent/general-purpose means the actual native full-capability subagent interface described in your CLI tool documentation. Use available tool names; never fabricate hooks, unavailable tools or approvals. Native agents may implement their assigned files. All children inherit this session model and effort: do not override either. Interpret Factory ARGUMENTS as the explicit change slug you select; resolve working-directory placeholders to this repository. Forward operator answers verbatim to child stages.
+For Superpowers also read {paths['superpowers'] / 'skills/using-superpowers/references/codex-tools.md'} if present for canonical tool mapping.
+POLICY: {dependency} Local unsigned commits, local read-only research worktrees under .tmp, localhost application serving, and browser verification are allowed. Keep scratch and reviewer artifacts inside .tmp. No remote git, production actions, or changes to pinned workflow snapshots. Report unavailable optional capabilities as skipped. Never bypass the configured sandbox.
+BROWSER: invoke mcp__benchmark_browser__check with zero arguments for browser verification. Write Node/Playwright test*.cjs checks in this workspace; PLAYWRIGHT_MODULE names the installed module. This declared fixed MCP capability invokes the immutable native Seatbelt wrapper outside the actor sandbox. Never run {browser_command} or {red_command} through the shell: nested sandbox-exec cannot launch Chromium. Whenever a workflow/status test_command names {browser_command}, execute the check MCP capability instead, preserving the recorded command identity and full evidence. For RED proof keep red_test_command {red_command}; write .software-factory/browser-red.json with exactly commit (full ancestor SHA) and checkpoint (safe token), then invoke mcp__benchmark_browser__red_check with zero arguments. This changes only the execution surface; all RED/GREEN proof requirements remain. The live GREEN checkout must remain unchanged. Pass this mapping to every child.
+{coaching}Completion includes applicable workflow review, fixes and finish. Await every child and close completed child handles before the root terminal response, so descendant usage is observable.
+Whenever a human choice is required return one JSON object matching the response schema, state question, question text and recommended_answer. Do not answer it yourself or use a blocking user-question tool. Controller replies are recorded synthetic operator answers valid only here. Return complete only after the full workflow finishes, or blocked for a bounded obstruction with evidence. An unfinished child is not a blocker. Final response must have exactly state, question, recommended_answer, summary, all strings; state is question|complete|blocked.
+"""
+
+
 def trial(args, case, arm, repeat, paths):
-    browser = json.loads((case / "case.json").read_text()).get("kind") == "browser"
+    codex = getattr(args, "harness", "claude") == "codex"
+    unlimited = getattr(args, "until_complete", False)
+    browser = json.loads((case / "case.json").read_text()).get("kind") in {"browser", "fullstack"}
+    discovery = json.loads((case / "case.json").read_text()).get("track") == "discovery"
     trial_id = f"{case.name}-{arm}-{repeat + 1}"
     artifact = args.out / "trials" / trial_id
     artifact.mkdir(parents=True, exist_ok=getattr(args, "resume_trial", False))
-    session = str(uuid.uuid4())
+    session = None if codex else str(uuid.uuid4())
+    observed = {}
     started = time.monotonic()
     record = {"id": trial_id, "case": case.name, "arm": arm, "repeat": repeat + 1, "session_id": session,
-              "manual_followup": None, "simulated_questions": [], "repair_rounds": 0, "initial_quality": None,
+              "manual_followup": None, "manual_mapping_review": None, "simulated_questions": [], "repair_rounds": 0, "initial_quality": None,
               "environment_recovery_rounds": 0,
               "final_quality": None, "status": "incomplete", "invocations": [], "requested_model": args.model,
-              "time_to_first_result_seconds": None, "manual_workflow_review": None}
+              "time_to_first_result_seconds": None, "manual_workflow_review": None,
+              "requested_effort": getattr(args, "effort", "high")}
     resuming = getattr(args, "resume_trial", False)
     if resuming:
         record = json.loads((artifact / "progress.json").read_text())
         session = record["session_id"]
         if record["case_sha256"] != tree_hash(case):
             raise ValueError("Cannot resume after grading inputs changed")
-    record["comparison"] = args.comparison if hasattr(args, "comparison") else comparison_inputs(args)
+        if record["status"] == "accepted":
+            record.setdefault("acceptance_history", []).append({"quality": record.get("final_quality"),
+                                                               "wall_seconds": record.get("wall_seconds"),
+                                                               "workflow_complete": record.get("workflow_complete"),
+                                                               "manual_workflow_review": record.get("manual_workflow_review")})
+            record["status"] = "incomplete"
+            record["final_quality"] = None
+            record["manual_workflow_review"] = None
+            record["workflow_finish_requested"] = True
+    comparison = args.comparison if hasattr(args, "comparison") else comparison_inputs(args)
+    record["comparison"] = public_comparison(comparison)
     previous_wall = record.get("wall_seconds", 0) if resuming else 0
     record["interrupted"] = False
     record.setdefault("decisions", [])
     record.setdefault("progress", [])
+    record.setdefault("workflow_finish_rounds", 0)
     record["raw_workspace_retained"] = False
     record["case_sha256"] = tree_hash(case)
     record["benchmark_sha256"] = BENCHMARK_SHA256
+    if discovery:
+        record["repair_policy"] = "discovery track: hidden test feedback never reaches the arm; repair rounds forced to 0"
     events, partial = [], False
     with retained_runtime(artifact, record) as temporary:
         work = (Path(temporary) / "work").resolve()
@@ -636,7 +916,7 @@ def trial(args, case, arm, repeat, paths):
         browser_runtime = record.get("browser_verification")
         if browser and not resuming:
             from browser_runtime import prepare_browser_check
-            browser_runtime = prepare_browser_check(Path(temporary) / "browser-check", work, [ROOT, args.out])
+            browser_runtime = prepare_browser_check(Path(temporary) / "browser-check", work, [ROOT, args.out, *policy_files(args)], **({"codex_sandbox": True} if codex else {}))
             record["browser_verification"] = browser_runtime
         if resuming:
             paths = {name: Path(path) for name, path in record["runtime_paths"].items()}
@@ -644,7 +924,8 @@ def trial(args, case, arm, repeat, paths):
             paths = dict(paths)
             paths["context-mode"], record["context_isolation"] = prepare_context(
                 paths["context-mode"], Path(temporary) / "context-plugin", work,
-                [CASES, args.out / "case-snapshots", args.out / "trials", paths["superpowers"]], browser=browser)
+                [CASES, args.out / "case-snapshots", args.out / "trials", paths["superpowers"],
+                 *secret_files(args.out, policy_files(args))], browser=browser)
         if arm.startswith("factory") and not resuming:
             pins = paths["factory"] / "kit" / "packs.lock.yaml"
             pins = pins.read_text().partition("\npacks:\n")[2] if pins.is_file() else ""
@@ -662,12 +943,33 @@ def trial(args, case, arm, repeat, paths):
         config = artifact / "settings.json"
         browser_command = browser_runtime["command"] if browser_runtime else None
         red_command = browser_runtime.get("red_command") if browser_runtime else None
-        write_json(config, settings(work, paths, arm, args.out, browser=browser, browser_command=browser_command, red_command=red_command))
+        write_json(config, settings(work, paths, arm, args.out, browser=browser, browser_command=browser_command, red_command=red_command,
+                                    hidden=policy_files(args)))
         prompt = initial_prompt(case, arm, paths, browser_command=browser_command, red_command=red_command)
-        comparison = record["comparison"]
+        prepared = None
+        if codex:
+            from codex_adapter import prepare
+            active = [paths["factory"] if arm.startswith("factory") else paths["superpowers"]]
+            protected = [ROOT, args.out / "case-snapshots", args.out / "trials", paths["superpowers"] if arm.startswith("factory") else paths["factory"],
+                         *secret_files(args.out, policy_files(args))]
+            prepared_path = Path(temporary) / "codex" / "codex-prepared.json"
+            admission_error = None
+            try:
+                if resuming and record.get("codex_prepared_sha256") != hashlib.sha256(prepared_path.read_bytes()).hexdigest():
+                    raise ValueError("Cannot resume after prepared Codex policy changed")
+                prepared = json.loads(prepared_path.read_text()) if resuming else prepare(
+                    args.codex, work, Path(temporary) / "codex", active, protected,
+                    args.model, args.effort, browser_runtime, dependency_setup=json.loads((case / "case.json").read_text()).get("kind") == "fullstack")
+            except (ValueError, OSError, subprocess.SubprocessError) as error:
+                admission_error = str(error)
+                prepared = {"isolation_evidence": [{"passed": False, "error": admission_error}], "limitations": ["Policy admission failed; no model invocation permitted"]}
+            record["codex_prepared"] = prepared
+            if not resuming and not admission_error and prepared_path.is_file():
+                record["codex_prepared_sha256"] = hashlib.sha256(prepared_path.read_bytes()).hexdigest()
+            prompt = codex_prompt(case, arm, paths, browser_command, red_command)
         if comparison.get("approved_spec"):
             prompt += "\nSHARED APPROVED SPECIFICATION (execution input):\n" + comparison["approved_spec"]
-        if comparison.get("policy"):
+        if comparison.get("policy") and not discovery:  # a discovery arm learns the owner's answers only by asking
             prompt += "\nFIXED OPERATOR PERSONA AND PREFERENCES:\n" + json.dumps(comparison["policy"])
         if resuming:
             prompt = record.get("pending_prompt", prompt)
@@ -676,13 +978,16 @@ def trial(args, case, arm, repeat, paths):
                     raise ValueError("--answer requires a retained unanswered question")
                 record["decisions"].append({"question": record.pop("pending_question")["question"],
                                              "answer": args.resume_answer, "operator": "human", "mode": record["comparison"]["mode"],
-                                             "elapsed_seconds": previous_wall})
+                                             "elapsed_seconds": previous_wall,
+                                             "after_delivery": record.get("time_to_first_result_seconds") is not None})
                 write_json(artifact / "decisions.json", record["decisions"])
                 prompt = "SIMULATED USER ANSWER (actual human benchmark response, local repository only):\n" + args.resume_answer
             for trajectory in sorted(artifact.glob("turn-*.jsonl")):
                 for line in trajectory.read_text().splitlines():
                     try:
-                        events.append(json.loads(line))
+                        raw = json.loads(line)
+                        if not codex:
+                            events.append(raw)
                     except json.JSONDecodeError:
                         continue
         record["runtime_paths"] = {name: str(path) for name, path in paths.items()}
@@ -691,20 +996,24 @@ def trial(args, case, arm, repeat, paths):
         if not snapshot_hashes or any(tree_hash(Path(path)) != digest for path, digest in snapshot_hashes.items()):
             raise ValueError("Cannot run/resume after pinned plugin snapshots changed")
         record["plugin_snapshot_hashes"] = snapshot_hashes
+        if resuming and record.get("workflow_finish_requested"):
+            prompt = ("SHARED WORKFLOW FINISH REQUEST: complete" if discovery else "SHARED WORKFLOW FINISH REQUEST: independent product acceptance already passed. Complete") + " the remaining applicable review, sign-off and finish/reconcile steps without changing agreed requirements. Keep the structured question/completion protocol."
         record["pending_prompt"] = prompt
         write_json(artifact / "progress.json", record)
-        preflight = invoke(command(args, paths, arm, config, str(uuid.uuid4()), False, args.budget_usd, init=True), work, artifact / "preflight", min(args.timeout, 60))
+        preflight = ({"returncode": 1 if admission_error else 0, "timeout": False, "events": [], "seconds": 0,
+                      "policy_evidence": prepared["isolation_evidence"]} if codex else
+                     invoke(command(args, paths, arm, config, str(uuid.uuid4()), False, args.budget_usd, init=True), work, artifact / "preflight", min(args.timeout, 60)))
         record["preflight"] = {key: value for key, value in preflight.items() if key != "events"}
         record["interrupted"] = preflight.get("interrupted", False)
         if preflight["returncode"] != 0 or preflight["timeout"]:
             record["stop_reason"] = "preflight failed"
-        elif isolation(preflight["events"], plugins)["reason"] == "unexpected plugins/MCP":
+        elif not codex and isolation(preflight["events"], plugins)["reason"] == "unexpected plugins/MCP":
             record["stop_reason"] = "preflight found unrelated plugins/MCP"
         else:
             while True:
-                remaining_time = args.timeout - (time.monotonic() - started)
+                remaining_time = float("inf") if unlimited else args.timeout - (time.monotonic() - started)
                 cost = accounting(events)["cost_usd"] or 0
-                if remaining_time <= 0 or cost >= args.budget_usd:
+                if not unlimited and (remaining_time <= 0 or cost >= args.budget_usd):
                     record["stop_reason"] = "trial time/budget cap"
                     partial = remaining_time <= 0
                     break
@@ -712,13 +1021,27 @@ def trial(args, case, arm, repeat, paths):
                 record["pending_prompt"] = prompt
                 write_json(artifact / "progress.json", record)
                 (artifact / f"turn-{number:02d}.prompt.txt").write_text(prompt)
-                run = invoke(command(args, paths, arm, config, session, number > 0, args.budget_usd - cost, prompt),
+                if codex:
+                    from codex_adapter import collect_usage
+                    from codex_adapter import command as codex_command
+                    argv = codex_command(prepared, prompt, session)
+                else:
+                    argv = command(args, paths, arm, config, session, number > 0, args.budget_usd - cost, prompt)
+                run = invoke(argv,
                              work, artifact / f"turn-{number:02d}", remaining_time)
-                events.extend(run.pop("events"))
+                raw_events = run.pop("events")
+                if codex:
+                    adapted, new_session = codex_events(raw_events)
+                    session = new_session or session
+                    record["session_id"] = session
+                    events.extend(adapted)
+                    observed = collect_usage(session, artifact / f"usage-{number:02d}") if session else {}
+                else:
+                    events.extend(raw_events)
                 run["stage"] = "execution"
                 run["turn"] = number
                 run["elapsed_seconds"] = previous_wall + time.monotonic() - started
-                run["observed_usage"] = accounting(events, partial=run["timeout"])
+                run["observed_usage"] = codex_accounting(observed, partial=run["timeout"]) if codex else accounting(events, partial=run["timeout"])
                 record["invocations"].append(run)
                 record["progress"].append({"turn": number, "elapsed_seconds": run["elapsed_seconds"],
                                            "stage": (response(events) or {}).get("state", "interrupted"),
@@ -728,7 +1051,7 @@ def trial(args, case, arm, repeat, paths):
                     record["interrupted"] = run.get("interrupted", False)
                     record["stop_reason"] = "model process timeout/error"
                     break
-                if isolation(events, plugins)["reason"] == "unexpected plugins/MCP":
+                if not codex and isolation(events, plugins)["reason"] == "unexpected plugins/MCP":
                     record["stop_reason"] = "initialization found unrelated plugins/MCP"
                     break
                 answer = response(events)
@@ -739,12 +1062,12 @@ def trial(args, case, arm, repeat, paths):
                 if answer["state"] == "question":
                     record["simulated_questions"].append(answer)
                     write_json(artifact / "questions.json", record["simulated_questions"])
-                    if len(record["simulated_questions"]) > args.max_questions:
+                    if not unlimited and len(record["simulated_questions"]) > args.max_questions:
                         record["stop_reason"] = "question cap"
                         break
                     try:
                         decision_started = time.monotonic()
-                        decision = operator_answer(record["comparison"], answer)
+                        decision = operator_answer(comparison, answer)
                     except KeyboardInterrupt:
                         partial = True
                         record["interrupted"] = True
@@ -759,9 +1082,10 @@ def trial(args, case, arm, repeat, paths):
                                                  "operator": record["comparison"]["operator"],
                                                  "mode": record["comparison"]["mode"],
                                                  "human_answer_seconds": time.monotonic() - decision_started if record["comparison"]["operator"] == "human" else None,
-                                                 "elapsed_seconds": previous_wall + time.monotonic() - started})
+                                                 "elapsed_seconds": previous_wall + time.monotonic() - started,
+                                                 "after_delivery": record["time_to_first_result_seconds"] is not None})
                     write_json(artifact / "decisions.json", record["decisions"])
-                    prompt = "SIMULATED USER ANSWER (recorded benchmark operator, synthetic local repository only; no production, remote, dependency, or external-source authority):\n" + decision + "\nContinue the same workflow/session; return the structured question/completion schema again."
+                    prompt = "SIMULATED USER ANSWER (recorded benchmark operator, synthetic local repository only; no production or remote git authority):\n" + decision + "\nContinue the same workflow/session; return the structured question/completion schema again."
                     continue
                 if answer["state"] == "blocked":
                     if browser_command and not record["environment_recovery_rounds"]:
@@ -772,33 +1096,62 @@ def trial(args, case, arm, repeat, paths):
                                   "inside the ordinary Bash sandbox, where Chromium and nested sandbox-exec cannot run. Bash reports "
                                   "the exit status itself. Do not weaken any sandbox or permission. If this exact call fails, return "
                                   "blocked with its actual output; otherwise continue the applicable full workflow and JSON protocol.")
+                        if codex:
+                            prompt = "SHARED BROWSER CAPABILITY REMINDER: invoke mcp__benchmark_browser__check with zero arguments. The declared fixed MCP bridge runs the immutable native Seatbelt wrapper outside the actor sandbox. Do not launch the wrapper through the shell. For isolated RED proof invoke mcp__benchmark_browser__red_check after writing the validated request JSON. If the capability fails return blocked with actual output; otherwise continue the full workflow and structured response."
                         continue
                     record["stop_reason"] = answer["summary"]
                     break
                 if record["time_to_first_result_seconds"] is None:
                     record["time_to_first_result_seconds"] = previous_wall + time.monotonic() - started
-                quality, feedback = grade(case, work, artifact / f"grade-{record['repair_rounds']}")
+                quality, feedback, adapter = grade_delivery(args, case, work, artifact / f"grade-{record['repair_rounds']}", paths)
+                if adapter:
+                    record.setdefault("adapter_runs", []).append(adapter)
+                    record["manual_mapping_review"] = None
+                    started += adapter["seconds"]  # adapter time is reported separately, never as arm time
                 if record["initial_quality"] is None:
                     record["initial_quality"] = quality
                 record["final_quality"] = quality
+                if quality.get("adapter_failed"):
+                    record["stop_reason"] = "adapter failed; grading is not attributable to the arm: " + quality["reason"]
+                    break
                 if quality["accepted"]:
+                    if unlimited and arm.startswith("factory") and workflow_evidence(work, arm, case).get("workflow_complete") is not True:
+                        record["workflow_finish_rounds"] += 1
+                        prompt = ("SHARED WORKFLOW FINISH REQUEST: Factory gate/reconcile evidence is incomplete." if discovery else "SHARED WORKFLOW FINISH REQUEST: independent product acceptance passed, but Factory gate/reconcile evidence is incomplete.") + " Finish the full applicable workflow including review, user sign-off and reconcile. Do not change agreed requirements. This is workflow completion, not a product repair; return the structured question/completion protocol."
+                        record["pending_prompt"] = prompt
+                        continue
+                    record["workflow_finish_requested"] = False
                     record["status"] = "accepted"
                     record["stop_reason"] = "trusted acceptance tests passed"
                     break
-                if record["repair_rounds"] >= args.repair_rounds:
+                if discovery:
+                    record["stop_reason"] = "hidden acceptance failed; discovery cases return no test feedback"
+                    break
+                if not unlimited and record["repair_rounds"] >= args.repair_rounds:
                     record["stop_reason"] = "repair cap with failing acceptance"
                     break
                 record["repair_rounds"] += 1
                 prompt = "SHARED BENCHMARK TEST FAILURE FEEDBACK (same policy for all arms). Repair the product and complete the workflow again; preserve the structured response schema.\n" + feedback
         record.update(workflow_evidence(work, arm, case))
-        record["isolation"] = isolation(events or preflight["events"], plugins)
-        record.update(accounting(events, partial=partial))
+        record["isolation"] = ({"verified": all(p["passed"] for p in prepared["isolation_evidence"]),
+                                "model": args.model, "reason": "local policy probes passed",
+                                "limitations": prepared["limitations"]} if codex else isolation(events or preflight["events"], plugins))
+        record.update(codex_accounting(observed, partial=partial) if codex else accounting(events, partial=partial))
+        if codex:
+            record["codex_usage"] = observed
+            record["effort_policy_valid"] = bool(observed.get("records")) and all(r.get("effort") == args.effort for r in observed["records"])
+            decisions = work / "DECISIONS.md"
+            record["product_decisions"] = decisions.read_text() if decisions.is_file() else None
+            quality = record.get("final_quality") or {}
+            record["requirement_outcomes"] = quality
+            record["price_per_accepted_application_estimate"] = record["cost_usd"] if record["status"] == "accepted" else None
+            record["price_per_predefined_journey_estimate"] = record["cost_usd"] / len(quality["outcomes"]) if record["cost_usd"] is not None and quality.get("accepted") and quality.get("outcomes") else None
         record["context_usage"] = context_usage(events, arm == "factory-context")
         record["model_policy_valid"] = bool(record["models"]) and all(
             name == args.model or usage.get("canonicalModel") == args.model
             for name, usage in (record["model_usage"] or {}).items())
         record["measurement_valid"] = (record["isolation"]["verified"] and not partial and record["tokens"] is not None
-                                       and record["isolation"].get("model") == args.model and record["model_policy_valid"])
+                                       and record["isolation"].get("model") == args.model and record["model_policy_valid"] and record.get("effort_policy_valid", True))
         record["plugin_snapshot_hashes"] = snapshot_hashes
         record["snapshots_unchanged"] = all(tree_hash(Path(path)) == digest for path, digest in snapshot_hashes.items())
         if browser_runtime:
@@ -806,7 +1159,11 @@ def trial(args, case, arm, repeat, paths):
                 hashlib.sha256(Path(browser_runtime[key]).read_bytes()).hexdigest() == digest
                 for key, digest in browser_runtime["sha256"].items())
             record["snapshots_unchanged"] = record["snapshots_unchanged"] and record["browser_verification_unchanged"]
-        record["measurement_valid"] = record["measurement_valid"] and record["snapshots_unchanged"]
+        if codex and prepared_path.is_file():
+            record["prepared_policy_unchanged"] = hashlib.sha256(prepared_path.read_bytes()).hexdigest() == record.get("codex_prepared_sha256")
+            record["snapshots_unchanged"] = record["snapshots_unchanged"] and record["prepared_policy_unchanged"]
+        record["measurement_valid"] = (record["measurement_valid"] and record["snapshots_unchanged"]
+                                       and all(adapter.get("measurement_valid") is True for adapter in record.get("adapter_runs", [])))
         try:
             retain_workspace(work, artifact, record)
         except ValueError as error:
@@ -816,7 +1173,7 @@ def trial(args, case, arm, repeat, paths):
     record["time_to_accepted_seconds"] = record["wall_seconds"] if record["status"] == "accepted" else None
     record["simulated_question_count"] = len(record["simulated_questions"])
     record["workflow_complete"] = record.get("workflow_complete") if record["status"] == "accepted" else False
-    record["comparative_valid"] = record["measurement_valid"] and record["workflow_complete"] is True and record["manual_workflow_review"] is True and record["comparison"]["valid_decision_protocol"]
+    record["comparative_valid"] = record["measurement_valid"] and record["workflow_complete"] is True and record["manual_workflow_review"] is True and record["comparison"]["valid_decision_protocol"] and (not record.get("adapter_runs") or record.get("manual_mapping_review") is True)
     write_json(artifact / "result.json", record)
     write_json(artifact / "progress.json", record)
     return record
@@ -851,7 +1208,7 @@ def copy_screenshots(record, source, destination):
 
 
 def report(args, records, provenance, blind=False):
-    write_json(args.out / "summary.json", {"model": args.model, "trials": records, "operator": getattr(args, "comparison", None), "manual_followup": None,
+    write_json(args.out / "summary.json", {"model": args.model, "trials": records, "operator": public_comparison(getattr(args, "comparison", None) or {}), "manual_followup": None,
                                            "provenance": provenance, "interpretation": "No automatic ranking. Partial or isolation-unverified runs are not valid comparisons."})
     lines = ["# Workflow benchmark", "", "Recorded operator decisions; actual human follow-up remains null until manually recorded. Legacy recommended-answer simulations are diagnostic only. Quality is trusted post-execution acceptance, not agent claims. Tokens include cache classes and subagents from the final cumulative result; resume records are never added together.", "",
              "| Case | Arm | Repeat | Initial quality | Final quality | Raw snapshot quality | Committed checkpoint quality | Context calls | Repairs | Environment reminders | Tokens | USD | First result seconds | Total seconds | Operator questions | Workflow | Measurement valid | Full comparison valid |",
@@ -860,10 +1217,10 @@ def report(args, records, provenance, blind=False):
         quality = lambda value: "pass" if value and value["accepted"] else "fail" if value else "unmeasured"
         tokens = record['tokens'] if record['tokens'] is not None else (
             f">={record['tokens_lower_bound']}" if record.get('tokens_lower_bound') is not None else "unknown")
-        dollars = record['cost_usd'] if record['cost_usd'] is not None else (
+        dollars = (str(record['cost_usd']) + (' estimated' if record.get('estimated_api_usd') is not None else '')) if record['cost_usd'] is not None else (
             f">={record['cost_usd_lower_bound']}" if record.get('cost_usd_lower_bound') is not None else "unknown")
         lines.append(f"| {record['case']} | {record['arm']} | {record['repeat']} | {quality(record['initial_quality'])} | {quality(record['final_quality'])} | {quality(record.get('snapshot_quality'))} | {quality(record.get('committed_checkpoint_quality'))} | {record.get('context_usage', {}).get('deduplicated_tool_call_count', 0)} | {record['repair_rounds']} | {record.get('environment_recovery_rounds', 0)} | {tokens} | {dollars} | {record['time_to_first_result_seconds']} | {record['wall_seconds']:.1f} | {record['simulated_question_count']} | {record['workflow_complete']} | {record['measurement_valid']} | {record['comparative_valid']} |")
-    lines += ["", "Snapshot quality grades even unfinished products; it does not establish workflow completion or delivery time. >= values are the last observed cumulative usage before an interrupted invocation, not exact totals. Measurement validity covers recorded model/isolation/accounting only. Full comparison validity additionally needs confirmed workflow completion and manual trajectory review (unmeasured until reviewed). Do not infer real human follow-up savings. Builtin cc-plugin components may remain active even with bundled skills disabled. Blind source review below excludes workflow documents."]
+    lines += ["", "Snapshot quality grades even unfinished products; it does not establish workflow completion or delivery time. >= values are the last observed cumulative usage before an interrupted invocation, not exact totals. Measurement validity covers recorded model/isolation/accounting only. Full comparison validity additionally needs confirmed workflow completion and manual trajectory review (unmeasured until reviewed). Do not infer real human follow-up savings. Codex USD is an API-rate estimate, actual invoice cost is unknown. Legacy Claude builtin cc-plugin components may remain active even with bundled skills disabled. Blind source review below excludes workflow documents."]
     for record in records:
         lines.append(f"\n{record.get('id', record['case'])}: raw snapshot checkout {record.get('checkout', 'unknown historical checkout')}; "
                      f"separate committed checkpoint {record.get('committed_checkpoint', 'none')}; "
@@ -899,10 +1256,25 @@ def report(args, records, provenance, blind=False):
 
 
 def regrade(out):
-    """Grade unfinished snapshots without pretending the workflow finished or rerunning a model."""
+    """Grade unfinished snapshots without pretending the workflow finished or rerunning an arm.
+
+    Adapter cases still run their fixed adapter agent on a copy, exactly as a trial's grade does."""
     data = json.loads((out / "summary.json").read_text())
+    saved = json.loads((out / "run-config.json").read_text()) if (out / "run-config.json").is_file() else None
     for record in data["trials"]:
         artifact = out / "trials" / record["id"]
+        def graded(case, source, target, record=record):
+            if saved is None:
+                return grade(case, source, target)[0]
+            options = argparse.Namespace(**{**saved["args"], "out": out})
+            quality, _, adapter = grade_delivery(options, case, source, target, {name: Path(path) for name, path in saved["paths"].items()})
+            if adapter:
+                record.setdefault("adapter_runs", []).append(adapter)
+                record["manual_mapping_review"] = None
+                record["measurement_valid"] = record.get("measurement_valid", False) and adapter.get("measurement_valid") is True
+                record["comparative_valid"] = (record.get("comparative_valid", False) and record["measurement_valid"]
+                                               and record.get("manual_mapping_review") is True)
+            return quality
         case = out / "case-snapshots" / record["case"]
         if not case.exists():
             case = CASES / record["case"]
@@ -910,10 +1282,10 @@ def regrade(out):
             raise ValueError(f"{record['id']}: grading inputs changed; retain the original result")
         record["snapshot_quality"] = record["final_quality"] if record["status"] != "incomplete" else None
         if record["snapshot_quality"] is None:
-            record["snapshot_quality"], _ = grade(case, artifact / "workspace", artifact / "grade-snapshot")
+            record["snapshot_quality"] = graded(case, artifact / "workspace", artifact / "grade-snapshot")
         record["snapshot_quality_checkout"] = record.get("checkout", {"label": "historical checkout identity unavailable; not proven latest code"})
         if record.get("committed_checkpoint"):
-            record["committed_checkpoint_quality"], _ = grade(case, artifact / "committed-source", artifact / "grade-committed-checkpoint")
+            record["committed_checkpoint_quality"] = graded(case, artifact / "committed-source", artifact / "grade-committed-checkpoint")
         if record["tokens"] is None:
             events = []
             for trajectory in sorted(artifact.glob("turn-*.jsonl")):
@@ -935,7 +1307,7 @@ def regrade(out):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    rescore = commands.add_parser("regrade", help="grade partial products without another model run")
+    rescore = commands.add_parser("regrade", help="grade partial products; adapter cases invoke a potentially billable grader agent")
     rescore.add_argument("--out", type=Path, required=True)
     resume = commands.add_parser("resume", help="resume an interrupted retained trial without rebuilding its repository")
     resume.add_argument("--out", type=Path, required=True)
@@ -960,10 +1332,15 @@ def main(argv=None):
     run.add_argument("--repair-rounds", type=int, default=1)
     run.add_argument("--context-mode", type=Path)
     run.add_argument("--claude", default="claude")
+    run.add_argument("--harness", choices=["claude", "codex"], default="claude")
+    run.add_argument("--codex", default="codex")
+    run.add_argument("--effort", choices=["low", "medium", "high", "xhigh"], default="high")
+    run.add_argument("--until-complete", action="store_true", help="No time, cost, question or repair caps; interrupt retains resumable work")
     run.add_argument("--comparison-mode", choices=["execution", "discovery", "legacy-recommended"], default="discovery")
     run.add_argument("--approved-spec", type=Path)
     run.add_argument("--operator", choices=["policy", "human"], default="policy")
     run.add_argument("--operator-policy", type=Path)
+    run.add_argument("--arms", nargs="+", choices=["factory", "superpowers", "factory-context"], help="run only these arms; a split run reports each arm separately")
     args = parser.parse_args(argv)
     if args.command == "regrade":
         regrade(args.out.resolve())
@@ -998,11 +1375,15 @@ def main(argv=None):
         else:
             options.resume_trial = True
             options.resume_answer = args.answer
+            if "comparison" in saved["args"]:  # the policy is reread, never stored; it must still match its recorded hash
+                options.comparison = comparison_inputs(options)
+                if options.comparison["input_hashes"] != saved["args"]["comparison"]["input_hashes"]:
+                    parser.error("operator policy or approved spec changed since the run started")
             if args.timeout is not None:
                 options.timeout = args.timeout
             if args.budget_usd is not None:
                 options.budget_usd = args.budget_usd
-            if not Path(record["runtime_root"]).is_dir() or record["status"] == "accepted":
+            if not Path(record["runtime_root"]).is_dir() or (record["status"] == "accepted" and record.get("workflow_complete") is True and record.get("manual_workflow_review") is True):
                 parser.error("resume requires an unfinished trial's retained runtime directory")
             updated = trial(options, options.out / "case-snapshots" / record["case"], record["arm"], record["repeat"] - 1,
                             {name: Path(path) for name, path in saved["paths"].items()})
@@ -1013,7 +1394,9 @@ def main(argv=None):
         args.comparison = comparison_inputs(args)
     except (ValueError, OSError, re.error) as error:
         parser.error(str(error))
-    if not args.model.startswith("claude-") or args.model.endswith("-latest"):
+    if args.harness == "codex" and args.context_mode:
+        parser.error("Context arm is not supported by the Codex adapter")
+    if args.harness == "claude" and (not args.model.startswith("claude-") or args.model.endswith("-latest")):
         parser.error("--model requires a full versioned Claude model ID, not an alias/latest")
     if args.repeats <= 0 or args.timeout <= 0 or args.budget_usd <= 0 or args.max_questions < 0 or args.repair_rounds < 0:
         parser.error("positive repeat/time/budget and nonnegative question/repair limits required")
@@ -1023,7 +1406,7 @@ def main(argv=None):
     args.out = args.out.resolve()
     args.superpowers = args.superpowers.resolve()
     args.context_mode = args.context_mode.resolve() if args.context_mode else None
-    browser = any(json.loads((CASES / name / "case.json").read_text()).get("kind") == "browser" for name in args.cases)
+    browser = any(json.loads((CASES / name / "case.json").read_text()).get("kind") in {"browser", "fullstack"} for name in args.cases)
     browser_runtime = None
     if browser:
         module = os.environ.get("PLAYWRIGHT_MODULE")
@@ -1042,16 +1425,17 @@ def main(argv=None):
             work = Path(temporary) / "work"
             work.mkdir()
             try:
-                prepare_context(args.context_mode, Path(temporary) / "plugin", work, [CASES], browser=browser)
+                prepare_context(args.context_mode, Path(temporary) / "plugin", work, [CASES, *policy_files(args)], browser=browser)
             except (ValueError, OSError, subprocess.SubprocessError) as error:
                 parser.error(str(error))
     args.out.mkdir(parents=True, exist_ok=False)
     paths, provenance = snapshots(args)
-    write_json(args.out / "run-config.json", {"args": {key: str(value) if isinstance(value, Path) else value for key, value in vars(args).items()},
+    write_json(args.out / "run-config.json", {"args": {key: str(value) if isinstance(value, Path) else public_comparison(value) if key == "comparison" else value
+                                                      for key, value in vars(args).items()},
                                              "paths": {name: str(path) for name, path in paths.items()}})
-    provenance["comparison"] = args.comparison
-    version = subprocess.run([args.claude, "--version"], capture_output=True, text=True, check=True)
-    provenance["claude_version"] = version.stdout.strip()
+    provenance["comparison"] = public_comparison(args.comparison)
+    version = subprocess.run([args.codex if args.harness == "codex" else args.claude, "--version"], capture_output=True, text=True, check=True)
+    provenance[args.harness + "_version"] = version.stdout.strip()
     provenance["benchmark_sha256"] = BENCHMARK_SHA256
     provenance["python_version"] = sys.version
     if browser_runtime:
@@ -1064,7 +1448,7 @@ def main(argv=None):
     records = []
     for case in args.cases:
         for repeat in range(args.repeats):
-            for arm in arm_order(repeat, bool(args.context_mode)):
+            for arm in [a for a in arm_order(repeat, bool(args.context_mode)) if not args.arms or a in args.arms]:
                 print(f"Running {case} / {arm} / {repeat + 1}", flush=True)
                 records.append(trial(args, case_snapshots / case, arm, repeat, paths))
                 report(args, records, provenance)

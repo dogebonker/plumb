@@ -1,0 +1,79 @@
+{
+  "id": "support-fullstack",
+  "track": "feature",
+  "kind": "fullstack",
+  "description": "Framework-neutral support desk with a real backend, durable data and measurable FR/NFR acceptance.",
+  "test_count": 19,
+  "verify": [
+    "sh",
+    "benchmark.sh",
+    "setup"
+  ],
+  "requirement_ids": [
+    "FR-01",
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "NFR-01",
+    "NFR-02",
+    "NFR-03",
+    "NFR-04",
+    "NFR-05",
+    "NFR-06"
+  ],
+  "outcomes": [
+    {
+      "id": "J01",
+      "description": "Authenticate and end a session",
+      "requirements": [
+        "FR-01",
+        "NFR-01"
+      ]
+    },
+    {
+      "id": "J02",
+      "description": "Find the right ticket",
+      "requirements": [
+        "FR-02",
+        "NFR-01",
+        "NFR-05",
+        "NFR-06"
+      ]
+    },
+    {
+      "id": "J03",
+      "description": "Create and retain a ticket",
+      "requirements": [
+        "FR-03",
+        "NFR-02",
+        "NFR-03",
+        "NFR-04",
+        "NFR-05",
+        "NFR-01"
+      ]
+    },
+    {
+      "id": "J04",
+      "description": "Update and assign a ticket safely",
+      "requirements": [
+        "FR-03",
+        "NFR-01",
+        "NFR-02",
+        "NFR-03",
+        "NFR-04",
+        "NFR-05"
+      ]
+    },
+    {
+      "id": "J05",
+      "description": "Comment and inspect persistent history",
+      "requirements": [
+        "FR-04",
+        "NFR-01",
+        "NFR-02",
+        "NFR-04",
+        "NFR-05"
+      ]
+    }
+  ]
+}

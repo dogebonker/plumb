@@ -1,6 +1,7 @@
 # Ledgers and core business logic: rich domain model, invariants in the domain.
+# Book lists are opt-in candidates; critical risk does not activate them.
 domain_model: rich
 lenses:                     # ordered by priority; a step loads at most two
   architecture: [domain-driven-design-distilled, clean-architecture]
   packet: [clean-code]
-  challenge: [domain-driven-design, clean-architecture, release-it]   # interface panel, beside APoSD
+  challenge: [domain-driven-design, clean-architecture, release-it]

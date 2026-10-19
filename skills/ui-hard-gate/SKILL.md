@@ -5,6 +5,8 @@ description: Pre-review hard gate for UI changes - start from a visual reference
 
 # UI hard gate
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Goal: the UI approver accepts the change on the first pass. Every rule below was raised repeatedly in real, recorded UI reviews. Product-specific rules (the product's vocabulary, its named good screens, what its colors mean, its theme) belong in the repository's design file (`DESIGN.md`: Words, Positions, Colors), not here; where the design file is more specific, it wins.
 
 ## Workflow

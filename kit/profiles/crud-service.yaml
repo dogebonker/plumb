@@ -1,4 +1,5 @@
 # Admin panels and simple CRUD: thin logic, transaction scripts.
+# Book lists are opt-in candidates; task design_lenses defaults to [].
 domain_model: transaction-scripts
 lenses:
   architecture: [patterns-of-enterprise-application-architecture]

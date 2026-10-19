@@ -1,10 +1,18 @@
-# Checkers that enforce a layout mechanically. Versions checked 2026-10-12; each pin is the newest stable release
-# at least two weeks old. Several stacks offer more than one: the Layout Decision picks one and records it on the
+# Checkers that enforce a layout mechanically. Release pins checked 2026-10-12 are stable and at least two weeks old;
+# archgraph instead uses a published immutable source pin, verified 2026-10-19, with experimental native collection.
+# Several stacks offer more than one: the Layout Decision picks one and records it on the
 # Pattern line (gates.md, Layout). The Decision also writes the checker's config in full, from the pattern's layers and
 # sibling rules, following `docs`; the first slice for that root creates it and proves it catches a planted violation.
 # The ordered `layers` list in lenses.yaml cannot express sibling rules; these tools can.
 
 typescript:
+  archgraph:
+    install: cargo install --git https://github.com/dogebonker/archgraph --rev 49464a7ec19fe8402b4258e751f7ba050c6eff19 --locked
+    config: layout.yaml
+    docs: https://github.com/dogebonker/archgraph/blob/49464a7ec19fe8402b4258e751f7ba050c6eff19/docs/guide.md
+    checks: layers, forbidden edges and entrypoint bypasses; surface reports; new cycles via diff --fail-on new-cycles
+    note: replace <tmp> with a fresh absolute directory outside the repository. Native engine is experimental; inspect unresolved imports and symbol coverage. check fails forbidden edges, not cycles or unplanned edges; compare base/head graphs for those. Keep the stack checker already chosen by the Layout Decision.
+    command: archgraph scan . --engine native --symbols --rules layout.yaml -o <tmp>/archgraph-head.json && archgraph check <tmp>/archgraph-head.json
   dependency-cruiser:
     install: dependency-cruiser@18.4.0 and typescript@6.0.3 as devDependencies    # 18.6.0 (2026-10-11) is too recent
     config: .dependency-cruiser.cjs
@@ -33,6 +41,13 @@ typescript:
     note: needs typescript 6.0.x (6.0.3) because TS 7 has no compiler API (depcruise then checks 0 modules and exits 0) and typescript-eslint requires <6.1; needs eslint-import-resolver-typescript 4.4.5 under `import-x/resolver`, or the rule passes silently
     command: npx --no-install eslint .
 python:
+  archgraph:
+    install: cargo install --git https://github.com/dogebonker/archgraph --rev 49464a7ec19fe8402b4258e751f7ba050c6eff19 --locked
+    config: layout.yaml
+    docs: https://github.com/dogebonker/archgraph/blob/49464a7ec19fe8402b4258e751f7ba050c6eff19/docs/guide.md
+    checks: layers, forbidden edges and entrypoint bypasses; surface reports; new cycles via diff --fail-on new-cycles
+    note: replace <tmp> with a fresh absolute directory outside the repository. Native engine is experimental; inspect unresolved imports and symbol coverage. check fails forbidden edges, not cycles or unplanned edges; compare base/head graphs for those. Keep the stack checker already chosen by the Layout Decision.
+    command: archgraph scan . --engine native --symbols --rules layout.yaml -o <tmp>/archgraph-head.json && archgraph check <tmp>/archgraph-head.json
   import-linter:
     install: import-linter==2.15 as a dev dependency
     config: .importlinter (or [tool.importlinter] in pyproject.toml)
@@ -48,6 +63,13 @@ python:
     note: the innermost module needs depends_on = []; a missing key allows every import (the opposite of go-arch-lint)
     command: tach check
 go:
+  archgraph:
+    install: cargo install --git https://github.com/dogebonker/archgraph --rev 49464a7ec19fe8402b4258e751f7ba050c6eff19 --locked
+    config: layout.yaml
+    docs: https://github.com/dogebonker/archgraph/blob/49464a7ec19fe8402b4258e751f7ba050c6eff19/docs/guide.md
+    checks: layers, forbidden edges and entrypoint bypasses; surface reports; new cycles via diff --fail-on new-cycles
+    note: replace <tmp> with a fresh absolute directory outside the repository. Native engine is experimental; inspect unresolved imports and symbol coverage. check fails forbidden edges, not cycles or unplanned edges; compare base/head graphs for those. Keep the stack checker already chosen by the Layout Decision.
+    command: archgraph scan . --engine native --symbols --rules layout.yaml -o <tmp>/archgraph-head.json && archgraph check <tmp>/archgraph-head.json
   compiler:
     config: none; put each private part under internal/
     checks: internal/ is importable only from the tree above it; import cycles are illegal

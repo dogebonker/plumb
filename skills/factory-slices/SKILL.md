@@ -7,6 +7,8 @@ argument-hint: "[slug]"
 
 # Factory slices
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -77,6 +79,10 @@ Rules:
 
 ## 4. Walk the human through it
 
+Track small: before the approval summary, run the scripted-only [Covers/SYS conformance check](../factory-shared/adr.md#draft-conformance) on the pending `04-slices.md`. Unknown standing IDs become Open questions and appear in that summary. This validates ID references, not semantic intent; it adds no architecture document or model call. Other tracks reuse their current draft-conformance evidence.
+
+Use gates.md **Explain questions and decisions**: connect each slice to something the user can try, recommend the smallest useful tracer bullet, and show a short dependency flow when ordering or parallel work is unclear. A retained compatible slice plan needs reverification of affected proof, not another approval question.
+
 Show the slice list with what each one proves. Ask whether the tracer bullet is thin enough, whether any slice is a layer in disguise, and whether each milestone ends where the user can try something. Then ask the open questions.
 
 Done when Open questions is empty.
@@ -85,7 +91,7 @@ Done when Open questions is empty.
 
 Include in the initial interactive approval question: "Approving this plan authorizes bounded local implementation, executable-test corrections under unchanged promises, evidence-backed negative-test exemptions, review repairs, automatic intermediate completion after independent review and passing checks, and derived corrections for independently reproduced acceptance defects against unchanged promises, confined to original approved slice paths including planned tests. The Development mandate is included in the approved bytes; completed parents and approval documents stay unchanged. Changed product/architecture/interface promises, waivers, unrelated scope, destructive actions, credentials and publication remain separate decisions. Final acceptance and reconciliation return together for your sign-off." Respect an explicit manual milestone pause/sign-off preference. Record the actual approval reference, never an invented signature or state-only authority. Only new interactive plans with this approved mandate use gates.md Autonomous local corrections; existing missing-mandate plans retain their genuine approval path. A later correction record never supplies initial approval. Headless mode retains its existing PR approvals.
 
-Headless mode: make the updates below to `status.yaml` when you push the document for review, since the runner records only the gate, and name, in the comment that asks for approval, the slices that stay `done`: approving keeps their sign-offs, and the runner keeps no others. Otherwise approve the `slices` gate as gates.md describes; after its steps 1 and 2 and before its commit step, set `sent_back: null` and update `slices` in `status.yaml` from the document, matching by id:
+Headless mode: make the updates below to `status.yaml` when you push the document for review, since the runner records only the gate, and name, in the comment that asks for approval, the slices that stay `done`: approving keeps their sign-offs, and the runner keeps no others. Otherwise approve the `slices` gate as gates.md describes; after its steps 1 and 2 and before its commit step, retain the current `sent_back` slice/reason and update `slices` in `status.yaml` from the document, matching by id, then clear `sent_back` only after those updates:
 
 - every slice's `milestone` comes from the document
 - a slice already `done` stays as it is
@@ -95,4 +101,4 @@ Headless mode: make the updates below to `status.yaml` when you push the documen
 
 On track standard in interactive mode, `/factory-plan` asks its own fast-lane approval sentence and runs this step's `status.yaml` slice update.
 
-Next skill: `/factory-build`, in a fresh session; from there the factory runs on autopilot (gates.md, Milestones and autopilot).
+Continue directly to `/factory-build` under the approved scope (gates.md, Milestones and autopilot). A fresh session is optional, not another approval or hand-off.

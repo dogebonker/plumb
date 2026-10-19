@@ -21,14 +21,17 @@ def check_case(case):
         public = run_tests(workspace, command)
         if public.returncode:
             raise AssertionError(f"{case.name}: public baseline failed\n{public.stdout}{public.stderr}")
-        if metadata.get("kind") == "browser":
+        if metadata.get("kind") in {"browser", "fullstack"}:
             sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
             from benchmark import grade
             baseline, _ = grade(case, workspace, Path(temporary) / "baseline")
-            if baseline["accepted"] or baseline["tests"] != metadata["test_count"]:
+            if baseline["accepted"] or (metadata["kind"] == "browser" and baseline["tests"] != metadata["test_count"]):
                 raise AssertionError(f"{case.name}: hidden baseline must fail real browser assertions: {baseline}")
             for reference in (case / "oracle").iterdir():
-                shutil.copy2(reference, workspace / reference.name)
+                if reference.is_dir():
+                    shutil.copytree(reference, workspace / reference.name, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(reference, workspace / reference.name)
             oracle, output = grade(case, workspace, Path(temporary) / "oracle")
             if not oracle["accepted"]:
                 raise AssertionError(f"{case.name}: browser oracle failed\n{output}")

@@ -1,0 +1,130 @@
+{
+  "articles": [
+    {
+      "slug": "swap-quotes-and-transaction-status",
+      "title": "A swap quote and a completed transaction describe different things",
+      "description": "Understand the difference between a displayed quote and evidence that a transaction has progressed.",
+      "sections": [
+        {
+          "heading": "Start with what the screen actually says",
+          "body": "A quote is information presented before you decide whether to continue. A transaction status describes processing that has already happened or is still in progress. Treating those two pieces of information as interchangeable makes it harder to understand what you are approving and what remains unfinished. Read the service’s current quote terms to understand what its displayed amount means; this article does not establish a Bitxchange rate guarantee, fee policy or quote lifetime."
+        },
+        {
+          "heading": "An example from Ethereum",
+          "body": "Ethereum documents a transaction lifecycle that includes broadcasting a signed transaction, waiting in the pending pool and possible inclusion in a block. Finalization is a later stage. These are different events, so an earlier event should not be presented as evidence that a later event has occurred. This is a neutral blockchain example, not a description of how Bitxchange executes swaps or chooses confirmation thresholds."
+        },
+        {
+          "heading": "Keep the evidence separate",
+          "body": "When following a transaction, look for the status supplied by the service and, where relevant, the corresponding onchain transaction record. A displayed quote alone does not demonstrate that processing completed. If the interface does not explain a status, use the service’s current help or support route before interpreting it as a completed transfer. The issuer and blockchain references below explain terminology; they do not confirm the availability, timing or result of any particular swap."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Ethereum: transaction lifecycle",
+          "url": "https://ethereum.org/developers/docs/transactions/#transaction-lifecycle"
+        }
+      ],
+      "published": true
+    },
+    {
+      "slug": "deposit-address-network-check",
+      "title": "Why a deposit address is only part of the check",
+      "description": "Separate the asset, network and receiving service’s instructions when reading deposit details.",
+      "sections": [
+        {
+          "heading": "Three separate pieces of information",
+          "body": "A deposit screen can show an asset name, a network and a destination address. Each answers a different question. The asset identifies what you intend to transfer. The network identifies the blockchain on which that transfer takes place. The receiving service’s instructions say which combination it accepts and how to use the destination it provides. Copying the address does not resolve the other two questions."
+        },
+        {
+          "heading": "An issuer directory is a reference, not a deposit destination",
+          "body": "Tether publishes protocol-specific USDT information, and Circle publishes a USDC directory organized by blockchain. These references help identify tokens. A token contract address in an issuer directory is not the personal deposit destination supplied by a receiving service. Do not substitute one for the other. An issuer supporting a deployment also does not establish that every wallet, exchange or other recipient accepts it."
+        },
+        {
+          "heading": "Check the recipient’s current instructions",
+          "body": "Use the exact asset and network shown in the receiving service’s current deposit instructions. Circle Mint provides one clearly named example of a service with its own supported assets and networks; its rules should not be treated as Bitxchange’s rules. This article does not publish a Bitxchange support list or recovery promise. If the asset or network is missing or ambiguous, resolve that uncertainty with the recipient before proceeding rather than assuming the address is sufficient."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Tether: supported protocols and integration guidelines",
+          "url": "https://tether.to/en/supported-protocols/"
+        },
+        {
+          "label": "Circle: USDC contract addresses",
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses"
+        },
+        {
+          "label": "Circle Mint: supported chains and currencies",
+          "url": "https://developers.circle.com/circle-mint/references/supported-chains-and-currencies"
+        }
+      ],
+      "published": true
+    },
+    {
+      "slug": "unpublished-editorial-draft",
+      "title": "Unpublished editorial draft",
+      "description": "A fixture proving that drafts have no public route.",
+      "sections": [],
+      "sources": [],
+      "published": false
+    }
+  ],
+  "guides": [
+    {
+      "slug": "usdt-ethereum-vs-tron",
+      "title": "USDT on Ethereum and Tron: what to verify",
+      "description": "Identify the USDT network and distinguish issuer information from receiving-service support.",
+      "sections": [
+        {
+          "heading": "The token name does not replace the network",
+          "body": "Tether’s supported-protocols directory lists USDT on Ethereum using the ERC-20 standard and on Tron using the TRC-20 standard. Those entries describe separate deployments with their own contract addresses. Referring only to “USDT” leaves out which blockchain is involved. Read the network name as part of the asset information whenever you compare a wallet selection with a receiving service’s instructions."
+        },
+        {
+          "heading": "Use the issuer’s current reference",
+          "body": "Consult Tether’s current directory when you need to verify protocol and token identification. Keep the listed token contract separate from the destination address provided to you for a deposit. The directory establishes issuer information; it does not tell you which networks Bitxchange currently accepts, whether a particular trading pair can execute, or what a transfer will cost or how long it will take."
+        },
+        {
+          "heading": "Match the receiving service’s instructions",
+          "body": "Confirm the exact asset and network in the recipient’s current instructions before preparing a transfer. Tether asks integrators to disclose their supported protocols, which is why a recipient’s own network selection matters. If Ethereum and Tron both appear in an issuer directory, that does not make the recipient’s instructions interchangeable. This guide does not rank either network or recommend a route. Continue with the deposit-address checklist for the distinction between an issuer reference and a recipient’s deposit destination."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Tether: supported protocols and integration guidelines",
+          "url": "https://tether.to/en/supported-protocols/"
+        }
+      ],
+      "published": true
+    },
+    {
+      "slug": "usdc-network-selection",
+      "title": "How to check a USDC network before depositing",
+      "description": "Use Circle’s network-specific directory and the recipient’s current instructions as separate references.",
+      "sections": [
+        {
+          "heading": "Find the right directory entry",
+          "body": "Circle publishes USDC contract identifiers by blockchain and separates mainnet information from testnet information. Its mainnet directory includes networks such as Ethereum, Base and Solana. Use the current directory rather than assuming a ticker identifies one universal deployment. A testnet entry describes a testing environment and should not be confused with a mainnet entry when reading deposit instructions."
+        },
+        {
+          "heading": "Verify identity and acceptance separately",
+          "body": "The issuer’s directory helps identify USDC on a particular network. The receiving service’s instructions establish whether that service accepts the asset on that network. Circle Mint, for example, documents its own supported chains and currencies. That is an example of a specific service’s acceptance rules, not evidence that Bitxchange offers the same choices. No network list in this guide is a live Bitxchange availability statement."
+        },
+        {
+          "heading": "Read the complete destination information",
+          "body": "Compare the selected asset and network with the recipient’s current instructions, then use the destination information that recipient supplies. A contract identifier from Circle’s reference is not a replacement for your deposit destination. If the receiving instructions omit a network or leave the intended asset unclear, ask that recipient to clarify the combination. This guide does not establish transfer fees, completion times, recovery policies or executable swap pairs. The related deposit-address article explains why an address alone does not answer those questions."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Circle: USDC contract addresses",
+          "url": "https://developers.circle.com/stablecoins/usdc-contract-addresses"
+        },
+        {
+          "label": "Circle Mint: supported chains and currencies",
+          "url": "https://developers.circle.com/circle-mint/references/supported-chains-and-currencies"
+        }
+      ],
+      "published": true
+    }
+  ]
+}

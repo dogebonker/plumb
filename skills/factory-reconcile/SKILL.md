@@ -7,6 +7,8 @@ argument-hint: "[slug]"
 
 # Factory reconcile
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -20,7 +22,7 @@ Load the change as [../factory-shared/gates.md](../factory-shared/gates.md) desc
 
 The agreed FR examples and applicable NFR fit criteria (including touched standing SYS-NFR promises) are independently verified on the running product by an agent that did not write its code and does not read it. An `acceptance.md` whose `Tried at` commit differs from HEAD only in `.software-factory/` (`git diff --name-only <Tried at> HEAD -- . ':!.software-factory' ':!.factory'` is empty) may be reused only for lines whose recorded example/fit criterion still matches the current approved documents and whose evidence remains applicable. Build the complete current ID list first: newly applicable IDs and older lines without a recorded criterion must be verified, even at unchanged source HEAD. Resume unanswered lines and retry every line answered `defect`.
 
-Fast lane: reuse the review step's `acceptance.md` under the `Tried at` rule above, without the input-receipt clause; otherwise acceptance runs as below. A defect goes to the review's executor while the slices are still `green`, as factory-review's Fast lane steps 5 and 6 say; the Autonomous local corrections paragraphs below do not apply. Lines the review held stay `fail` for step 8's question, with no further repair round.
+Fast lane: reuse the review step's `acceptance.md` under the `Tried at` rule above, without the input-receipt clause; otherwise acceptance runs as below. A defect goes to the review's executor while the slices are still `green`, as factory-review's Fast lane steps 5 and 6 say; the Autonomous local corrections paragraphs below do not apply. Continue authorized implementation repairs and their affected review/acceptance proof automatically. Only actual held requirement/scope/waiver/security-outcome decisions go to step 8; a failed first repair is not a new approval gate.
 
 1. **Examples and promises.** Each FR with its Example line, from `01-product.md` (track small: `04-slices.md`), and each applicable NFR/SYS-NFR fit criterion from `02-architecture.md` and the standing registry, with its verification procedure from `03-interface.md`. Include the agreed failed-write, recovery and interleaved-writer sequences for saved user data. Retain their IDs; an NFR is not implicitly passed by green FR tests.
 2. **Surfaces.** Every module in `lenses.yaml` whose `dev_command` is not `none`: its path, `dev_command` and `dev_url`. A module with an empty `dev_command` (a `lenses.yaml` from before this step): ask the user how a user runs it, and record the command and local URL, or `none` for a library. When no module has a surface, use the existing test/check commands as the verification surface: the independent agent runs the mapped checks without inspecting implementation. Record their command/output for each applicable ID; unavailable checks are `not run`, not automatic passes.
@@ -63,10 +65,19 @@ Status: accepted
 Change: <slug>
 Context: <from the entry>
 Decision: <from the entry>
+Enforced by: <from the entry; named checker rule, test or monitor, or human-verified>
 Consequences: <from the entry>
 ```
 
-An entry that supersedes an earlier ADR also drafts that ADR's Status change to `superseded by NNNN`.
+An entry that supersedes an earlier ADR also drafts that ADR's Status change to `superseded by NNNN`. Follow [standing ADR rules](../factory-shared/adr.md): placement/import decisions use the Layout Decision’s chosen checker; behavioral decisions reuse the named test or monitor of their source constraint, cited by ID. Existing ADRs without an enforcement line are human-verified until this step touches them; when touched, draft an explicit line rather than silently inventing enforcement.
+
+Done when every drafted ADR has an `Enforced by` line and every named rule, test or monitor exists at HEAD, with source evidence from the shared checker manifest. A missing named check blocks completion; an unavailable execution is unchecked, never a pass.
+
+### 3a. Drift at HEAD
+
+Run the [ADR drift pass](../factory-shared/adr.md) after drafting ADRs and before the final question, including on the fast lane. Script the accepted standing ADRs’ named rules and tests at HEAD, reusing only evidence bound to the same source and effective inputs. Only when human-verified ADRs exist (legacy missing lines included), give one fresh read-only sub-agent the ADR texts and the files their Context references. When available, archgraph’s blast radius bounds the initial reading packet and gives the reading order; repository access remains readable. Ask only: “Does the code at HEAD still do what this Decision says? Quote the source line that contradicts it or say conforming.” Missing referenced files or insufficient evidence stay unchecked, not conforming.
+
+Write `<change>/drift.md`, one line per accepted ADR, with HEAD, enforcement/result and evidence; retain failed command outputs and source citations. This pass reports only: never fix code, supersede an ADR, or accept drift automatically. Each drifted ADR becomes a held item in step 8 with the choices `update the code (a new change)`, `update the ADR (supersede)` or `accept the drift with a reason`. Unavailable required proof is also held. Record the actual answer and reason; draft any authorized supersession for the consolidated confirmation. Stay inside reconcile’s current invocation budget and record the read’s usage; no new budget or retry authority is created. Retro reads this report and proposes mechanical enforcement when an ADR drifts in two repository changes.
 
 ## 4. Standing constraints
 
@@ -107,7 +118,7 @@ Not on the fast lane, unless the user asks. Follow [../factory-retro/SKILL.md](.
 
 ## 8. Confirm and write
 
-Ask one consolidated final question: present acceptance results, held review/requirement/waiver decisions and every drafted ADR, ADR status change, constraint row, product section, glossary line, layout tree change, principle change and user-layer proposal, and everything retro drafted: `retro.md`, the playbook changes and counters, the environment fixes, proposals for the factory repository and suspicious items. Write local drafts once the user confirms; apply their corrections first. Only actual explicit final approval fills the milestone reviews' `Sign-off` lines; retain their original completion records. An answer changing a promise follows the appropriate gate and invalidation path before completion. Fast lane: the question also covers the review's held items. On approval, set every slice `done` and fill the review's Sign-off; then step 9 sets `reconciled: true`. A defect the user reports at this question goes to the same or a fresh executor while slices are still `green`, then Phase 1 checks 2 to 5 rerun at the fix HEAD, as factory-review step 9 says, and the affected review and acceptance lines rerun once. The project's `principles.md` goes into the reconcile commit. Global user-layer changes need explicit separate authority; a local reconcile confirmation alone does not authorize them. An explicitly accepted user-layer proposal is written to `~/.software-factory/user/principles.md`, which no repository tracks. Reconcile never edits the framework cache: changes to the factory stay proposals for the factory repository.
+Ask one consolidated final question: present acceptance results, held review/requirement/waiver decisions, each drifted ADR and its three choices from `drift.md`, unavailable ADR proof, and every drafted ADR, ADR status change, constraint row, product section, glossary line, layout tree change, principle change and user-layer proposal, and everything retro drafted: `retro.md`, the playbook changes and counters, the environment fixes, proposals for the factory repository and suspicious items. Write local drafts once the user confirms; apply their corrections first. Only actual explicit final approval fills the milestone reviews' `Sign-off` lines; retain their original completion records. An answer changing a promise follows the appropriate gate and invalidation path before completion. Fast lane: the question also covers the review's held items. On approval, set every slice `done` and fill the review's Sign-off; then step 9 sets `reconciled: true`. A defect the user reports at this question goes to the same or a fresh executor while slices are still `green`, then Phase 1 checks 2 to 5 rerun at the fix HEAD, as factory-review step 9 says, and affected review/acceptance rerun for each authorized repair batch until required proof passes or a real blocker remains; changed source requires the complete current acceptance matrix. The project's `principles.md` goes into the reconcile commit. Global user-layer changes need explicit separate authority; a local reconcile confirmation alone does not authorize them. An explicitly accepted user-layer proposal is written to `~/.software-factory/user/principles.md`, which no repository tracks. Reconcile never edits the framework cache: changes to the factory stay proposals for the factory repository.
 
 ## 9. Record
 

@@ -7,6 +7,8 @@ argument-hint: "[slug]"
 
 # Factory interface
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -16,7 +18,7 @@ Track standard, interactive mode: `/factory-plan` drafts this document from step
 
 ## 1. Load
 
-Load the change as gates.md describes, for the `interface` gate. Read `01-product.md`, `02-architecture.md`, and the modules it names with their callers.
+Load the change as gates.md describes, for the `interface` gate. An approved matching interface is complete: skip steps 2 to 6 and continue to unfinished work. For a revision, apply gates.md **Change impact** before editing. A changed signature alone does not reopen architecture or security: preserve their bytes and approval records unless the exact delta contradicts a named decision, budget or trust/access rule. Read `01-product.md`, `02-architecture.md`, and the modules it names with their callers.
 
 ## 2. Draft `03-interface.md`
 
@@ -46,8 +48,10 @@ Feature: <capability, in the product's words>
 
 ## Decisions
 ### <lens conflict the human settled>
+Supersedes: <earlier ADR number, or none>
 Context: <the two cards, by lens>
 Decision: <the call>
+Enforced by: <named rule, test or monitor from its constraint, or human-verified>
 Consequences: <what gets easier, what gets harder>
 
 ## Coverage
@@ -68,6 +72,8 @@ Consequences: <what gets easier, what gets harder>
 - In a native module that test is a declarative scenario: its steps state business intent, never clicks, fields or URLs, and reuse the wording of existing step definitions (the adapter's BDD step search finds them).
 - Elsewhere it is a test name in the repository's framework. Coverage names that scenario or test.
 
+Track critical: before approval, run the [draft conformance pass](../factory-shared/adr.md) against every accepted standing ADR and SYS row. The scripted inventory and one bounded fresh read check drafted Decisions and Frozen contracts; reuse the existing fresh challenge reviewer where available rather than add a parallel panel. Keep at most three evidence-backed conflicts, each quoting the standing decision and the contradictory draft line. Without an explicit `Supersedes: NNNN`, place the conflict in the pending document’s Open questions for the user to answer `supersedes NNNN` or `withdraw`; include it with Assumptions in the approval summary. Record the answer in the pending draft before hashing. Never edit an approved upstream document or silently supersede an ADR; retain compatible architecture/security approvals. Decision enforcement follows the [standing ADR rules](../factory-shared/adr.md).
+
 ## 3. Compile and cost
 
 Prove the signatures compile against the real code, using `<kit>/adapters/<language>.md` for each module's language. Without an adapter for a language, tell the user that module stays unchecked.
@@ -82,17 +88,16 @@ Done when every module type-checks or is reported unchecked with its reason, eve
 
 ## 4. Challenge panel
 
-Fresh reviewers challenge the draft, one lens each, the way a future reader would: they see the documents, never this conversation.
+Book challenges are optional, under packs.md's explicit task selection and size caps. With no selected applicable design lens and no required money review, skip this step entirely: compile/coverage checks and the human's contract decision still run. No empty panel report or extra question.
 
 1. The panel, each lens checked as [../factory-shared/packs.md](../factory-shared/packs.md) describes or reported skipped:
 
    | Lens | When | File under resolved `<pack>` (bundled exact pin or cache; packs.md) |
    | --- | --- | --- |
-   | `a-philosophy-of-software-design` | always; it also gets each module's language pack index | `<name>.md` (full size) |
-   | the profile's `challenge` lenses | always | `<name>.mini.md` |
+   | selected applicable design lenses, including APoSD | only explicit `design_lenses` opt-in; one reviewer within the task-size cap | `<name>.nano.md` or `<name>.mini.md`; full only by explicit deep-review request |
    | `fin-money-core` | `money: true` in `lenses.yaml` | `SKILL.md` |
 
-2. Make a new temp directory `<tmp>`. Start one fresh sub-agent per lens, all at once (round 3, and the one round after a send-back: the APoSD lens only, on the changed signatures, step 5). Each receives these instructions and nothing else:
+2. Make a new temp directory `<tmp>`. Start at most one design reviewer for the selected excerpts; required money review remains separate. Each sees only the applicable changed signatures, named constraints and its selected excerpts, never this conversation. A later revision reuses affected selected reviewers; it never activates an unselected APoSD reviewer. Each receives:
 
    > Challenge the interface in `<change>/03-interface.md` through the rules in `<lens file>`. Read only the files named here.
    > - Constraint IDs: `<change>/01-product.md` (when it exists) and `.software-factory/system/constraints.md`.
@@ -102,13 +107,15 @@ Fresh reviewers challenge the draft, one lens each, the way a future reader woul
    > - Zero cards is a valid answer: then write the strongest objection you considered and why you dropped it.
    > - From round 2: challenge only these changed signatures: `<list>`.
 
-3. Collect the cards into `<change>/challenges.md` under `## Round N`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. A card whose lens and rule are listed under Quiet rules of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths) becomes a `note`, unless it is a money or security rule. Two cards that pull one signature in opposite directions are marked `conflict`; recommend the APoSD side, since APoSD arbitrates at interface level.
+3. Collect the cards into `<change>/challenges.md` under `## Round N`, grouped by lens, keeping at most three per lens (`block` before `fix` before `note`). Drop a card whose quoted signature is not in the interface; a `block` or `fix` card whose anchor does not exist becomes a `note`. A card whose lens and rule are listed under Quiet rules of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths) becomes a `note`, unless it is a money or security rule. Conflicts are decided against the agreed constraints and smaller public surface; no unselected book arbitrates them.
 
 Append a `panel_round` event with the round number and card count (gates.md, History). Done when every lens has its cards, or its dropped objection, in `challenges.md`.
 
 ## 5. The human decides
 
-For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again, and through the panel within a limit of three rounds: round 2 is the full panel on the changed signatures only; round 3 is the APoSD reviewer alone, on what changed since round 2; there is no round 4 unless the user asks for one. A send-back to this gate reopens the panel for one round outside that limit: the APoSD reviewer alone, on the signatures that changed; more only if the user asks. The user can end the rounds at any point by approving. Then ask the open questions.
+Use gates.md **Explain questions and decisions**: show only changed signatures with a plain-language caller/result example, the recommendation and trade-off, plus which approvals stay valid and which tests rerun. Use a small caller → interface → result sketch when it clarifies the effect. A new response field or changed parameter stays an interface question unless its actual semantics require a named upstream/security decision to change; do not backfill interface detail into approved architecture or rerun the security approval ceremony.
+
+For each module, show the draft with its Cost line and its cards, `block` first, and ask the user to accept, edit or rewrite it. A high Cost count is a prompt to ask whether the module hides enough. For each card the user answers accept, modify or overrule with one line, written into its Response in `challenges.md`; each `conflict` they settle becomes an entry under Decisions. Apply their changes verbatim: their wording of a signature wins over yours. Any changed signature goes through step 3 again. Only affected opted-in design reviewers and required money coverage recheck the changed signatures; no automatic APoSD pass. Keep the panel to one initial pass and one scoped confirmation; further optional design critique runs only if the user requests it. Required correctness, contract, money and security failures still need proof and repair. The user can end the rounds at any point by approving. Then ask the open questions.
 
 Done when every card has a Response (`grep -n 'accept / modify / overrule:' challenges.md` finds nothing), the user has decided every module, every FR example and applicable NFR failure sequence has its test, scenario or stated verification procedure in the Test plan, Coverage maps every ID from the earlier gates, listed SYS IDs included, and Open questions is empty. An unmapped ID blocks approval.
 

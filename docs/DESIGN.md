@@ -2,6 +2,10 @@
 
 The complete specification of the factory. The README explains the why; this document is what the skills are built against.
 
+The [event-driven extension](FACTORY_EVENTS.md) specifies signed wake-ups, bounded
+mid-build replanning, outcome metrics and the proposed Pond/archgraph gateway,
+with implemented versus pending runtime pieces explicitly separated.
+
 ## 1. Principles
 
 - **Own the interface, delegate the implementation.** Humans design module interfaces; agents fill them in behind a frozen contract.
@@ -67,7 +71,7 @@ An unmapped ID blocks the Interface Design gate. The registry is seeded from `<k
 
 1. **Draft.** Per module: signatures, interface comments (what it promises, never how), a one-line depth statement (what it hides).
 2. **Cost card.** Computed from stubs: public methods and parameters, error variants exposed, configuration exposed, pass-through methods, modules touched per planned slice.
-3. **Challenge panel.** Fresh-context reviewers, one lens each, in parallel.
+3. **Optional design challenge.** No book panel by default. Explicit task-selected lenses use one focused reviewer within the task-size cap; required money/security coverage remains.
 4. **Respond.** Accept, modify, or overrule with one line.
 5. **Freeze.** Stubs compile through the stack adapter; approval hash recorded.
 
@@ -79,7 +83,7 @@ An unmapped ID blocks the Interface Design gate. The registry is seeded from `<k
 | Refactoring.Guru | Smells predicted from the slice plan |
 | Release It! / DDIA | Remote calls whose failure modes are invisible at the interface |
 | Money pack | Money invariants missing from types (floats, missing idempotency keys, exposed balance mutation) |
-| Language pack | API design and data modeling idioms, through the APoSD reviewer |
+| Language pack | Applicable language idioms through the existing reviewer, without requiring APoSD |
 
 **Challenge card**
 
@@ -94,11 +98,11 @@ Severity is earned: only anchored challenges can block or require a fix. Three p
 
 **Calibration.** Answers are recorded in each change's `challenges.md` and `review.md`; reconcile counts them per lens rule from git, using Pond to find the repositories. Overruled three times: demoted to a note. Accepted three times: promoted into `principles.md`. Money and security rules never demote.
 
-**Precedence.** APoSD arbitrates at interface level. Inside a module, code-level rules apply in their smallest form. Small functions never override deep modules. A language pack decides how to express something; book lenses decide where boundaries go.
+**Precedence.** Agreed constraints and smaller public surface decide interface trade-offs; no unselected book arbitrates. Inside a module, code-level rules apply in their smallest form. Small functions never override deep modules. A language pack decides how to express something; book lenses decide where boundaries go.
 
 ## 7. Hard gates, packet and build
 
-**Gates.** `status.yaml` stores approver, time and the document hash per gate. A hash mismatch reverts that gate and all downstream gates. A hook blocks source edits until slices are approved. During build, editing a file outside the slice's allowed list requires a logged deviation; a frozen signature change sends the slice back to Interface Design. On a server, approval comes from a pull-request review or a tracker state change.
+**Gates.** `status.yaml` stores approver, time and the document hash per gate. Approved gate documents and the active change's approved threat model stay frozen; supplemental evidence is separate. Resumes skip completed stages and reuse applicable approvals. A proven agent-only incidental edit is restored from the exact approved snapshot. Interactive revisions reopen changed/contradicted decisions and retain exact compatible approvals after a delta-bound impact check; uncertain impact and headless PR snapshots retain conservative downstream invalidation. A small interface change does not itself reopen architecture/security. A hook blocks routine approved-document rewrites and source edits until slices are approved. During build, editing a file outside the slice's allowed list requires a logged deviation; a frozen signature change sends the slice back to Interface Design. On a server, approval comes from a pull-request review or a tracker state change.
 
 **Packet** (`slices/NN/packet.md`): goal; requirement IDs with fit criteria; frozen signatures, interface comments and depth statements; allowed files; tests to write, which must fail on the base commit; verify commands; a don't list; a budget. Rules in their smallest form only: the code-quality lens, the legacy-code lens on brownfield, the slice's money skill when relevant, Ponytail's ladder, and the language pack's rule index. In BDD-native modules: the slice's scenarios and an inventory of existing step definitions.
 
@@ -114,23 +118,23 @@ One fresh independent read-only reviewer carries cleanliness, design/reuse, effi
 | Interface conformance | Phase 1 script: signatures against frozen stubs, files against the packet | about zero |
 | Dead code | Phase 1 script: the stack's own tool | about zero |
 | Language rules | Phase 1: linter rules mapped from the pack | about zero |
-| Refactoring.Guru, Ponytail | Rubric inside the design and reuse agent | one lens file |
+| Refactoring.Guru | Explicit task opt-in, excerpt in the existing reviewer | off by default |
 | Language pack (high impact) | Rubric inside design and efficiency | one lens file |
 | Gherkin | Checklist inside cleanliness, BDD-native modules only | about zero |
-| APoSD | Own agent, only when the slice adds public surface beyond the frozen interface | conditional |
+| APoSD / Clean Architecture books | Explicit task opt-in; one targeted excerpt in the existing reviewer | off by default |
 | Money | Own agent, only in money repositories | conditional |
 
 | Track | Review runs |
 | --- | --- |
 | Small | Phase 1 + one fresh independent general reviewer and applicable risk specialists |
-| Standard | Phase 1 + one fresh independent general reviewer; UI/security/money/APoSD follow actual risk |
+| Standard | Phase 1 + one fresh independent general reviewer; required UI/security/money coverage follows risk, design books require opt-in |
 | Critical | Standard with required critical risk coverage, including Money where financial outcomes are affected |
 
 Book-lens findings use the challenge card; without an anchor they cap at "skip". Findings are written to `review.md`; the user's fix, skip and undo answers feed calibration, and fixes applied without asking do not. Regression tests must fail when their fix is reverted. UI polish runs separately, only on slices that touch UI.
 
 ## 9. Packs
 
-**Book lenses.** Sizes by role: smallest in packets, medium in gates and review, full for APoSD and escalations. Never load overlapping or conflicting books together.
+**Book lenses.** Task-local `design_lenses: []` defaults off, independent of risk track or pinned profile. Small/medium tasks get no unsolicited lens question; large tasks can recommend one in the existing plan summary. Explicit selection loads one nano excerpt for small tasks, one mini for medium, at most two mini for large, in the existing reviewer (one optional interface-design reviewer). Full books need an explicit deep-review request. Profile rows below are candidates, not mandatory loads.
 
 | Profile | Lens order | Typical repo |
 | --- | --- | --- |

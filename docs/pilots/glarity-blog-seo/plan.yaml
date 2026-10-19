@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "change_id": "glarity-blog-seo",
+  "base_commit": "d39b64d28e863aada0c2b27defc6df7ddb208453",
+  "policy": {
+    "layout": {
+      "path": ".software-factory/v2-pilot/layout.yaml",
+      "sha256": "f190ff6bea8de6f39e45cac26537fe0d09e349fe9a4b4863010d111f4ccda009"
+    },
+    "permitted_rule_ids": [
+      "contract-no-app",
+      "root-no-features",
+      "blog-independent",
+      "guides-independent",
+      "discovery-independent",
+      "frontend-no-private-systems"
+    ],
+    "gate_definitions": [
+      {
+        "id": "contracts-http",
+        "kind": "tests",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "contracts"
+        ],
+        "timeout_seconds": 360,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "blog-http",
+        "kind": "tests",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "blog"
+        ],
+        "timeout_seconds": 360,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "guides-http",
+        "kind": "tests",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "guides"
+        ],
+        "timeout_seconds": 360,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "discovery-http",
+        "kind": "tests",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "discovery"
+        ],
+        "timeout_seconds": 360,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "final-http",
+        "kind": "tests",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "final"
+        ],
+        "timeout_seconds": 360,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "typecheck",
+        "kind": "typecheck",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "typecheck"
+        ],
+        "timeout_seconds": 180,
+        "outputs": [
+          "apps/frontend/.next/",
+          "apps/frontend/tsconfig.tsbuildinfo"
+        ]
+      },
+      {
+        "id": "lint",
+        "kind": "lint",
+        "argv": [
+          "node",
+          ".software-factory/v2-pilot/check.mjs",
+          "lint"
+        ],
+        "timeout_seconds": 180,
+        "outputs": []
+      }
+    ],
+    "final_test_gate": "final-http"
+  },
+  "frozen_inputs": [
+    {
+      "path": ".software-factory/v2-pilot/check.mjs",
+      "sha256": "7cf8f2ac73331545336990ea457413e9a7a7670b59805d24953df80b004198bc",
+      "kind": "fr"
+    },
+    {
+      "path": ".software-factory/v2-pilot/scenarios.json",
+      "sha256": "e35dae99cadae94013e54162825aec7969ffe9930f1857bd4469e5a20fca449e",
+      "kind": "fr"
+    },
+    {
+      "path": "apps/frontend/content/editorial.json",
+      "sha256": "26aba3aadcb0b21d41327225eb9045e2a4a7beceab0076be087135ff5d7ca0af",
+      "kind": "content"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "454fbc1cf04d00aaaac15844d6fb83e2220188801156e0cfd51a51e8276da793",
+      "kind": "dependency-lock"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4384f4c7543ea6838ea2db7793577f451f7b88b867cad3957dd4050bdcdfff34",
+      "kind": "tool-config"
+    },
+    {
+      "path": "apps/frontend/package.json",
+      "sha256": "814c05dc66ce13030cfead27b0606746b3f57f9a2defd3dab3908ea8bd47f0ca",
+      "kind": "tool-config"
+    },
+    {
+      "path": "apps/frontend/tsconfig.json",
+      "sha256": "fc667bb79ffd49fd38ccd3e3ea9ba1f4a617fb6157a545bcf89600efdb2ac8eb",
+      "kind": "tool-config"
+    },
+    {
+      "path": "apps/frontend/next.config.mjs",
+      "sha256": "311abeb166be04ef050466881ff4571b83e55594aa2ff5b6ee2f6a0b68180df3",
+      "kind": "tool-config"
+    },
+    {
+      "path": "apps/frontend/eslint.config.mjs",
+      "sha256": "6e0819e9aa12117dbd9d5e476de941b504bc8d83f5e83f6e7c644f5d29848336",
+      "kind": "tool-config"
+    },
+    {
+      "path": ".software-factory/v2-pilot/product.md",
+      "sha256": "265a320e26007c5b270b0d63c884dc6469abb5fd28dc46595401858b9bac8df5",
+      "kind": "spec"
+    },
+    {
+      "path": ".software-factory/v2-pilot/architecture.md",
+      "sha256": "71be724b1bedd7c9a991aae30f9277d02764c254df3c53b5c126f462f0e7ba54",
+      "kind": "spec"
+    },
+    {
+      "path": ".software-factory/v2-pilot/program-design.md",
+      "sha256": "49bdac0d5c8401ac98636b9daadf1f0db6c601cb2abff76b4710ffe6d346d355",
+      "kind": "spec"
+    }
+  ],
+  "budget": {
+    "tokens": 3000000,
+    "seconds": 5400,
+    "opus_share_limit": 0.25
+  },
+  "slices": [
+    "slices/contracts.yaml",
+    "slices/blog.yaml",
+    "slices/guides.yaml",
+    "slices/discovery.yaml"
+  ]
+}

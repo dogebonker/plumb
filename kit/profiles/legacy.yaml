@@ -1,4 +1,5 @@
 # Brownfield code without tests: characterize first, refactor in small steps.
+# Book lists are opt-in candidates; characterization tests remain required.
 domain_model: keep               # the architecture gate records the model the code already uses
 lenses:
   architecture: [working-effectively-with-legacy-code, refactoring]

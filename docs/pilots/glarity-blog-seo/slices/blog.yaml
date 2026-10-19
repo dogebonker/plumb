@@ -1,0 +1,107 @@
+{
+  "id": "blog",
+  "kind": "feature",
+  "depends_on": [
+    "contracts"
+  ],
+  "owns": [
+    "apps/frontend/app/blog/"
+  ],
+  "reads": [
+    "apps/frontend/content/editorial.json",
+    "package-lock.json",
+    "package.json",
+    "apps/frontend/package.json",
+    "apps/frontend/tsconfig.json",
+    "apps/frontend/next.config.mjs",
+    "apps/frontend/eslint.config.mjs",
+    "apps/frontend/lib/content.ts",
+    "apps/frontend/lib/publishing.ts",
+    "apps/frontend/app/layout.tsx",
+    "apps/frontend/app/page.tsx",
+    "apps/frontend/app/globals.css",
+    "docs/agents/admin/core.md",
+    "docs/agents/conventions.md",
+    "docs/agents/core.md",
+    "docs/agents/memory_maintenance.md",
+    "docs/agents/suggested_commands.md",
+    "docs/agents/task_completion.md",
+    "docs/agents/tech_stack.md"
+  ],
+  "interfaces": [
+    {
+      "path": "apps/frontend/app/blog/page.tsx",
+      "symbol": "default",
+      "signature": "() => import(\"react\").JSX.Element"
+    },
+    {
+      "path": "apps/frontend/app/blog/page.tsx",
+      "symbol": "metadata",
+      "signature": "import(\"next\").Metadata"
+    },
+    {
+      "path": "apps/frontend/app/blog/[slug]/page.tsx",
+      "symbol": "default",
+      "signature": "(props: {params: Promise<{slug: string}>}) => Promise<import(\"react\").JSX.Element>"
+    },
+    {
+      "path": "apps/frontend/app/blog/[slug]/page.tsx",
+      "symbol": "generateMetadata",
+      "signature": "(props: {params: Promise<{slug: string}>}) => Promise<import(\"next\").Metadata>"
+    },
+    {
+      "path": "apps/frontend/app/blog/[slug]/page.tsx",
+      "symbol": "generateStaticParams",
+      "signature": "() => readonly {slug: string}[]"
+    }
+  ],
+  "fr": [
+    {
+      "id": "BLOG-01",
+      "given": "two published articles and one unpublished draft in frozen editorial.json",
+      "when": "the blog index is requested",
+      "then": "both published titles and detail anchors are visible and the draft is absent",
+      "gate_id": "blog-http",
+      "case_id": "BLOG-01"
+    },
+    {
+      "id": "BLOG-02",
+      "given": "published article entries with frozen headings, bodies, descriptions and sources",
+      "when": "each article is requested in preview and publication modes",
+      "then": "all editorial text and source links are visible outside scripts, titles differ, metadata matches and truthful Article/Breadcrumb JSON-LD adds no author or dates",
+      "gate_id": "blog-http",
+      "case_id": "BLOG-02"
+    },
+    {
+      "id": "BLOG-03",
+      "given": "an unknown article slug and the unpublished draft slug",
+      "when": "both routes are requested",
+      "then": "both return HTTP 404",
+      "gate_id": "blog-http",
+      "case_id": "BLOG-03"
+    }
+  ],
+  "rules": {
+    "ids": [
+      "contract-no-app",
+      "root-no-features",
+      "blog-independent",
+      "guides-independent",
+      "discovery-independent",
+      "frontend-no-private-systems"
+    ],
+    "surfaces": []
+  },
+  "gates": [
+    "blog-http",
+    "typecheck",
+    "lint"
+  ],
+  "budget": {
+    "tokens": 450000,
+    "retries": 1,
+    "review_passes": 2,
+    "review_tokens": 150000,
+    "seconds": 1500
+  }
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+case "${1:-}" in
+ setup) python3 -m py_compile server.py ;;
+ reset) exec python3 server.py reset ;;
+ start) PORT="$PRODUCT_PORT" exec python3 server.py ;;
+ *) exit 2 ;;
+esac

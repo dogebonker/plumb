@@ -52,8 +52,8 @@ Commands run from the repository root and must also work in an isolated checkout
 - `<command>`
 
 ## Rules in scope
-Read these before writing code, and apply them inside the frozen contract.
-- `<resolved pack>/<lens>.nano.md` (matching bundled book or exact cache; packs.md)
+Read only the applicable rules below and apply them inside the frozen contract.
+- Optional design book: `<explicitly selected excerpt path>` or `none`; profiles alone activate no book (packs.md).
 - Principles: <copied from the principle layers, merged (gates.md, Paths)>
 - Simplification ladder: <copied from packs.md>
 - Language pack: `~/.software-factory/packs/<index pack>@<hash>/SKILL.md`, plus `~/.software-factory/packs/<rules pack>@<hash>/SKILL.md` for each rules pack. Read only the one or two rules this slice needs, apply them to the code this slice writes, leave what the linter enforces to the linter, and skip rules that need a newer <language> than <language_version>.

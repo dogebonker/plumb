@@ -7,6 +7,8 @@ argument-hint: "[slug]"
 
 # Factory architecture
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Slug: $ARGUMENTS
 Session: ${CLAUDE_SESSION_ID}
 
@@ -16,7 +18,7 @@ Track standard, interactive mode: `/factory-plan` drafts this document.
 
 ## 1. Load
 
-Load the change as gates.md describes, for the `architecture` gate. Read `01-product.md`.
+Load the change as gates.md describes, for the `architecture` gate. An approved matching document is complete: skip steps 2 to 5 and continue to the next unfinished stage, reusing applicable security approval. Read `01-product.md` only when architecture is pending. A later research, implementation or review detail belongs in its evidence file, not in approved architecture.
 
 ## 2. Research
 
@@ -44,7 +46,7 @@ Research runs behind a firewall: the agent that answers never sees the task, so 
 
    One numbered item per question, its answer indented under it. Gaps become new questions, answered the same way. A resumed run keeps the questions already answered.
 5. Read the files the answers point to, and `.software-factory/system/`: earlier ADRs bind this change unless it supersedes them, and the rows of the SYS IDs listed in `01-product.md` give their current fit criteria.
-6. Load the profile's `architecture` lenses as [../factory-shared/packs.md](../factory-shared/packs.md) describes, and draft with their rules and the Principles of the principle layers ([../factory-shared/gates.md](../factory-shared/gates.md), Paths).
+6. Apply the project's concise Principles and existing architecture. Only when `design_lenses` explicitly selects an applicable architecture book, load its task-sized excerpt through [../factory-shared/packs.md](../factory-shared/packs.md). The profile alone loads no books; do not research design alternatives the task does not need.
 
 Done when every question is answered or marked "not found", and every claim in the Research section of `02-architecture.md` cites an answer or experiment in `research.md`, or a documentation URL.
 
@@ -90,11 +92,13 @@ Trust boundaries: <each one, with what enforces it>
 Supersedes: <earlier ADR, or none>
 Context: <forces at play, with references>
 Decision: <what was decided>
+Enforced by: <archgraph rule `<name>` | lint: `<rule>` | test: `<file> :: <name>` | monitor: `<name>` | human-verified>
 Consequences: <what gets easier, what gets harder>
 
 ## Open questions
 ```
 
+- Give each decision an `Enforced by` line using [standing ADR rules](../factory-shared/adr.md). Code placement/import decisions name an archgraph rule or the stack checker chosen by the Layout Decision; behavioral decisions reuse the named test or monitor of their source constraint, cited by ID. Use `human-verified` only for a decision requiring human judgment. Existing ADRs without the line remain human-verified until reconcile touches them; never backfill an approved document.
 - Each decision is an ADR kept inside this document, so the gate hash covers it. Reconcile moves them into `.software-factory/system/adr/` once the change's slices are done, before it merges.
 - When `.software-factory/system/` records no domain-model decision, add one, starting from `domain_model` in `lenses.yaml`: rich domain model or transaction scripts. `keep` means record the model the code already uses. The decision writes its outcome back to `lenses.yaml`.
 - Layout gives every module the change creates or adds folders to its lines, one group per root: the backend, and each frontend root (gates.md, Layout). Choose each root's layout as the procedure at the top of `<kit>/layouts/index.yaml` says: an existing convention wins and is recorded as `existing`; otherwise propose rows with their reasons and two exemplars from the pattern file, in the root's stack when it has them. FDA currently has one upstream example and two reference views: disclose that limitation rather than invent independent adoption. Choosing is a Decision. Copy the pattern's Layout lines for the root's stack, each path prefixed with the root's path relative to the module path (no prefix when they are the same); a `cqrs` addition goes under its host as `<host>+cqrs`. The Decision also appends the pattern's layers for that stack, prefixed the same way, after the module's existing `layers` (approval writes them to `lenses.yaml`), names its sibling rules, and picks a checker from `<kit>/layouts/tools.yaml` for that stack with its config written in full from those layers and sibling rules, or `check: none`. For `existing`, the rules come from the module's current `layers` in `lenses.yaml` and any rule the user names, with a baseline of today's violations in the config; with neither, `check: none`.
@@ -104,7 +108,11 @@ Consequences: <what gets easier, what gets harder>
 - Threats: one abuse path per who-may-see-or-do rule of the product, each mitigated by an FR, an NFR or a named test, at most 15 lines. The Security lens routes by the Components line. Track critical writes "see `.software-factory/system/threat-model.md`" instead, since `/factory-security threat-model` runs there.
 - When the profile is `domain-core` and a module in scope has no `layers` in `lenses.yaml`, and the Layout Decision does not supply them, decide them: path globs ordered from the innermost layer (the domain) outward. Approval writes them to `lenses.yaml`; review then checks that no file imports from a layer further out than its own.
 
+Before the approval summary, run the [draft conformance pass](../factory-shared/adr.md) against every accepted standing ADR and SYS row: scripted inventory, then a bounded read of the drafted Decisions and Frozen contracts, at most three evidence-backed conflict cards. Standard planning uses its conductor without an extra model call, as `/factory-plan` describes. On track critical, reuse an existing fresh reviewer where available; otherwise use one fresh read-only agent. A contradiction without an explicit `Supersedes: NNNN` is an Open question quoting both decisions, answered by the user as `supersedes NNNN` or `withdraw`. Apply the answer only to pending drafts; keep the standing ADR and all approved documents unchanged. Include unresolved conflicts with Assumptions in the summary; record the resolved answer in the draft so its approval hash covers it. A changed draft refreshes this evidence, not compatible upstream approvals.
+
 ## 4. Walk the human through it
+
+Follow gates.md **Explain questions and decisions**: explain the user consequence of each actual architecture choice with an example and recommendation. A small system/data-flow diagram should show the boundary or failure behavior the choice changes. When Change impact retains this architecture, skip this stage entirely; do not copy new interface fields into it to manufacture a decision.
 
 Present the Decisions first, each with the main alternative it rejects. Then the Budgets, then the open questions. Fold every answer into the document.
 

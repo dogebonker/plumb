@@ -7,6 +7,8 @@ argument-hint: "[pack name]"
 
 # Factory packs
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Pack: $ARGUMENTS (empty: every pin)
 
 A pin approves a pack's content as you read it. Upstream moves on, and nothing loads the new content until you read what changed and bump the pin. This skill maintains the framework's pins, in `kit/packs.lock.yaml` of the factory repository: the clone `framework_repo` names in `~/.software-factory/user/config.yaml` (no `framework_repo`: say so and stop). A pin is `{ source, path, hash, pinned_at, version }`: `path` is the pack's folder in the `source` repository (`.` for its root), `hash` is the git tree of that folder, and `version` is there only when the pack has a changelog. A pin made by the skills CLI for a pack at a repository's root names a commit instead; its tree is `<hash>^{tree}`. A project's own pins are in its `.software-factory/factory.lock` and change only through `/factory-upgrade`, which copies the framework's pins; the framework cache and the pack cache are never edited.

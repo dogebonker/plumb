@@ -7,6 +7,8 @@ argument-hint: "[audit [quick|standard|deep] | threat-model | lens <slug>] [path
 
 # Factory security
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Mode and scope: $ARGUMENTS (empty: `audit quick` of the whole repository)
 
 `<kit>` and `<project>`: [../factory-shared/gates.md](../factory-shared/gates.md), Paths; stop as it says.
@@ -29,9 +31,15 @@ Never copy a secret value into any file, report or message: cite file:line, rule
 
 ## 2. Threat model
 
-Draft `.software-factory/system/threat-model.md` from [threat-model.md](threat-model.md), reading `.software-factory/system/` (product, ADRs, constraints, lenses.yaml) and the code itself: entry points, data stores, outbound calls, secrets, deployment files, CI. Every entry point and every trust boundary gets at least one threat or an explicit "none, because". The Components line uses the tags of `index.yaml`; routing reads it.
+**Resume first.** For the current change, compare the model's bytes with its latest genuine `threat_model_approved` event and the approved product/architecture security decisions. A matching model whose assets, trust boundaries, access rules, assumptions and accepted risks remain applicable is complete: leave its bytes and approval event unchanged, skip drafting and approval, and continue to the next unfinished stage. Resuming, a new code commit, additional citations or an implementation finding within the agreed security decisions do not require security reapproval. Record fresh findings and mitigation evidence in a change-local `security-notes.md` or review instead. A hash mismatch first uses gates.md's exact-byte recovery rule for your own proven incidental edits; preserve user changes and uncertain provenance. A file's existence alone is not approval; missing/unproven approval retains the initial approval step. Headless authority is unchanged.
 
-Show the draft, and its differences from an existing model, to the user and ask: "Approve this threat model, or correct it?" Write it once they approve, with their corrections, and, when run for a change, append a `threat_model_approved` event to its `history` with the file's SHA-256 ([../factory-shared/gates.md](../factory-shared/gates.md), History). Ask once per draft: answer a question the user asks, fold in a requirement they add, then ask the approval question once for the revised draft. Done when the file is written and approved.
+If a material security decision must change, preserve the approved model and write the proposed diff separately. Ask only about changed assets, boundaries, access rules, assumptions or accepted risks; show why the existing decision cannot hold. Do not redraft the entire model or architecture to add observations. An in-scope fix preserving those decisions proceeds through build/review without a new approval.
+
+Apply gates.md **Change impact** and **Explain questions and decisions**. An interface/product amendment alone does not invalidate the model. For a real security choice, describe who can now see or do what, one concrete abuse/failure example, the recommended protection and its usability/cost trade-off; use a small actor → boundary → data diagram when useful. Extra explanation or a newly cited mitigation is not another approval question.
+
+Only for an initial model or material decision revision, draft separately from the approved `.software-factory/system/threat-model.md` using [threat-model.md](threat-model.md), reading `.software-factory/system/` (product, ADRs, constraints, lenses.yaml) and the code itself: entry points, data stores, outbound calls, secrets, deployment files, CI. Every entry point and every trust boundary gets at least one threat or an explicit "none, because". The Components line uses the tags of `index.yaml`; routing reads it.
+
+Show the initial draft or material decision diff to the user and ask: "Approve this threat model, or correct it?" Only after actual approval, finalize the approved bytes with their corrections and, when run for a change, append a `threat_model_approved` event to its `history` with those bytes' SHA-256 ([../factory-shared/gates.md](../factory-shared/gates.md), History), then write exactly those bytes to the model. The editing hook permits that full Write against the recorded digest. Verify the on-disk hash before continuing. Ask once per changed decision set: answering an explanatory question does not change the draft or require approval again; a new material requirement does. Done when the file is written and approved; continue automatically in interactive mode unless manually paused.
 
 ## 3. Route
 

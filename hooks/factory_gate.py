@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Claude Code PreToolUse hook: hard gates for factory changes.
 
+Keeps approved gate documents and the active change's approved threat model frozen.
 Blocks Edit/Write/MultiEdit/NotebookEdit on source files (anything outside
 .software-factory/ and the root DESIGN.md) in a repository with an active factory change
 on the current branch, unless the change's gates allow it. Exit 2 blocks the tool call and
@@ -43,7 +44,8 @@ def field(text, key):
 
 
 def parse_status(text):
-    status = {"branch": None, "stubbing": False, "gates": {}, "slices": [], "scalars": {}}
+    status = {"branch": None, "stubbing": False, "gates": {}, "slices": [], "scalars": {},
+              "threat_model_sha256": None}
     section = None
     for line in text.splitlines():
         top = re.match(r"^(\w+):\s*(.*)$", line)
@@ -65,7 +67,25 @@ def parse_status(text):
             status["slices"].append({"id": field(item.group(1), "id") or "?", "state": field(item.group(1), "state"),
                                      "head_commit": field(item.group(1), "head_commit"),
                                      "base_commit": field(item.group(1), "base_commit")})
+        if section == "history" and item and field(item.group(1), "event") == "threat_model_approved":
+            digest = re.search(r'\bdetail:\s*["\']?sha256 ([0-9a-f]{64})(?=["\',}\s]|$)', item.group(1))
+            if not digest:
+                raise ValueError("cannot read approved threat model digest")
+            status["threat_model_sha256"] = digest.group(1)
     return status
+
+
+def approved_document_problem(change, status, rel, content=None):
+    root = change.parent.parent.parent
+    digest = status["threat_model_sha256"] if rel == ".software-factory/system/threat-model.md" else None
+    for gate, doc in GATES:
+        if rel == (change / doc).relative_to(root).as_posix() and status["gates"].get(gate, {}).get("state") == "approved":
+            digest = status["gates"][gate]["doc_sha256"] or "invalid"
+    if digest is None or isinstance(content, str) and hashlib.sha256(content.encode()).hexdigest() == digest:
+        return None
+    return (f"approved document is frozen: {rel}. Keep progress and supplemental evidence in separate files; "
+            "reuse its approval and continue. Propose material decision changes separately before revising it. "
+            "A full Write restoring the exact approved bytes is allowed.")
 
 
 def allowed_files(packet):
@@ -401,7 +421,9 @@ def check(change, status, rel, worktree=None):
             path = safe_path(root, (change / doc).relative_to(root).as_posix())
             digest = hashlib.sha256(path.read_bytes()).hexdigest() if path.exists() else None
             if digest != gates[gate]["doc_sha256"]:
-                return f"{doc} changed after the {gate} gate was approved. Run /factory-{gate} to approve it again."
+                return (f"{doc} changed after the {gate} gate was approved. Compare with the approved snapshot; "
+                        "restore only your own incidental edits from proven approved bytes, or propose the actual "
+                        "decision change through /factory-" + gate + ". Do not reapprove unchanged decisions.")
     for gate, _ in GATES:
         if gates[gate]["state"] not in ("approved", "skipped"):
             return f"source edits wait for the slices gate; the {gate} gate is not approved yet. Run /factory-{gate}."
@@ -524,7 +546,10 @@ def main():
         print("factory gate: this repository still uses .factory/; run /factory-init to migrate it", file=sys.stderr)
         return 2
     changes = root / ".software-factory" / "changes"
-    if rel.startswith(".software-factory/") or rel == "DESIGN.md" or not changes.is_dir():
+    metadata = rel.startswith(".software-factory/")
+    protected = rel == ".software-factory/system/threat-model.md" or any(
+        re.fullmatch(r"\.software-factory/changes/[^/]+/" + re.escape(doc), rel) for _, doc in GATES)
+    if rel == "DESIGN.md" or not changes.is_dir() or metadata and not protected:
         return 0
     branch = git(root, "symbolic-ref", "--short", "HEAD")
     for status_file in sorted(changes.glob("*/status.yaml")):
@@ -534,7 +559,11 @@ def main():
                 continue
             if status["scalars"].get("reconciled") == "true":
                 continue
-            reason = lock_problem(root) or check(status_file.parent, status, rel, worktree)
+            if metadata:
+                content = tool_input.get("content") if data.get("tool_name") == "Write" else None
+                reason = approved_document_problem(status_file.parent, status, rel, content)
+            else:
+                reason = lock_problem(root) or check(status_file.parent, status, rel, worktree)
         except Exception as e:  # noqa: BLE001 - an active change with unreadable state stays closed
             reason = f"cannot read the change's state ({type(e).__name__}: {e}). Fix {status_file.relative_to(root)}."
         if reason:

@@ -1,0 +1,33 @@
+{
+  "proposed_plan_sha256": "b3cc1a18113e2f8ed16800fd8eb3d3f317339a8c816ae617c70af6997c428e4f",
+  "prepared_base_commit": "e1acb9ac937e104e57b285b352c715a18c48c228",
+  "prior_reported_tokens": 868340,
+  "prior_raw_audit_status": "unavailable after user deletion",
+  "remaining_feature_tokens": 2131660,
+  "remaining_feature_seconds": 4844,
+  "additional_contract_worker_limit": 134680,
+  "additional_contract_review_limit": 69162,
+  "approval": "pending; no provider call authorized against this recovery plan",
+  "native_preflight": {
+    "status": "pass",
+    "evidence_sha256": "b1ead567d9332418cfb3387dee13aa0fece572aa37f31ca0a766aae3255b81c9",
+    "contracts_http": "C0-01,C0-02,C0-03 including noindex/no-canonical404 checks",
+    "typecheck": "pass",
+    "lint": "pass",
+    "scope": "pass",
+    "architecture": "pass",
+    "compiler_surfaces": "pass"
+  },
+  "archgraph_binary_sha256": "c79ae7bc8ba819acba5c1729a1d14de7a22f654cdd84f80482f7a5bf86d19272",
+  "native_prune_preflight": {
+    "status": "pass",
+    "evidence_sha256": "105b0dc71dc604ad736fb57c8b56fff5fbd153b4305e00186b53e0da3a683d8d",
+    "source_mutated": false,
+    "scope": "TypeScript unused-symbol audit; no CSS pruning claimed"
+  },
+  "launcher_validation": {
+    "self_check": "pass",
+    "synthetic_tests": 7,
+    "providers_called": false
+  }
+}

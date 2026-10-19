@@ -7,6 +7,8 @@ argument-hint: "[path to limit the audit]"
 
 # Factory prune
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Scope: $ARGUMENTS (empty: the whole repository)
 
 `<kit>` and `<project>`: [../factory-shared/gates.md](../factory-shared/gates.md), Paths; stop as it says.

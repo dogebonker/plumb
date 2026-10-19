@@ -7,6 +7,8 @@ argument-hint: "[audit | verify <.software-factory/runs/ci/YYYY-MM-DD.md#Pn> <pu
 
 # Factory CI
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Mode: $ARGUMENTS (empty: `audit`)
 
 `<kit>` and `<project>`: [../factory-shared/gates.md](../factory-shared/gates.md), Paths; stop as it says.

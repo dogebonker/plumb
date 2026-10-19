@@ -1,0 +1,30 @@
+{
+  "as_of": "2026-10-19T19:12:08.507291+00:00",
+  "cohorts": [
+    {
+      "arm": "factory-v2",
+      "confirmed_defects": null,
+      "defects_per_feature": null,
+      "features": 1,
+      "merged_features": 0,
+      "observed_features": 0
+    }
+  ],
+  "features": [
+    {
+      "adoption": null,
+      "arm": "factory-v2",
+      "confirmed_defects_lower_bound": null,
+      "escaped_defects": null,
+      "id": "glarity-blog-seo",
+      "merge_sha": null,
+      "merged_at": null,
+      "observation": null,
+      "status": "pending",
+      "suspected_defects": null,
+      "window_end": null
+    }
+  ],
+  "recovery": [],
+  "window_days": 7
+}

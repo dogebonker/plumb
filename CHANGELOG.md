@@ -2,6 +2,27 @@
 
 All notable changes to Software Factory. Dates are when the change landed on `main`.
 
+## Unreleased
+
+### Added
+- Standalone `factory-code-review`: polish lenses, bundled defect scanners/checklist, Factory intent/ADR/contract checks, local and PR modes, and explicitly authorized follow-through.
+- ADR enforcement, draft-only conformance, report-only drift and M12 defect-origin attribution; pinned archgraph checks and bounded review context for TypeScript, Python and Go.
+- Experimental v2 slice contracts, isolated workers, mechanical gates, bounded Opus review, metrics and an optional budgeted post-integration replanning checkpoint.
+- Signed GitHub/Linear webhook intake and a durable queue for the existing headless runner, with structured progress, coalescing and conservative failure recovery. Live subscriptions and durable v2 slice resume remain integration work.
+- Post-merge defect, recovery and adoption reporting, plus evidence-backed skill deprecation proposals. Unmerged or unobserved outcomes remain unknown.
+- Historical 20-PR benchmark results, protocol and harness; quality remains separate from cost/time, with the deleted raw-evidence limitation retained. Extended evaluation adapters and fixtures include explicit accounting/isolation limitations.
+
+### Fixed
+- Resume approved stages without redrafting, enriching or asking architecture/security approval again; supplemental evidence stays separate and pending-only plan approval preserves earlier approvals.
+- The edit hook freezes approved gate documents and the current change's approved threat model, while permitting exact-byte writes/restores and pending drafts. Hash validation and headless approval provenance remain intact.
+- Interactive interface/product corrections retain unchanged compatible architecture/security approvals after a focused impact check, instead of forcing every later gate through approval again. Affected tests and reviews still rerun; headless snapshot rules stay intact.
+
+### Changed
+- Design books now require explicit task-local opt-in. Small/medium tasks default to no book reads or panels; large tasks may recommend one lens in the existing approval summary. Selected excerpts are size-capped and reuse the general reviewer; APoSD no longer automatically spawns a reviewer, and Refactoring.Guru/pattern maps are not baseline loads.
+- Provider-backed per-task/per-skill token receipts and reports replace guessed token budgets. The headless runner captures raw usage outside the harness clone even on failure; resumes and child rollups are deduplicated, and unknown attribution stays visible. No claimed dollar savings without measured evidence.
+- New standard interactive approvals authorize bounded repair/review/acceptance rounds until required proof passes or a real blocker remains. Completed stages advance automatically; actual decision changes and final sign-off still return to the user.
+- Question stages keep their existing questions and add practical examples, recommendation reasons, trade-offs and small diagrams when useful; unchanged facts and explanatory answers do not create more approval questions.
+
 ## 2026-10-15
 
 ### Added

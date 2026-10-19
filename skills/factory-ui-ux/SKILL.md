@@ -7,6 +7,8 @@ argument-hint: "[design-md | mockups <slug> | critique <routes> | lens <slug>]"
 
 # Factory UI/UX
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Mode: $ARGUMENTS (empty, or only a change slug as the headless runner sends it: `design-md` when the design file is missing, otherwise `critique` of the main routes)
 
 Why each source and tool is here: `docs/research/ui-ux-selection.md` in the factory repository. Patterns and tools: `<kit>/ui/slop-patterns.yaml` and `tools.yaml`.

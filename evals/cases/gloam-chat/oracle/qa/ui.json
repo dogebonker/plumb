@@ -1,0 +1,16 @@
+{
+  "email": "#login input[name=email]",
+  "password": "#login input[name=password]",
+  "log-in": "#login button",
+  "alert": "[role=alert]",
+  "scene-link": "[data-testid=scene-link]",
+  "composer": "[data-testid=composer]",
+  "in-character": "[data-testid=in-character]",
+  "send": "[data-testid=send]",
+  "post": "[data-testid=post]",
+  "whisper-to": "[data-testid=whisper-to]",
+  "xcard": "[data-testid=xcard]",
+  "resume": "[data-testid=resume]",
+  "close-scene": "[data-testid=close-scene]",
+  "search": "[data-testid=search]"
+}

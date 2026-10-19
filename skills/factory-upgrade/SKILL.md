@@ -7,6 +7,8 @@ argument-hint: "[commit, tag or dev_path]"
 
 # Factory upgrade
 
+Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+
 Framework: $ARGUMENTS (empty: `HEAD` of `<framework_repo>`)
 
 An upgrade makes a framework change a reviewed commit of the project's own ([../factory-shared/gates.md](../factory-shared/gates.md), Paths). It changes `.software-factory/factory.lock` on the current branch, then offers the other branches (step 6). `<framework_repo>` is `framework_repo` in `~/.software-factory/user/config.yaml`. Without `.software-factory/factory.lock`, point to `/factory-init` and stop. `<bin>` is `<framework>/bin` once step 3 has a framework that holds `bin/`, otherwise `<framework_repo>/bin`.
