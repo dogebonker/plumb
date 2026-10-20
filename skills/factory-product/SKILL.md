@@ -86,7 +86,7 @@ When `ui` is `true` in `status.yaml`, ask the user once whether this change need
 
 ## 4. Walk the human through it
 
-Use gates.md **Explain questions and decisions**: keep the existing questions, ground each in one user example and the consequence of each option, and use the existing mockup or a small flow sketch for multi-step behavior. A corrected example does not automatically reopen unchanged architecture/security; apply Change impact.
+Use gates.md **Explain questions and decisions**: recap the goal and relevant answers, then show each behavior choice with an existing mockup, access table or small flow sketch beside the question. Use everyday words and one user example, with a recommended outcome and drawback. Keep open questions one at a time. A corrected example does not automatically reopen unchanged architecture/security; apply Change impact.
 
 Go rule by rule. For each: read back the rule and its examples, with the mockup screenshots that show them, ask for the missing or surprising case, and fold the answer in. A change to a rule that a mockup shows updates the mockup. Then ask the open questions one at a time.
 

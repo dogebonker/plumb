@@ -21,7 +21,7 @@ All notable changes to Software Factory. Dates are when the change landed on `ma
 - Design books now require explicit task-local opt-in. Small/medium tasks default to no book reads or panels; large tasks may recommend one lens in the existing approval summary. Selected excerpts are size-capped and reuse the general reviewer; APoSD no longer automatically spawns a reviewer, and Refactoring.Guru/pattern maps are not baseline loads.
 - Provider-backed per-task/per-skill token receipts and reports replace guessed token budgets. The headless runner captures raw usage outside the harness clone even on failure; resumes and child rollups are deduplicated, and unknown attribution stays visible. No claimed dollar savings without measured evidence.
 - New standard interactive approvals authorize bounded repair/review/acceptance rounds until required proof passes or a real blocker remains. Completed stages advance automatically; actual decision changes and final sign-off still return to the user.
-- Question stages keep their existing questions and add practical examples, recommendation reasons, trade-offs and small diagrams when useful; unchanged facts and explanatory answers do not create more approval questions.
+- Pre-build questions use everyday wording, a short goal/decided recap and a concrete scenario describing the person's steps before asking what they should see or do next. Inline behavior diagrams, access tables or screen previews appear by default. Recommendations include drawbacks and simple answer labels; existing question rounds, rendering budgets and approval boundaries remain unchanged.
 
 ## 2026-10-15
 

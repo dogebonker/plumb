@@ -28,20 +28,20 @@ Only when pending architecture has unanswered research questions, start research
 
 Phrase every question in the brief's own nouns ("Can a player edit a post after someone replies?", not "Is data mutable?"), so a short reply suffices.
 
-Follow gates.md **Explain questions and decisions**: keep the questions and one-round batching, but give concrete examples, recommended outcomes and trade-offs. Share a small diagram across related flow/access/persistence questions when it helps; simple choices stay brief. On revisions, show the impact table and ask only changed decisions, leaving compatible architecture/security approvals intact.
+Follow gates.md **Explain questions and decisions**: start each batch with the goal and relevant answers, then describe the scenario as a short sequence: the page or place, the person's action, and what happens next. Ask what they should see or be able to do. Show behavior choices visually by default, and offer plain-language outcomes with a recommended answer and drawback. Keep the one-round batching; related questions share a visual. On revisions, translate the impact table into what changes for the user and ask only changed decisions, leaving compatible architecture/security approvals intact.
 
 On resume, skip topics already answered or approved. If product is approved, read its decisions as fixed inputs and ask only a concrete unresolved decision in a pending gate; do not repeat discovery or regenerate the product/design documents.
 
-**Round 1, one message.** Ask about each topic below that the brief, the repository and `.software-factory/system/` do not already settle. Number the questions. Give your proposed answer with each one.
+**Round 1, one message.** The topics below are an internal coverage checklist, not eight headings to copy into the chat. Ask only about what the brief, the repository and `.software-factory/system/` do not already settle. Use short numbered behavior questions with A/B outcomes; a reply like "1A, 2B, but owners can still delete" should suffice. Share context and visuals across related questions instead of repeating them.
 
-1. **Users and roles.** Who will use it, in what roles, how many, on which devices. How people get in (accounts, invitations, sign-in) and how each person is shown to others (name, display name, alias).
+1. **Who uses it?** Who will use it, in what roles, how many, on which devices. How people get in (accounts, invitations, sign-in) and how each person is shown to others (name, display name, alias).
 2. **Who may see and do what between users.** For each thing a user creates: who can see it and who can act on it. Anything private between some users, and every place it must never leak: lists, search, counts, previews, notifications, history. Any tool people use to protect themselves or each other (safety, consent, blocking, reporting) and who learns that it was used.
-3. **Data lifecycle.** Create, edit (by whom, until when), delete or withdraw, what happens when a person leaves or is removed, how things are closed, ended or archived, and what history is kept afterwards.
-4. **Failure and durability.** What "saved" means. What the user sees and keeps when a save fails or the connection drops. Two people acting at the same time, and editing from a stale copy. What happens when stored data is damaged or unreadable.
-5. **Vocabulary.** What the users call each role, thing and action, and the words that must never appear on screen. These become the Glossary.
-6. **Brand voice.** How the product should sound, with two or three example lines for real moments (an empty state, a success, an error), and where the voice must be plain with no flavor (safety, errors, removals, money).
-7. **Visual direction.** Look and feel, themes, the devices that matter most, any reference products, two or three named products it must never be mistaken for, the accessibility bar, and the quality bar for this release (a finished daily tool or a working prototype). Offer the optional 2 to 3 feature examples of [../factory-ui-ux/references.md](../factory-ui-ux/references.md) here, once, when triage has not.
-8. **Non-goals.** Name the three to five features a user of this kind of product would expect (for example notifications, reactions, integrations, admin tools) and ask which ones this version must not build.
+3. **When can people change or remove things?** Create, edit (by whom, until when), delete or withdraw, what happens when a person leaves or is removed, how things are closed, ended or archived, and what history is kept afterwards.
+4. **What if saving goes wrong?** What "saved" means. What the user sees and keeps when a save fails or the connection drops. Two people acting at the same time, and editing from a stale copy. What happens when stored data is damaged or unreadable.
+5. **What words should the app use?** What the users call each role, thing and action, and the words that must never appear on screen. These become the Glossary.
+6. **How should the app sound?** How the product should sound, with two or three example lines for real moments (an empty state, a success, an error), and where the voice must be plain with no flavor (safety, errors, removals, money).
+7. **How should it look and feel?** Look and feel, themes, the devices that matter most, any reference products, two or three named products it must never be mistaken for, the accessibility bar, and the quality bar for this release (a finished daily tool or a working prototype). Offer the optional 2 to 3 feature examples of [../factory-ui-ux/references.md](../factory-ui-ux/references.md) here, once, when triage has not.
+8. **What should we leave out for now?** Name the three to five features a user of this kind of product would expect (for example notifications, reactions, integrations, admin tools) and ask which ones this version must not build.
 
 Omit topic 7 when `ui` is false. Do not use the words "approve" or "confirm" in a discovery message: approval is one separate question at the end.
 
@@ -69,6 +69,8 @@ Before the approval summary, run the [draft conformance pass](../factory-shared/
 Check each document as gates.md's Approve a gate says. More than eight slices: offer the split the same way.
 
 ## 6. Ask for approval
+
+Use the shared recap and plain-language labels: "What it does", "How it behaves", "How we protect it", "What you'll try first" and "What we're assuming". Include all the details listed below, but group them by user outcome rather than pasting document headings or raw signatures. Show the relevant mockups inline and reuse the behavior visuals; paths remain supporting links. Retain the explicit authorization sentence and approval question.
 
 One message: the rules as one line each with their example, the Glossary, the Voice lines, the design file's principles, positions and quality bar, the mockup paths, each Decision with the alternative it rejects, the Threats, the slice list, the Assumptions and draft-conformance conflicts (including their recorded answers), and this sentence: "Approving this plan authorizes building all slices inside their Allowed files, executable-test corrections under unchanged promises, and bounded implementation, review and acceptance repairs until the required checks pass or a real blocker remains, before your final sign-off. Changed promises, waivers, unrelated scope, destructive actions, credentials and publication remain separate decisions." Then ask: "Approve this plan, or correct it?" On resume, summarize only the pending decisions and their concrete diff; do not request approval of unchanged earlier decisions.
 

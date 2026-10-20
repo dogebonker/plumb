@@ -69,7 +69,9 @@ The standard-track loop:
 | **Review** | Mechanical results, independently validated findings and acceptance evidence |
 | **Reconcile** | The shipped decisions, constraints and vocabulary folded into living docs |
 
-Questions carry examples and trade-offs. Flow and boundary choices get a diagram when it helps. A small interface change does not automatically reopen compatible architecture or security decisions.
+Questions start with a short reminder of what we're making and what's decided, so you can return after a break. Then a concrete scenario walks through where a person is, what they do and what happens, before asking what they should see or be able to do next. Behavior choices use plain words and visible flows, access tables or screen previews by default, with a recommendation and an easy A/B reply. Observed behavior and proposals are labeled separately. A small interface change does not automatically reopen compatible architecture or security decisions.
+
+[Try three visual question examples](docs/examples/pre-build-questions.html): saving without a connection, who can open a shared note, and compact versus roomy screens. The preview's choices are illustrative and do not approve a project plan.
 
 <details>
 <summary><strong>How much process does a task get?</strong></summary>

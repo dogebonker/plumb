@@ -81,9 +81,9 @@ Rules:
 
 Track small: before the approval summary, run the scripted-only [Covers/SYS conformance check](../factory-shared/adr.md#draft-conformance) on the pending `04-slices.md`. Unknown standing IDs become Open questions and appear in that summary. This validates ID references, not semantic intent; it adds no architecture document or model call. Other tracks reuse their current draft-conformance evidence.
 
-Use gates.md **Explain questions and decisions**: connect each slice to something the user can try, recommend the smallest useful tracer bullet, and show a short dependency flow when ordering or parallel work is unclear. A retained compatible slice plan needs reverification of affected proof, not another approval question.
+Use gates.md **Explain questions and decisions**: recap the goal and relevant answers, then show the build order as a short path of things the user can try, such as "Create a note → Save and reopen it → Share it with a teammate". Recommend the smallest useful first working version. Keep slice IDs, dependencies and files in the supporting plan. A retained compatible slice plan needs reverification of affected proof, not another approval question.
 
-Show the slice list with what each one proves. Ask whether the tracer bullet is thin enough, whether any slice is a layer in disguise, and whether each milestone ends where the user can try something. Then ask the open questions.
+Show the slice list with what each one proves. Check yourself that slices deliver usable behavior rather than isolated technical layers. Ask in plain words: "Is <first thing you can try> the right place to start, or would <alternative> be more useful?" Ask about a milestone only when its usable result or order is unsettled. Then ask the remaining open questions; do not ask the user to assess "tracer bullets" or "layers in disguise".
 
 Done when Open questions is empty.
 

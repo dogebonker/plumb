@@ -215,15 +215,47 @@ An impact table cannot promote an already-pending gate back to approved. Recover
 
 ## Explain questions and decisions
 
-Keep the existing questions, stage boundaries and batching. Improve their context instead of adding more questions or narration:
+Apply this to every pre-build question, including triage, design, security and approval summaries. Keep the existing decisions, stage boundaries and round limits. Change how the question is presented, not what must be decided.
 
-- Start with the user-visible decision and why it matters now. State the known current behavior and one concrete example using the product's nouns; label unknowns rather than inventing facts. Explain technical terms only when the choice needs them.
-- Give a recommendation with its reason, then the real trade-off of each useful alternative, including keeping the current behavior when viable. Describe what the user would notice, not only type/architecture labels. A simple question needs only a sentence or two; related questions share one explanation.
-- Use a small inline Mermaid flow/state/sequence diagram, ASCII sketch or comparison table when relationships, permissions, data flow, failure handling or before/after behavior are hard to follow. Label current versus proposed and add a plain-language caption. Reuse existing mockups when relevant. Skip a diagram for a simple choice; no installation, generated artwork or new approval gate is needed.
-- For a revision, show **what changes**, **what stays approved**, and **what will be checked automatically**, then ask only about the changed decision. Never ask to approve a list of unchanged facts, a passed check, or "architecture needs no change". A factual update is a short progress note and continues.
-- An explanatory follow-up is answered without changing the approved documents or asking the same approval again. If the decision is still pending, keep that original question pending. Ask for one concrete user example when missing context would materially change the options; do not request examples as a routine extra step.
+**Make each batch understandable after 45 minutes away.** Open with a short recap: **We're making** <user goal>; **Already decided** <only the relevant answers>; **Scenario** <where the person is, what they do, then what happens>. Write the scenario like the reproduction steps in a bug report, in two or three everyday sentences or a short numbered sequence. Follow it with the concrete question: what should the person see on the page, what happens to their work, or what can they do next? For example: "A user opens a note and starts typing. Before it finishes saving, their internet connection drops. What should they see on the page, and can they keep typing?" Avoid abstract summaries such as "Choosing now: offline behavior". Normal flows and screen choices also need a concrete situation; do not invent a failure to fit the format. Rebuild this recap from the brief, recorded answers and current pending documents, even in the same session. Never require the user to scroll back, remember IDs or open a document to understand the question. On resume, skip answered topics; do not interpret silence as an answer.
 
-Example for an interface revision: "The payment response will include the remaining amount in the invoice currency, so the browser displays the server's value instead of calculating it. Architecture and access rules stay approved. I recommend the server field to keep rounding consistent; the trade-off is one extra response field. We'll recheck the response contract, caller and rounding tests. Approve this interface change?" A compact `server amount → response field → displayed remainder` sketch is enough; do not present the same choice as new architecture or security approval.
+**Use everyday words.** Ask what a person sees or does, using names from the brief and one realistic example. Ask "If Maya and Leo both edit the same note, whose changes should we keep?", rather than "What is the concurrency policy?" Keep IDs, signatures, file paths and technical rationale in the linked draft or a short supporting note. Preserve exact identifiers and commands when the user must change them. Explain any necessary technical term in the same sentence. Internal topic lists are coverage checklists, not text to paste into the chat.
+
+**Show behavior before asking about it.** Every question about a flow, screen, access rule, saved data or failure gets a visible explanation beside it by default. Related questions can share one visual, with matching question/option labels. Choose the smallest form that actually shows the choice:
+
+| The user is choosing… | Show… |
+| --- | --- |
+| Steps, waiting, retries or what happens next | A short flow or sequence with the changed branch visible |
+| Who can see or change something | A people × action table with explicit Allowed/Blocked labels |
+| What happens to saved work or two competing edits | One named example, showing each person's result side by side |
+| A screen or interaction | The relevant current screenshot and proposed mockup/state, or a small labeled wireframe |
+| What comes first in the build | A short path of things the user will be able to try |
+
+Show screenshots/mockups inline using the host's image surface when available; paths alone are not a visual explanation. For diagrams, prefer inline rendered Mermaid; when unsupported, use a readable text sketch or Markdown table in the question itself. Reuse existing capture/mockup tools and artifacts; no new renderer, dependency or extra design round. A simple name, wording or yes/no scope choice can stay text-only. Avoid diagrams of internal modules when the decision is about user behavior.
+
+Label visuals **Current — observed**, **Proposed**, or **Illustrative example**. A current-behavior claim needs a code reference or inspected running screen; cite it briefly. With no evidence, say **Current — not verified**; with no existing feature, show only the proposal. Never pass off a wireframe, planned flow or stale screenshot as the running product. Keep visuals focused on the affected steps, usually 3–6 nodes; use plain labels and a one-line caption. Use text labels as well as color, and a short image description so the question remains readable without the picture. Question sketches explain choices; they do not replace required rendered acceptance evidence.
+
+**Make replying easy.** For each numbered question, use a short behavior title, its example/visual, then **My pick: A — <outcome>**, one reason and its real drawback. Offer B (and C only when useful), describing what the user would notice; include keeping current behavior when viable. End with one concrete question and an answer cue such as "Reply A, B, or describe your version." In a batch, allow "1A, 2B" or a short correction. Do not turn a checklist into a pile of nested questions. Bundle only decisions that share the same consequence; omit settled choices. Keep simple questions to a sentence or two. Choice labels are answer aids, never approval: an explicit approval still follows the gate's own protocol.
+
+For a revision, show **what changes**, **what stays approved**, and **what will be checked automatically**, then ask only about the changed decision. Never ask to approve a list of unchanged facts, a passed check, or "architecture needs no change". A factual update is a short progress note and continues. An explanatory follow-up is answered without changing approved documents or asking the same approval again. If the decision is still pending, keep that original question pending. Ask for a concrete user example only when missing context would materially change the options.
+
+Example discovery question (illustrative, not a claim about an existing product):
+
+> **We're making:** shared notes for a small team. **Already decided:** teammates can edit notes.
+>
+> **Scenario:** Maya and Leo open the same note. Maya edits it and saves. Leo is still looking at the old version, makes his own changes, and presses Save.
+>
+> **1. What should Leo see after pressing Save, and what happens to Maya's changes?**
+
+```mermaid
+flowchart LR
+    S["Maya saves first; Leo saves later"] --> A["A · Warn Leo and keep his draft"]
+    S --> B["B · Leo's save replaces Maya's changes"]
+```
+
+> **Proposed options:** A preserves both people's work until Leo chooses what to keep; B keeps only the last save.
+>
+> **My pick: A** — prevents a quiet loss of Maya's work. The drawback: Leo has to review the changes before saving again. **Which should happen: A, B, or your version?**
 
 ## Draft a gate document
 

@@ -112,7 +112,7 @@ Before the approval summary, run the [draft conformance pass](../factory-shared/
 
 ## 4. Walk the human through it
 
-Follow gates.md **Explain questions and decisions**: explain the user consequence of each actual architecture choice with an example and recommendation. A small system/data-flow diagram should show the boundary or failure behavior the choice changes. When Change impact retains this architecture, skip this stage entirely; do not copy new interface fields into it to manufacture a decision.
+Follow gates.md **Explain questions and decisions**: recap the goal and relevant answers, then explain each actual architecture choice through what a user will notice. Show the changed behavior or failure in a small flow or before/after table, with a concrete example, recommendation and drawback. Keep internal module names and budgets as supporting detail; ask about outcomes such as "Will your notes still be there on another device?" When Change impact retains this architecture, skip this stage entirely; do not copy new interface fields into it to manufacture a decision.
 
 Present the Decisions first, each with the main alternative it rejects. Then the Budgets, then the open questions. Fold every answer into the document.
 

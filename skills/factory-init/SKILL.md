@@ -21,6 +21,8 @@ Edit `.git/info/exclude` and `.claude/settings.local.json` with shell commands (
 
 ## 1. Detect
 
+For setup questions, follow [gates.md, Explain questions and decisions](../factory-shared/gates.md#explain-questions-and-decisions). Explain committed/ignored as "share the planning files with the project / keep them only on this machine". Explain framework choices as "use the current version (recommended) / use a specific version / develop the factory itself", retaining the exact ref or path beside the label. Keep settled setup facts out of the question list.
+
 - The repository root: `git rev-parse --show-toplevel`. Work from there. The starting point: the branch (`git symbolic-ref --quiet --short HEAD`), or the sha when HEAD is detached.
 - The harness: the `CLAUDECODE`, `CODEX_THREAD_ID` and `CURSOR_AGENT` environment variables, and the `.claude`, `.codex` and `.cursor` folders at the root.
 - Manifests (`package.json`, `Cargo.toml`, `go.mod`, `pyproject.toml`, ...) with their paths, and CI: `.github/workflows/*`.

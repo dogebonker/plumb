@@ -51,6 +51,8 @@ Otherwise show the draft first. Then ask at most 3 questions per round, at most 
 - one example of the intended voice for a real action or error, offering a draft when none exists
 - brand commitments that cannot change (logo, colors, faces)
 
+Follow [gates.md, Explain questions and decisions](../factory-shared/gates.md#explain-questions-and-decisions): include the short recap and show the affected screen or labeled wireframe alongside each behavior/layout choice. Translate abstract trade-offs into visible alternatives, such as "show 20 rows at once / show 8 rows with larger text", with a recommendation and drawback. Reuse current captures and the representative preview; use small inline sketches for other options within the existing render budget. Show images inline when supported, not just their paths. Label observed screens and proposed sketches separately.
+
 Reuse answers already recorded in the brief; ask only for missing intent. Never ask the user to invent spacing, colors or font scales: propose those from the reference and job. A confirmed brand constrains the proposal; disposable starter values do not. Before implementation expands across screens, render one representative primary-job screen with realistic content at a narrow width and a wide width. Record approval or specific requested changes alongside the design draft. A required visual quality bar is a delivery criterion, not an optional cosmetic follow-up.
 
 ## 8. Validate

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-build questions — three examples</title>
+<style>
+  :root { color-scheme: light; font: 17px/1.55 system-ui, sans-serif; color: #202c35; background: #f4f3ef; }
+  * { box-sizing: border-box; }
+  body { max-width: 1040px; margin: auto; padding: 48px 24px; }
+  h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; max-width: 760px; margin: 12px 0 20px; }
+  h2 { font-size: 1.5rem; line-height: 1.3; margin: 10px 0 18px; }
+  h3, p { margin: 0 0 14px; }
+  a { color: #115e55; text-underline-offset: 4px; }
+  nav { display: flex; gap: 12px 24px; flex-wrap: wrap; margin: 26px 0 36px; }
+  article { background: white; border: 1px solid #d4d9d8; border-radius: 12px; padding: 30px; margin: 0 0 28px; scroll-margin-top: 20px; }
+  .eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #52616b; }
+  .recap { border-left: 3px solid #b0c9c3; padding-left: 16px; margin: 0 0 24px; }
+  .recap p { margin: 4px 0; }
+  .visual { background: #f6f8f7; border: 1px solid #dce4df; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  .columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .step, .screen { border: 1px solid #bdcbc6; padding: 16px; background: white; border-radius: 6px; }
+  .arrow { text-align: center; margin: 8px 0; }
+  .caption, small { font-size: .88rem; color: #52616b; }
+  .caption { margin: 16px 0 0; }
+  .recommendation { border-left: 3px solid #167165; padding-left: 16px; }
+  table { border-collapse: collapse; width: 100%; text-align: left; }
+  th, td { border-bottom: 1px solid #c9d6cf; padding: 12px 8px; }
+  th { font-size: .88rem; }
+  td:not(:first-child) { font-weight: 600; }
+  .yes { color: #126253; } .no { color: #884029; }
+  fieldset { border: 0; padding: 0; margin: 22px 0 0; display: grid; grid-template-columns: 24px 1fr; gap: 12px 8px; align-items: center; }
+  legend { font-weight: 600; padding: 0; margin-bottom: 12px; }
+  input { accent-color: #126253; width: 18px; height: 18px; margin: 0; }
+  label { border: 1px solid #c3ceca; border-radius: 6px; padding: 12px; cursor: pointer; }
+  input:checked + label { background: #e5f2ec; border-color: #126253; }
+  input:focus-visible + label, a:focus-visible { outline: 3px solid #126253; outline-offset: 4px; }
+  .result { display: none; grid-column: 1 / -1; background: #eaf3ef; border-radius: 6px; padding: 14px; margin: 0; }
+  #save-a:checked ~ .save-a, #save-b:checked ~ .save-b,
+  #access-a:checked ~ .access-a, #access-b:checked ~ .access-b,
+  #screen-a:checked ~ .screen-a, #screen-b:checked ~ .screen-b { display: block; }
+  .toolbar { border-bottom: 1px solid #d4d9d8; padding-bottom: 12px; margin-bottom: 14px; font-weight: 700; }
+  .rows { list-style: none; margin: 0; padding: 0; font-size: .88rem; }
+  .rows li { border-bottom: 1px solid #e0e5e2; padding: 7px 0; }
+  .roomy li { padding: 16px 0; }
+  footer { color: #52616b; font-size: .9rem; }
+  @media (max-width: 640px) { body { padding: 28px 16px; } article { padding: 20px; } .columns { grid-template-columns: 1fr; } .visual { padding: 14px; } th, td { padding: 10px 4px; font-size: .8rem; } }
+</style>
+<header>
+  <p class="eyebrow">Software Factory · Question previews</p>
+  <h1>Step away. Come back.<br>The question still makes sense.</h1>
+  <p>Three illustrative questions for a shared notes app. Each restores context, shows the choice, and makes replying easy. Try the A/B options to see their consequences.</p>
+  <nav aria-label="Examples"><a href="#saving">1. Saving goes wrong</a><a href="#access">2. Who can see a note</a><a href="#screens">3. How the screen feels</a></nav>
+</header>
+<main>
+  <article id="saving">
+    <p class="eyebrow">Example 1 · A behavior choice</p>
+    <div class="recap"><p><strong>We're making:</strong> shared notes for a small team.</p><p><strong>Already decided:</strong> notes save automatically.</p><p><strong>Scenario:</strong> Maya opens a note on the train and starts typing. Before the note finishes saving, her internet connection drops for two minutes.</p></div>
+    <h2>What does Maya see on the page, and can she keep typing?</h2>
+    <div class="visual">
+      <p class="eyebrow">Proposed options</p>
+      <div class="step">Maya is writing → the connection drops</div>
+      <div class="arrow" aria-hidden="true">↓</div>
+      <div class="columns">
+        <div class="step"><strong>A · Keep writing</strong><p>Keep a draft on this device. Show “Waiting to sync”.</p><strong>Connection returns → try saving again.</strong></div>
+        <div class="step"><strong>B · Pause editing</strong><p>Keep what she has typed. Show “Reconnect to keep writing”.</p><strong>Connection returns → editing resumes.</strong></div>
+      </div>
+      <p class="caption">Both keep the text already typed. A lets Maya continue while offline; B makes her wait. “Waiting to sync” is not a successful save.</p>
+    </div>
+    <p class="recommendation"><strong>My pick: A.</strong> Maya can finish her notes. The drawback: this device holds the only copy of new text until syncing succeeds.</p>
+    <fieldset><legend>Which should happen? Try A or B.</legend>
+      <input type="radio" name="save" id="save-a"><label for="save-a">A — Keep writing and retry saving</label>
+      <input type="radio" name="save" id="save-b"><label for="save-b">B — Pause editing until reconnected</label>
+      <p class="result save-a">With A: Maya keeps writing. Her new text appears on other devices only after a successful sync.</p>
+      <p class="result save-b">With B: Maya keeps the text already typed, but cannot add more until the connection returns.</p>
+    </fieldset>
+  </article>
+  <article id="access">
+    <p class="eyebrow">Example 2 · An access choice</p>
+    <div class="recap"><p><strong>We're making:</strong> shared notes for a small team.</p><p><strong>Already decided:</strong> Maya owns a note and invites Leo to read it.</p><p><strong>Scenario:</strong> Leo opens Maya's note, copies its link, and sends it to Sam. Sam has not been invited but clicks the link.</p></div>
+    <h2>Does Sam see the note, or a message saying they need access?</h2>
+    <p>Neither option lets Sam edit the note.</p>
+    <div class="visual">
+      <p class="eyebrow">Proposed options · Reading this note</p>
+      <table><caption class="caption">A checks invitations; B treats possession of the link as permission to read.</caption><thead><tr><th scope="col">Person</th><th scope="col">A · Invite required</th><th scope="col">B · Link is enough</th></tr></thead><tbody>
+        <tr><th scope="row">Maya · owner</th><td class="yes">Allowed</td><td class="yes">Allowed</td></tr>
+        <tr><th scope="row">Leo · invited</th><td class="yes">Allowed</td><td class="yes">Allowed</td></tr>
+        <tr><th scope="row">Sam · link only</th><td class="no">Blocked</td><td class="yes">Allowed</td></tr>
+      </tbody></table>
+    </div>
+    <p class="recommendation"><strong>My pick: A.</strong> Forwarding a link cannot accidentally share private notes. The drawback: Maya must invite each new reader.</p>
+    <fieldset><legend>Who should be able to read it?</legend>
+      <input type="radio" name="access" id="access-a"><label for="access-a">A — Only people Maya invites</label>
+      <input type="radio" name="access" id="access-b"><label for="access-b">B — Anyone who receives the link</label>
+      <p class="result access-a">With A: Sam sees an access message. Maya must invite Sam before the note opens.</p>
+      <p class="result access-b">With B: Sam can read the note immediately, and can forward the link to another reader.</p>
+    </fieldset>
+  </article>
+  <article id="screens">
+    <p class="eyebrow">Example 3 · A screen choice</p>
+    <div class="recap"><p><strong>We're making:</strong> shared notes for a small team.</p><p><strong>Already decided:</strong> the home screen lists your recent notes.</p><p><strong>Scenario:</strong> Maya opens the app on her phone to find last week's meeting notes. Several newer notes appear above the one she wants.</p></div>
+    <h2>Should Maya see more notes at once, or fewer notes with more room to read and tap each one?</h2>
+    <div class="visual">
+      <p class="eyebrow">Illustrative wireframes · Not running app screenshots</p>
+      <div class="columns">
+        <div class="screen"><div class="toolbar">A · Compact list</div><ul class="rows"><li>Team meeting</li><li>Launch checklist</li><li>Customer feedback</li><li>Ideas for next week</li><li>Design notes</li><li>Project links</li></ul></div>
+        <div class="screen"><div class="toolbar">B · Roomier list</div><ul class="rows roomy"><li>Team meeting</li><li>Launch checklist</li><li>Customer feedback</li></ul></div>
+      </div>
+      <p class="caption">The same notes and actions, with different spacing. A fits more rows; B gives each row more room. Final counts depend on screen size and text length.</p>
+    </div>
+    <p class="recommendation"><strong>My pick: B</strong> for a team mostly using phones. The drawback: more scrolling to reach older notes.</p>
+    <fieldset><legend>Which would suit your team better?</legend>
+      <input type="radio" name="screen" id="screen-a"><label for="screen-a">A — More notes visible at once</label>
+      <input type="radio" name="screen" id="screen-b"><label for="screen-b">B — More space around each note</label>
+      <p class="result screen-a">With A: prioritize fast scanning. Touch targets and keyboard access still need to meet the accessibility requirements.</p>
+      <p class="result screen-b">With B: prioritize comfortable reading and tapping. Fewer notes fit before you scroll.</p>
+    </fieldset>
+  </article>
+</main>
+<footer>These are examples of how questions will be presented, not decisions for your project. Selections stay on this page, are not saved or sent anywhere, and do not approve a plan. In conversation you can reply “1A, 2A, 3B”, or describe your own version.</footer>
+</html>

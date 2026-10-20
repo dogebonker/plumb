@@ -51,7 +51,7 @@ Pick the track from what the code shows, not from how the task is worded.
 
 ## 4. Confirm with the user
 
-Follow gates.md **Explain questions and decisions**: explain the practical reason for the proposed track and any real choice, with a concrete example where useful. Keep the existing intake questions; do not turn detected facts or unchanged approvals into additional decisions.
+Follow gates.md **Explain questions and decisions**: start with the short recap and keep the existing intake in one message. Present the proposed track as "how much planning and checking this needs", the slug as "short project name", and the mode as "continue in this chat / run through a pull request". Group detected commands, modules, BDD and lens details in a compact "What I found" table, preserving exact values for corrections. Explain promises through user examples and visuals; do not paste catalog terminology into questions. Ask only real intake decisions; detected facts and unchanged approvals are not additional decisions.
 
 Ask in one message:
 
