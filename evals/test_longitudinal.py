@@ -87,6 +87,23 @@ class ChainTests(unittest.TestCase):
             self.assertFalse(sentinel.exists())
             self.assertEqual((work / 'source.py').read_text(), 'candidate source')
 
+    def test_host_reads_config_as_git_does_so_a_leading_bom_cannot_hide_a_filter(self):
+        with tempfile.TemporaryDirectory() as folder:
+            work = Path(folder) / 'work'
+            initialize(work)
+            sentinel = Path(folder) / 'filter-ran'
+            filter_script = Path(folder) / 'filter.sh'
+            filter_script.write_text('#!/bin/sh\ntouch "' + str(sentinel) + '"\ncat\n')
+            filter_script.chmod(0o755)
+            config = work / '.git/config'
+            config.write_bytes(b'\xef\xbb\xbf[filter "untrusted"]\n\tclean = ' + str(filter_script).encode()
+                               + b'\n' + config.read_bytes())
+            (work / '.gitattributes').write_text('*.py filter=untrusted\n')
+            (work / 'source.py').write_text('candidate source')
+            with self.assertRaisesRegex(ValueError, 'filter'):
+                longitudinal.host_savepoint(work, phase='candidate')
+            self.assertFalse(sentinel.exists())
+
     def test_host_rejects_metadata_index_link_and_alternates_before_git_work(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
@@ -108,7 +125,7 @@ class ChainTests(unittest.TestCase):
                         longitudinal.host_savepoint(work, phase='candidate')
                     self.assertEqual(target.read_text(), 'external data must remain unchanged')
 
-    def test_host_diff_provenance_never_executes_external_diff_or_textconv(self):
+    def test_host_rejects_external_diff_and_textconv_before_executing_them(self):
         with tempfile.TemporaryDirectory() as folder:
             work = Path(folder) / 'work'
             initialize(work)
@@ -120,22 +137,21 @@ class ChainTests(unittest.TestCase):
             git(work, 'config', 'diff.untrusted.textconv', str(script))
             (work / '.gitattributes').write_text('*.py diff=untrusted\n')
             (work / 'source.py').write_text('first candidate')
-            longitudinal.host_savepoint(work, phase='candidate')
-            (work / 'source.py').write_text('updated candidate')
-            longitudinal.host_savepoint(work, phase='candidate')
+            with self.assertRaisesRegex(ValueError, 'diff.external, diff.untrusted.textconv'):
+                longitudinal.host_savepoint(work, phase='candidate')
             self.assertFalse(sentinel.exists())
 
-    def test_host_rejects_include_and_core_worktree_configuration(self):
+    def test_host_rejects_include_redirect_hook_and_excludes_configuration(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
-            for key in ('include.path', 'core.worktree'):
+            for key in ('include.path', 'core.worktree', 'hook.untrusted.command', 'core.excludesFile'):
                 with self.subTest(key=key):
                     work = root / key
                     initialize(work)
                     target = root / 'external-config'
                     target.write_text('[core]\n    bare = false\n')
                     git(work, 'config', key, str(target))
-                    with self.assertRaisesRegex(ValueError, 'includes|redirect'):
+                    with self.assertRaisesRegex(ValueError, 'unsupported workspace Git configuration.*' + key.lower()):
                         longitudinal.host_savepoint(work, phase='candidate')
                     self.assertEqual(target.read_text(), '[core]\n    bare = false\n')
 
@@ -157,12 +173,14 @@ class ChainTests(unittest.TestCase):
     def test_chain_commits_pinned_overlay_before_next_trial(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
-            overlay = root / 'next-test.py'
+            (root / 'corpus').mkdir()
+            overlay = root / 'corpus/next-test.py'
             overlay.write_text('approved next test')
             cases = self.cases()[:2]
             cases[1].update(provide_acceptance=True, acceptance_overlays=[
                 {'path': 'test_feature.py', 'source': str(overlay), 'sha256': longitudinal.pr_benchmark.sha(overlay)}])
             def host(config, case, entry, out):
+                self.assertEqual(config['private_input_roots'], [str((root / 'corpus').resolve())])
                 work = Path(entry['runtime']) / 'work'
                 initialize(work)
                 if case['id'] == '1':
@@ -183,12 +201,44 @@ class ChainTests(unittest.TestCase):
                 self.assertTrue(provenance['created'])
                 self.assertEqual(provenance['changed_files'], ['test_feature.py'])
 
+    def test_overlay_stored_beside_actor_workspaces_is_rejected_before_any_trial(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            overlay = root / 'next-test.py'
+            overlay.write_text('approved next test')
+            cases = self.cases()[:2]
+            cases[1].update(provide_acceptance=True, acceptance_overlays=[
+                {'path': 'test_feature.py', 'source': str(overlay), 'sha256': longitudinal.pr_benchmark.sha(overlay)}])
+            calls = []
+            with self.assertRaisesRegex(ValueError, 'overlaps actor'):
+                longitudinal.run({'cases': cases, 'shared_context': 'facts'}, {}, root / 'evidence',
+                                 trial_fn=lambda *args: calls.append(args))
+            # A folder copied into a workspace exposes the overlay as surely as the actor folder does.
+            prepared = root / 'prepared'
+            (prepared / 'actor').mkdir(parents=True)
+            hidden = prepared / 'actor/next-test.py'
+            overlay.rename(hidden)
+            for name, config, first in (('snapshot', {'snapshot': str(prepared / 'actor')}, {}),
+                                        ('prepared actor', {}, {'prepared_dir': str(prepared)}),
+                                        ('dependency', {}, {'dependency_dirs': {'vendor': str(prepared / 'actor')}})):
+                with self.subTest(copied_into=name):
+                    cases = self.cases()[:2]
+                    cases[0].update(first)
+                    cases[1].update(provide_acceptance=True, acceptance_overlays=[
+                        {'path': 'test_feature.py', 'source': str(hidden), 'sha256': longitudinal.pr_benchmark.sha(hidden)}])
+                    with self.assertRaisesRegex(ValueError, 'overlaps actor'):
+                        longitudinal.run({'cases': cases, 'shared_context': 'facts'}, config, root / 'evidence',
+                                         trial_fn=lambda *args: calls.append(args))
+            self.assertEqual(calls, [])
+            self.assertFalse((root / 'evidence').exists())
+
     def test_hardlinked_acceptance_target_holds_before_overlay_or_next_trial(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             outside = root / 'outside.py'
             outside.write_text('external original')
-            overlay = root / 'next-test.py'
+            (root / 'corpus').mkdir()
+            overlay = root / 'corpus/next-test.py'
             overlay.write_text('new acceptance')
             cases = self.cases()[:2]
             cases[1].update(provide_acceptance=True, acceptance_overlays=[

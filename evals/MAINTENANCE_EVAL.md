@@ -45,7 +45,8 @@ by copying the historical reference implementation.
 Later cases with provided acceptance require `acceptance_overlays`: one
 `{path, source, sha256}` per admitted immutable acceptance/support file. Overlays may
 only replace those paths. Prepare and freeze these files from approved requirements
-before actor execution; production source, historical implementation, agent decisions
+before actor execution, outside the actor and framework folders. Each overlay's folder
+is denied to every step. Production source, historical implementation, agent decisions
 and history cannot be overlaid. The normal trial still denies actor edits and grades
 against the admitted immutable files. All arms get identical overlay bytes.
 

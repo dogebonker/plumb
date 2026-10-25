@@ -15,6 +15,11 @@ import pr_benchmark
 import quality_report
 
 DIMENSIONS = ('delivery', 'correctness', 'architecture', 'history', 'rule_compliance')
+# What `git init` and the fixture setup write; host Git overrides the signing and hook keys anyway.
+SAFE_CONFIG = {'core.repositoryformatversion', 'core.filemode', 'core.bare', 'core.logallrefupdates',
+               'core.ignorecase', 'core.precomposeunicode', 'core.symlinks', 'core.hookspath',
+               'extensions.objectformat', 'user.name', 'user.email', 'user.signingkey',
+               'commit.gpgsign', 'tag.gpgsign'}
 
 
 def validate_chain(manifest):
@@ -70,14 +75,13 @@ def _audit_metadata(metadata):
     config = metadata / 'config'
     if not config.is_file():
         raise ValueError('workspace Git metadata config missing')
-    text = config.read_text()
-    if re.search(r'^\s*\[\s*(?:filter|include(?:if)?)(?:[.\s\]])', text, re.IGNORECASE | re.MULTILINE):
-        raise ValueError('actor-configured Git filters/includes are not supported for host savepoints')
-    if re.search(r'\\[ \t]*$', text, re.MULTILINE):
-        raise ValueError('continued Git metadata configuration is not supported for host savepoints')
-    if re.search(r'^\s*(?:\[[^\r\n]*\]\s*)?(?:worktree|partialclone|promisor|alternaterefscommand)\s*(?:=|$)',
-                 text, re.IGNORECASE | re.MULTILINE):
-        raise ValueError('workspace Git metadata configuration redirect is not supported')
+    # Git parses the file itself (a regex misses syntax Git accepts, such as a leading BOM); --file never follows includes.
+    # Allowlist, not denylist: new Git releases add command keys (hook.<name>.command in 2.54).
+    keys = [entry.split('\n', 1)[0] for entry in
+            _git(Path('/'), 'config', '--file', str(config), '--null', '--list').split('\0') if entry]
+    unsupported = sorted({key for key in keys if key not in SAFE_CONFIG and not key.startswith('branch.')})
+    if unsupported:
+        raise ValueError('unsupported workspace Git configuration for host savepoints: ' + ', '.join(unsupported))
 
 
 def _workspace_root(work):
@@ -153,6 +157,15 @@ def run(manifest, config, output, *, trial_fn=pr_benchmark.trial, score_fn=None)
     """
     cases = validate_chain(manifest)
     output = Path(output).resolve()
+    # Later acceptance files stay hidden from every earlier step.
+    overlay_roots = {Path(item['source']).resolve().parent for case in cases for item in case.get('acceptance_overlays', [])}
+    # Actor runtimes, the framework and every tree trials copy into a workspace.
+    public = [output.parent / (output.name + '-actors'), *([Path(config['snapshot']).resolve()] if config.get('snapshot') else []),
+              *(Path(case['prepared_dir']).resolve() / 'actor' for case in cases),
+              *(Path(source).resolve() for case in cases for source in case.get('dependency_dirs', {}).values())]
+    if any(root == path or root in path.parents or path in root.parents for root in overlay_roots for path in public):
+        raise ValueError('acceptance overlay root overlaps actor/framework; use isolated corpus storage')
+    private_roots = sorted({*config.get('private_input_roots', []), *map(str, overlay_roots)})
     output.mkdir(parents=True, exist_ok=True)
     if any(output.iterdir()):
         raise FileExistsError('use an empty persistent output directory')
@@ -217,6 +230,7 @@ def run(manifest, config, output, *, trial_fn=pr_benchmark.trial, score_fn=None)
             step_out = output / f'step-{index + 1}'
             step_out.mkdir(exist_ok=True)
             step_config = {**config, 'source_repositories': [*config.get('source_repositories', []), str(output)],
+                           'private_input_roots': private_roots,
                            'schedule': [{'arm': a, 'runtime': str(output.parent / (output.name + '-actors') / a)} for a in pr_benchmark.ARMS]}
             result = trial_fn(step_config, case, entry, step_out)
             if result.get('status') == 'complete':
