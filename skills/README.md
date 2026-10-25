@@ -78,7 +78,7 @@ Self-check: `python3 runner/test_factory_run.py`.
 
 ## Run one change
 
-`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices and independent review, then the next milestone, then `/factory-reconcile` with one final human sign-off before merging. Headless mode retains per-slice PR sign-off. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step. Track standard in interactive mode runs `/factory-triage`, `/factory-plan`, then `/factory-build` through reconcile.
+`/factory-triage <task>`, then the gates `/factory-product`, `/factory-architecture`, `/factory-interface`, `/factory-slices` (track small: slices only), then `/factory-build`, which runs on autopilot: each milestone's slices and independent review, then the next milestone, then `/factory-reconcile` with one final human sign-off before merging. Headless mode retains per-slice PR sign-off. One Opus 5.5 lead handles slices and repairs in dependency order, using ordinary bounded Opus subagents for independent approved work; independent review finishes before the next milestone. Each skill resumes from `.software-factory/changes/<slug>/status.yaml`, so a fresh session can pick up at any step. Track standard in interactive mode runs `/factory-triage`, `/factory-plan`, then `/factory-build` through reconcile.
 
 ## Skills
 
@@ -87,12 +87,12 @@ Self-check: `python3 runner/test_factory_run.py`.
 | `factory-init` | S14 | Sets a repository up: detects the harness, stack and CI, installs and locks a framework commit (or a `dev_path`), migrates `.factory/`, writes `factory.lock` and `principles.md`, links the skills, offers the hard-gate hook and the user layer's principles |
 | `factory-upgrade` | S14 | Moves the lock to another framework commit or `dev_path`: the log and decisions in between, the install, new pins, relinked skills |
 | `factory-triage` | S1, S2 | Track, slug, branch, `status.yaml`; modules, BDD and money detection into `lenses.yaml`. Lens profile in S3 |
-| `factory-build` | S1 | Packet, fresh executor, red then green check, mechanical checks per slice, a milestone's slices back to back |
+| `factory-build` | S1 | Packet, Opus 5.5 lead with bounded native subagents, slice evidence barriers, red then green check, mechanical checks per slice, a milestone's slices back to back |
 | `factory-review` | S1, S6 | Mechanical checks (files, contract, red/green, lint, language checks, dependency rule, dead code), review agents with lens rubrics, APoSD, UI/UX, Security and Money reviewers, validated fixes routed to the executor, regression proofs, approved-scope completion and final human sign-off; once per milestone |
 | `factory-code-review` | Standalone | Local/PR pre-release review: polish lenses, bundled bug scanners/checklist, Factory docs/ADRs/contracts/approval integrity, archgraph context, one verified report and explicitly authorized follow-through; no active change required |
 | `factory-plan` | S2 | Track standard, interactive: one discovery pass, the four gate documents drafted together, one approval |
 | `factory-product` | S2 | Product gate: problem, rules and examples, promises, constraints |
-| `factory-architecture` | S2, S4 | Architecture gate: research behind a firewall, budgets, ADRs |
+| `factory-architecture` | S2, S4 | Architecture gate: cited baseline research by the Opus lead or bounded helpers, budgets, ADRs |
 | `factory-interface` | S2, S4, S6 | Interface gate: signatures that compile through the kit's adapters, cost card, a challenge panel of one lens per reviewer, the human's decisions, coverage |
 | `factory-slices` | S2 | Slices gate: vertical slices, tracer bullet first |
 | `factory-shared` | S2, S3 | Not a skill: `gates.md` (gate rules), `packs.md` (lens and language pack loading), `constraints.md` (registry template) |

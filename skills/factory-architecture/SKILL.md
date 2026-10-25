@@ -22,15 +22,15 @@ Load the change as gates.md describes, for the `architecture` gate. An approved 
 
 ## 2. Research
 
-Research runs behind a firewall: the agent that answers never sees the task, so its facts carry no bias toward a solution. `research.md` is evidence; the gate hashes `02-architecture.md`, which carries the facts it relies on.
+The Opus lead gathers bounded, cited facts about the baseline before choosing a solution. It may delegate independent read-only questions to Opus subagents when useful and integrates their actual results. Do not claim a task-blind research pass unless a helper actually had that isolation. `research.md` is evidence; the gate hashes `02-architecture.md`, which carries the facts it relies on.
 
-1. Write a `## Questions` list: how the code in scope works today, what calls it, what data it touches, what Pond records about it. Each question names only code, data and records that exist at `change_base_commit`. Before dispatching, compare the list with `01-product.md` and reword any question that names a rule or outcome from it.
-2. Put the questions in a new temp directory outside the repository, as `questions.md`, and check out a clean copy there: `git worktree add --detach <tmp>/repo <change_base_commit>`. That copy has no `.software-factory/changes/` and no factory branch checked out.
-3. Start one fresh sub-agent on the smaller model (gates.md, Models). It receives these instructions, nothing else from this conversation:
+1. Write a `## Questions` list: how the code in scope works today, what calls it, what data it touches, what Pond records about it. Each question names only code, data and records that exist at `change_base_commit`. Compare the list with `01-product.md` and reword any question that names a proposed rule or outcome from it.
+2. Keep the questions and answers in `<change>/research.md`. Inspect baseline files with `git show <change_base_commit>:<path>` when the live checkout differs; do not create a worker or worktree for a read-only fact lookup.
+3. Use the Opus 5.5 planning lead or explicitly assigned read-only Opus helpers (gates.md, Models) for the bounded research below. Reuse known evidence, wait for actual helper completion and keep unanswered research separate from approved decisions:
 
-   > Answer every question in `<tmp>/questions.md` from the code at `<tmp>/repo` and, through Pond's tools, from sessions dated before `<date of change_base_commit>`. Write the answers to `<tmp>/answers.md`, numbered like the questions. Facts only, each with `path:line` or a Pond session id; write "not found" where the code and Pond are silent.
+   > Answer each question from the repository's code at `change_base_commit` and, through Pond's tools, from sessions dated before `<date of change_base_commit>`. Write answers numbered like the questions. Facts only, each with baseline `path:line` or a Pond session id; write "not found" where the code and Pond are silent.
 
-4. Copy questions and answers into `<change>/research.md`, then `git worktree remove <tmp>/repo`. The form:
+4. Record questions and answers in `<change>/research.md` in this form:
 
    ```markdown
    # Research: <slug>

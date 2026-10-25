@@ -21,9 +21,9 @@
 
 Software Factory is a set of agent skills, versioned documents and execution tools for software development. It asks the questions that change the product, turns the answers into contracts, and coordinates implementation, independent review and acceptance.
 
-On the standard track, you approve one plan and sign off the result. Agents handle the build and scoped repair work between those decisions. Changed promises, security decisions and missing authority come back to you.
+On the standard track, you approve one plan and sign off the result. An Opus 5.5 lead handles slices and scoped repairs, delegating bounded subtasks to Opus subagents when useful; an independent reviewer checks gate-green work. Changed promises, security decisions and missing authority come back to you.
 
-**Status:** experimental. The existing workflow is implemented; the new swarm has not completed its end-to-end pilot. [Current capabilities ↓](#current-capabilities)
+**Status:** experimental. The existing workflow is implemented; the simplified Opus-led controller has not completed its end-to-end pilot. [Current capabilities ↓](#current-capabilities)
 
 ## Start a change
 
@@ -93,6 +93,8 @@ A constraint names its enforcement: a test, lint rule, architecture rule, monito
 
 Selected layout checkers enforce import boundaries. [Archgraph](https://github.com/dogebonker/archgraph) can supply cross-stack rules, blast radius and reading order; the repository stays readable beyond that initial context. Missing tools and incomplete graph coverage stay explicit.
 
+The [shared archgraph adapter](skills/factory-shared/archgraph.md#shared-adapter) now prepares bounded context for the Opus lead and reviewers, and checks new forbidden edges, cycles and unplanned edges when the approved layout selects it. Setup detects the pinned tool; context and gate reports bind the source, rules and binary. Helpers receive only their permitted context.
+
 Approved documents are bound to exact hashes. When installed, the editing hook protects them and the current slice's allowed files. Supplemental evidence lives separately. Compatible unchanged approvals survive a revision; changed contracts need their actual decision. [Authority and limits](skills/README.md#hard-gates)
 
 ### Review checks both the code and its intent
@@ -127,12 +129,13 @@ One shared packet and one deduplicated report. Small reviews stay lean; large re
 | Standalone code review | Implemented for local work and PRs |
 | Headless runner | Implemented for a dedicated clone, with actual GitHub approver checks |
 | Signed GitHub/Linear wake-ups | Local receiver and durable queue implemented; live subscriptions require setup |
-| Sonnet workers, mechanical gates and Opus review | Experimental v2 controller; Glarity pilot not merged |
+| Opus 5.5 lead with bounded subagents, mechanical gates and independent review | Experimental v2 controller; native execution not yet validated; Glarity pilot not merged |
 | Mid-build replanning | Budgeted v2 host checkpoint; proposals hold changed contracts for a decision |
-| Durable event-by-event v2 resume and Linear ticket admission | Pending integration |
+| Durable v2 checkpoint recovery | Implemented and crash-tested through the host API; live provider restart unvalidated |
+| Automatic queue recovery and Linear ticket admission | Pending integration |
 | Shared Pond/archgraph context gateway | Design only |
 
-The [v2 controller](docs/FACTORY_V2.md) isolates slice work in separate worktrees and gates scope, frozen tests, types, lint, architecture and declared exports before Opus review. The [event-driven extension](docs/FACTORY_EVENTS.md) describes wake-ups, replanning, outcome metrics and the remaining integration work.
+The [v2 controller](docs/FACTORY_V2.md) reuses one Opus 5.5 lead session across slices and repairs in one isolated clone, with bounded native Opus helpers. It gates scope, frozen tests, types, lint, architecture and declared exports before a separate Opus review; each slice must clear its gates and independent review before the next slice starts. The [event-driven extension](docs/FACTORY_EVENTS.md) describes wake-ups, replanning, outcome metrics and the remaining integration work.
 
 ## Results so far
 
@@ -144,7 +147,9 @@ The sequential Factory trailed both controls in the published **20-task, three-a
 | Agent + a good CLAUDE.md | **14 / 20** |
 | Sequential Factory | **9 / 20** |
 
-These results do not measure the new swarm. Quality, tokens and wall time are reported separately; Factory's incomplete cost accounting stays unknown. Raw artifacts were later deleted, which limits independent re-audit. [Full table, protocol and limitations →](docs/research/real-pr-benchmark-2026-10-19.md)
+That is **45% accepted for Factory versus 70% for each control: five fewer tasks, or 25 percentage points lower**. This measured the previous sequential workflow; it does not measure the current Opus-led simplification. Quality, tokens and wall time are reported separately; Factory's incomplete cost accounting stays unknown. Raw artifacts were later deleted, which limits independent re-audit. [Full table, protocol and limitations →](docs/research/real-pr-benchmark-2026-10-19.md)
+
+The [recovery and engineering-quality evaluation](docs/research/recovery-evaluation-2026-10-20.md) is in progress: all 20 tasks are recalibrated, with executable guarantee checks and separate architecture, rule-compliance and history measurements. The maintenance chain is reported; there is no new twenty-task acceptance result yet.
 
 The next outcome is a merged, observed feature: **escaped defects per feature, time to recovery and adoption**, alongside cost and time. The [Glarity pilot report](docs/pilots/glarity-blog-seo/outcomes.md) currently records those outcomes as pending, not zero.
 

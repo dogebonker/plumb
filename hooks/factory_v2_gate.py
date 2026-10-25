@@ -26,9 +26,11 @@ from v2_contract import (
 
 
 def validate_policy(policy):
-    exact(policy, 'schema_version run_id slice_id root owns reads frozen')
+    exact(policy, 'schema_version run_id slice_id root owns reads frozen', 'allow_subagents')
     if type(policy['schema_version']) is not int or policy['schema_version'] != 1:
         raise ValueError('unsupported policy schema_version')
+    if 'allow_subagents' in policy and type(policy['allow_subagents']) is not bool:
+        raise ValueError('allow_subagents must be boolean')
     slug(policy['run_id'])
     slug(policy['slice_id'])
     if not isinstance(policy['root'], str):
@@ -56,6 +58,18 @@ def write_problem(policy, tool_name, tool_input):
     """Return a denial reason for reads or writes; None permits this tool call."""
     try:
         root = validate_policy(policy)
+        if tool_name == 'Agent':
+            if not policy.get('allow_subagents', False):
+                raise ValueError('subagents are not enabled for this invocation')
+            exact(tool_input, 'description prompt subagent_type', 'run_in_background')
+            string(tool_input['description'])
+            if not isinstance(tool_input['prompt'], str) or not tool_input['prompt'].strip():
+                raise ValueError('helper prompt must be nonempty')
+            if tool_input['subagent_type'] != 'factory-helper':
+                raise ValueError('only the pinned inheriting factory-helper is allowed')
+            if tool_input.get('run_in_background', False) is not False:
+                raise ValueError('helpers must finish before slice gates; background tasks are disabled')
+            return None
         # Native --json-schema reports data through this tool; it performs no I/O.
         if tool_name == 'StructuredOutput':
             if isinstance(tool_input, dict) and 'state' in tool_input:

@@ -18,7 +18,7 @@ import sys
 import tempfile
 import time
 import uuid
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 
 from context_adapter import prepare as prepare_context
@@ -332,7 +332,7 @@ def command(args, paths, arm, config, session, resume, remaining_budget, prompt=
     return cmd
 
 
-def invoke(cmd, work, artifact, timeout):
+def invoke(cmd, work, artifact, timeout, *, observe_events=False):
     started = time.monotonic()
     timed_out = False
     interrupted = False
@@ -343,12 +343,14 @@ def invoke(cmd, work, artifact, timeout):
     for key in ["CLAUDE_CODE_SIMPLE", "CLAUDE_CODE_SAFE_MODE"]:
         env.pop(key, None)
     try:
-        with (artifact.with_suffix(".jsonl")).open("w") as stdout, (artifact.with_suffix(".stderr")).open("w") as stderr:
+        observation = artifact.with_suffix('.timings.jsonl').open('w') if observe_events else nullcontext(None)
+        with (artifact.with_suffix(".jsonl")).open("w") as stdout, (artifact.with_suffix(".stderr")).open("w") as stderr, observation as timing:
             process = subprocess.Popen(cmd, cwd=work, stdin=subprocess.DEVNULL,
                                        stdout=stdout, stderr=stderr, text=True, env=env, start_new_session=True)
             try:
                 pending = b""
                 terminal = None
+                event_index = 0
                 with artifact.with_suffix(".jsonl").open("rb") as reader:
                     while True:
                         pending += reader.read()
@@ -359,6 +361,12 @@ def invoke(cmd, work, artifact, timeout):
                                 event = json.loads(line)
                             except (json.JSONDecodeError, UnicodeDecodeError):
                                 continue
+                            if isinstance(event, dict):
+                                if timing is not None:
+                                    timing.write(json.dumps({'event_index': event_index, 'timestamp': time.time(),
+                                                             'monotonic_seconds': time.monotonic() - started}) + '\n')
+                                    timing.flush()
+                                event_index += 1
                             if (isinstance(event, dict) and event.get("type") == "result"
                                     and event.get("parent_tool_use_id") is None
                                     and (event.get("is_error") or event.get("subtype") != "success" or response([event]) is not None)):

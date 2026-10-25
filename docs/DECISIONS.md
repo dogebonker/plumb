@@ -536,3 +536,28 @@ Every named skill invocation registers provider-backed token coverage per task. 
 **Why.** Skills and derived memory need a retirement path, while every consumer needs the same current decisions and navigation cues.
 
 **Cost.** The gateway is a design, not an enabled MCP write endpoint or Slack bot. Project substring search is not tenant authorization; server-side scoped access and freshness/provenance are required. Raw transcripts remain historical evidence, never approval authority.
+
+
+## 53. Reuse an Opus lead with bounded subagents; retain independent review
+
+**Decision.** Replace the prescribed Sonnet slice-worker swarm with one Opus 5.5 lead, reused across dependency-ordered slices and repairs. The lead may use bounded native Opus helpers, including useful parallel subtasks. The v2 controller uses one isolated clone and an explicit native session ID, then resumes that session. The pinned helper inherits the model and current slice's ownership, read and frozen-file guards, with no background or nested agents. Helper usage counts toward budgets. A separate read-only Opus reviewer runs only after mechanical gates pass, before the next slice starts. Existing frozen contracts, scope guards, retries, actual-change approvals and final merge authority remain intact. A missing or changed implementation session stops execution rather than silently starting over.
+
+**Why.** The user retained subagent delegation and chose an Opus lead instead of a Sonnet swarm. Context reuse and mechanical gates remain useful without prescribed parallel worktrees or a worker pool. The historical benchmark accepted 9/20 tasks for the prior sequential Factory versus 14/20 for each control; it does not evaluate this simplification.
+
+**Cost.** The lead, helpers and review all use Opus, so new plans omit `opus_share_limit`. Explicit share ceilings in already-approved plans remain binding until the actual budget change is approved; historical pilot contracts are not rewritten. Incompatible explicit ceilings block admission before spending. Resumed native token and list-cost counters are accounted as deltas, and missing proof stays unknown. No native run or shipped pilot yet demonstrates savings, session reuse or improved quality. Durable event-driven v2 recovery remains separate work. This supersedes the prescribed slice-swarm execution defaults and the blanket 25% Opus target for new plans, not historical evidence or existing approvals.
+
+## 54. One executable archgraph adapter for build and review
+
+**Decision.** The existing build and review skills use `kit/archgraph.py` for pinned-tool discovery, bounded context and architecture regression evidence. Init detects availability. Build packets and reviewers receive ordered paths, explanations, source/base/policy/tool bindings and explicit omissions; helpers receive only their permitted context. A selected archgraph Layout check compares a verified Git base with current source under identical current rules and fails new forbidden edges, cycles and unplanned edges. Other selected stack checkers remain. The scoped v2 controller retains its existing sandboxed gates and filtered context; whole-root MCP is not silently granted to restricted helpers.
+
+**Why.** Optional prose recipes left the everyday build without an executable context step. One shared adapter makes the same evidence reusable without another model call or a new skill.
+
+**Cost.** Context defaults to an estimated 8k tokens; native graph coverage remains experimental and package-specific. Missing tools, changed source, invalid snapshots and uncovered changed source are explicit skipped/error proof gaps. Native TypeScript, Python and Go fixtures passed clean checks and rejected planted imports; this establishes integration behavior, not better feature quality. Existing approved documents and pilot contracts remain unchanged.
+
+## 55. Recovery preserves authority, spending and verified work
+
+**Decision.** V2 registers a plan to its original run directory and checkpoints execution with a hash-chained journal. A trusted host resumes only with the original approval source and exact plan/runtime/input bindings. Accepted commits, native session, elapsed time, usage, retries and review passes survive interruption. Recovery revalidates state under the execution lock, reuses verified boundaries and deduplicates receipts and events. Ambiguous native work, interrupted arbitrary callbacks and corrupt evidence hold rather than replay or reset budgets.
+
+**Why.** Restarting the workflow must not repeat completed work, demand unchanged approvals or create a fresh spending allowance. This implements the recovery seam left open in decisions 49, 50 and 53.
+
+**Cost.** Crash regressions and an independent review cover simulated interruption boundaries. Live provider restart recovery and automatic event-queue integration remain unvalidated. Recovery is not exactly-once execution of arbitrary external effects; it fails closed when the saved evidence cannot prove what happened.

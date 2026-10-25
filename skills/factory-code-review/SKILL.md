@@ -37,7 +37,7 @@ Trusted local project checks come from existing configuration/instructions. For 
 
 Use [ADR enforcement](../factory-shared/adr.md#inventory-and-named-enforcement) for named checks, with trusted explicit command mappings. Its helper requires clean committed source; a dirty snapshot needs safe checks or an isolated copy and an honest coverage gap. Mechanical failures become findings directly; do not pay another agent to rediscover an exit code. Continue semantic review of the remaining scope without calling it merge-ready.
 
-When available use [pinned archgraph](../factory-shared/archgraph.md) for boundary/cycle evidence, public-surface changes, blast radius and reading order. Keep the stack's chosen checker. Fresh dirty-tree context is distinct from committed impact. Hand over graph limitations and all reviewable files: context bounds the initial packet, never repository reads or diff coverage.
+For supported modules, use the [shared archgraph adapter](../factory-shared/archgraph.md#shared-adapter) `prepare`, with the pinned review base and every reviewable path, for fresh bounded context and reading order. When the approved Layout selects archgraph, run its `check` for boundary/cycle regressions before model judgment, retaining explicit skipped/error outcomes. Keep the stack's chosen checker and the existing public-surface fallback. Fresh dirty-tree context is distinct from committed impact. Hand over graph limitations and all reviewable files: context bounds the initial packet, never repository reads or diff coverage. Pass each helper only its permitted context; do not attach a whole-root MCP server to a scoped helper.
 
 ## 3. Review lenses, one shared packet
 

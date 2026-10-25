@@ -4,6 +4,75 @@ Use the Layout Decision's Pattern line. Archgraph supplements a previously selec
 
 If absent, report **skipped** with the exact install line from the registry. Preserve the adapter's checks and ordinary reviewer reading order; absence is not a clean verdict. A command error, unresolved import, incomplete symbols or stale graph is a limitation to report, not evidence of conformance. The native engine is experimental.
 
+## Shared adapter
+
+Build, milestone review and standalone code review use `python3 <kit>/archgraph.py`.
+It resolves the immutable Cargo installation and records its binary checksum;
+`ARCHGRAPH_BIN` additionally requires `ARCHGRAPH_SHA256` and is labelled a
+caller-verified artifact rather than independently proven source provenance.
+`doctor` checks availability without scanning or calling a model:
+
+```sh
+python3 <kit>/archgraph.py doctor
+```
+
+Prepare context before building a slice, and again for the final review snapshot:
+
+```sh
+python3 <kit>/archgraph.py prepare \
+  --repo <absolute-repository-root> --root web --language typescript \
+  --base <recorded-base-sha> \
+  --files web/src/orders.ts web/src/orders.test.ts \
+  --task 'Implement the approved order behavior' --budget 8k \
+  --rules web/layout.yaml --out <absolute-outside-repository>/context
+```
+
+`--root`, `--rules` and every `--files` value are repository-relative; root defaults
+to `.`. Language is `typescript`, `python` or `go`. Omit `--rules` to detect the
+module's `layout.yaml`; missing rules remain a disclosed policy gap. Output must
+be a new or empty directory outside the repository. Reports retain source bytes'
+fingerprint, commit, base when supplied, dirty status, tool identity, complete seed
+list, missing/outside-module files, context omissions and native limitations.
+Eight thousand estimated context tokens is the default, not a provider-token cap.
+Pass the report path and relevant reading-order entries; do not paste complete
+graphs or duplicate source into every helper's prompt. Filter helper context to
+its permitted reads. The full reviewable-file list remains the coverage checklist.
+
+For Python monorepos, select a package explicitly when detection is ambiguous
+(`--root . --language python --package kit`, for example). Package selection is
+recorded and identical at both gate endpoints. Preparation preserves unscanned
+seeds without pretending their dependencies are known; a mechanical check rejects
+changed source missing from its graph. It derives changed and untracked files from
+the explicit base when `--files` is omitted. Use another module/package or the
+selected stack checker to cover the remaining files, rather than narrowing a
+scan until it passes.
+
+Where the approved Pattern selects archgraph, run its regression gate:
+
+```sh
+python3 <kit>/archgraph.py check \
+  --repo <absolute-repository-root> --root web --language typescript \
+  --base <recorded-base-sha> --rules web/layout.yaml \
+  --out <absolute-outside-repository>/architecture-check
+```
+
+This compares a verified Git-base snapshot with current working source, using the
+same current rules and inclusion options. It fails new forbidden edges, cycles
+and unplanned edges. It never rewrites rules, approved documents or source.
+Existing baseline debt remains separate; an absolute-clean final gate still uses
+the existing full check. Other selected stack checkers stay in place.
+
+Exit `0` means `available`/`prepared` for discovery/context, or `pass` for a check;
+exit `1` means architecture regressions; exit `2` means `skipped` or `error` with
+the concrete reason. A prepared reading plan is not a passing architecture gate.
+Reuse a report only when source, base, policy, tool and options still match;
+otherwise collect fresh evidence. Commands and raw evidence stay outside source.
+No extra model or book-review pass is introduced.
+
+The scoped v2 controller retains its existing stronger sandboxed gates and
+filtered context builder. Native archgraph MCP has whole-root context authority;
+do not attach it to a restricted helper as though query seeds enforce `reads`.
+
 ## Gate evidence
 
 From the module's source root, save output outside the scanned root (replace `<tmp>` with an absolute path):

@@ -10,10 +10,34 @@ from pathlib import Path
 from unittest.mock import patch
 
 import benchmark
-from browser_runtime import prepare_browser_check
+from browser_runtime import prepare_browser_check, sandbox_policy
 
 
 class BrowserRuntimeTests(unittest.TestCase):
+    @unittest.skipUnless(platform.system() == 'Darwin', 'native Seatbelt required')
+    def test_declared_cache_resolves_through_home_without_reading_siblings(self):
+        with tempfile.TemporaryDirectory(prefix='factory-cache-test-', dir=Path.home()) as home_tmp, tempfile.TemporaryDirectory() as tmp:
+            cache = Path(home_tmp) / 'cache'
+            cache.mkdir()
+            (cache / 'allowed').write_text('cached dependency')
+            secret = Path(home_tmp) / 'private'
+            secret.write_text('denied sibling')
+            work = Path(tmp).resolve()
+            profile = work / 'test.sb'
+            profile.write_text(sandbox_policy(work, [cache], [work], Path(sys.executable), [secret], strict_reads=True))
+            script = ("from pathlib import Path\n"
+                      "import sys\n"
+                      "assert Path(sys.argv[1]).resolve(strict=True).read_text() == 'cached dependency'\n"
+                      "try: Path(sys.argv[2]).read_text()\n"
+                      "except PermissionError: pass\n"
+                      "else: raise AssertionError('private sibling readable')\n"
+                      "try: list(Path.home().iterdir())\n"
+                      "except PermissionError: pass\n"
+                      "else: raise AssertionError('home directory readable')\n")
+            result = subprocess.run(['sandbox-exec', '-f', str(profile), sys.executable, '-I', '-S', '-c', script,
+                                     str(cache / 'allowed'), str(secret)], cwd=work, capture_output=True, text=True, check=False)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     @unittest.skipUnless(platform.system() == "Darwin" and os.environ.get("PLAYWRIGHT_MODULE"),
                          "requires macOS and installed Playwright")
     def test_codex_capability_brokers_fixed_native_checks_and_rejects_arbitrary_arguments(self):

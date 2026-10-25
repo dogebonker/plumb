@@ -76,6 +76,139 @@ class ProtocolTests(unittest.TestCase):
             self.assertFalse(check["verified"])
             self.assertEqual(check["changed"], feature["acceptance_files"])
 
+    def test_factory_hook_installation_is_explicit_and_factory_only(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            hook = root / "snapshot" / "hooks" / "factory_gate.py"
+            hook.parent.mkdir(parents=True)
+            hook.write_text("import json, sys; json.load(sys.stdin)\n")
+            work = root / "work"
+            work.mkdir()
+            for arm in bench.ARMS:
+                settings = bench.actor_settings(work, root / "snapshot", [], arm, factory_hooks=True)
+                self.assertEqual("hooks" in settings, arm == "factory")
+                self.assertNotIn("hooks", bench.actor_settings(work, root / "snapshot", [], arm))
+                if arm == "factory":
+                    entry = settings["hooks"]["PreToolUse"][0]
+                    self.assertEqual(entry["matcher"], "Edit|Write|MultiEdit|NotebookEdit")
+                    self.assertIn(str(hook), entry["hooks"][0]["command"])
+            self.assertTrue(bench.hook_preflight(root / "snapshot", work)["ready"])
+            hook.write_text("raise RuntimeError('broken installation')\n")
+            self.assertFalse(bench.hook_preflight(root / "snapshot", work)["ready"])
+            hook.unlink()
+            self.assertFalse(bench.hook_preflight(root / "snapshot", work)["ready"])
+
+    def test_broken_factory_hook_stops_trial_before_any_paid_call(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            actor = root / "prepared" / "actor"
+            actor.mkdir(parents=True)
+            bench.pr_fixtures._init_git(actor)
+            bench.write(root / "prepared" / "admission.json", {"admitted": True})
+            runtime = root / "runtime"
+            runtime.mkdir()
+            entry = {"case": "feature", "arm": "factory", "runtime": str(runtime)}
+            config = {"factory_hooks": True, "snapshot": str(root / "missing-snapshot"), "schedule": [entry]}
+            feature = {**case(), "prepared_dir": str(root / "prepared")}
+            with patch("pr_benchmark.benchmark.invoke") as invoke:
+                result = bench.trial(config, feature, entry, root / "out")
+            invoke.assert_not_called()
+            self.assertEqual(result["status"], "infrastructure_error")
+            self.assertFalse(result["hook_installation"]["ready"])
+            settings = json.loads((root / "out" / "trials" / "feature" / "factory" / "settings.json").read_text())
+            self.assertIn("PreToolUse", settings["hooks"])
+
+    def test_shared_policy_inputs_are_pinned_immutable_and_disclosed_in_all_arms(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "policy.md"
+            source.write_text("Money is never float.")
+            feature = {**case(), "prepared_dir": str(root / "prepared"), "shared_inputs": [
+                {"path": ".software-factory/system/adr/0007.md", "source": str(source), "sha256": bench.sha(source)}]}
+            for tree in ("actor", "reference"):
+                target = root / "prepared" / tree / feature["shared_inputs"][0]["path"]
+                target.parent.mkdir(parents=True)
+                target.write_bytes(source.read_bytes())
+            bench.verify_files(feature)
+            self.assertIn(feature["shared_inputs"][0]["path"], bench.task_prompt(feature))
+            paths = bench.provided_acceptance(feature, root / "prepared" / "actor")
+            self.assertEqual(len(paths), 1)
+            for arm in bench.ARMS:
+                settings = bench.actor_settings(root / "work", root / "snapshot", [], arm, protected_files=paths)
+                self.assertIn(str(paths[0].resolve()), settings["sandbox"]["filesystem"]["denyWrite"])
+            paths[0].write_text("actor rewrote policy")
+            with self.assertRaisesRegex(ValueError, "shared input"):
+                bench.verify_files(feature)
+            feature["shared_inputs"][0]["path"] = "../escape"
+            with self.assertRaises(ValueError):
+                bench.provided_acceptance(feature, root / "work")
+
+    def test_policy_graph_uses_identical_pinned_rules_on_both_scans(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rules = root / "layout.yaml"
+            rules.write_text("layers: {}\n")
+            feature = {**case(), "archgraph_rules": str(rules), "archgraph_rules_sha256": bench.sha(rules)}
+            config = {"tools": {"archgraph": {"path": "/fake/archgraph", "sha256": "pinned"}}}
+            actual_sha = bench.sha
+            with patch("pr_benchmark.sha", side_effect=lambda path: "pinned" if str(path) == "/fake/archgraph" else actual_sha(path)), \
+                    patch("pr_benchmark.subprocess.run", return_value=subprocess.CompletedProcess([], 0, "", "")) as run:
+                result = bench.graph_check(config, feature, root / "work", root / "artifact")
+            for call in run.call_args_list[:2]:
+                argv = call.args[0]
+                self.assertEqual(argv[argv.index("--rules") + 1], str(rules))
+            self.assertIn("forbidden", result["scope"])
+            self.assertNotIn("cycle-only", result["scope"])
+            rules.write_text("tampered")
+            with self.assertRaisesRegex(ValueError, "rules changed"):
+                bench.graph_check(config, feature, root / "work", root / "artifact")
+
+    def test_private_corpus_roots_cover_sibling_prepared_trees_without_public_overlap(self):
+        cases = [{**case("one"), "prepared_dir": "/private/corpus/one"},
+                 {**case("two"), "prepared_dir": "/private/corpus/two"}]
+        roots = bench.private_input_roots(cases, ["/private/actors", "/private/framework"])
+        self.assertEqual(roots, [str(Path("/private/corpus").resolve())])
+        for path in ("/private/corpus/runtime", "/private"):
+            with self.assertRaisesRegex(ValueError, "overlaps"):
+                bench.private_input_roots(cases, [path])
+
+    def test_opt_in_runtime_storage_is_persistent_and_outside_denied_results(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out = root / "results"
+            path = bench.persistent_runtime_home(root, out, "actors-")
+            self.assertEqual(path.parent, root.resolve())
+            self.assertTrue(path.is_dir())
+            for forbidden in (out, out / "state"):
+                with self.assertRaisesRegex(ValueError, "inside denied"):
+                    bench.persistent_runtime_home(forbidden, out, "actors-")
+        with patch("pr_benchmark.tempfile.mkdtemp", return_value="/tmp/legacy") as temporary:
+            bench.persistent_runtime_home(None, Path("/tmp/out"), "actors-")
+            temporary.assert_called_once_with(prefix="actors-", dir=None)
+
+    def test_new_profile_discloses_scope_and_joins_helpers_in_all_arms(self):
+        feature = {**case(), "scope": "Offline email-domain unit contract only; not full request handler."}
+        self.assertIn(feature["scope"], bench.task_prompt(feature))
+        self.assertIn("identical in every arm", bench.task_prompt(feature))
+        legacy = {"model": "pinned", "effort": "high"}
+        self.assertNotIn("CLAUDE_CODE_DISABLE_BACKGROUND_TASKS", bench.actor_environment(legacy))
+        for flag in ("diagnostics", "factory_hooks"):
+            self.assertEqual(bench.actor_environment({**legacy, flag: True})["CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"], "1")
+        feature["shared_inputs"] = [{"source": "/private/standing/0007.md"}]
+        roots = bench.private_input_roots([{**feature, "prepared_dir": "/private/corpus/one"}], ["/private/actors"])
+        self.assertIn(str(Path("/private/standing").resolve()), roots)
+        settings = bench.actor_settings(Path("/private/actor"), Path("/private/framework"), [Path("/private/standing")], "factory", ["/private/deps"])
+        for denied in ("/private/standing", "/private/framework", "/private/deps"):
+            self.assertIn(f"Write(/{Path(denied).resolve()}/**)", settings["permissions"]["deny"])
+
+    def test_diagnostic_native_invocation_is_opt_in_only(self):
+        with patch("pr_benchmark.benchmark.invoke", return_value={}) as invoke:
+            bench.invoke_actor({}, ["cli"], Path("work"), Path("turn"), 3)
+            invoke.assert_called_once_with(["cli"], Path("work"), Path("turn"), 3)
+            invoke.reset_mock()
+            bench.invoke_actor({"diagnostics": True}, ["cli"], Path("work"), Path("turn"), 3)
+            invoke.assert_called_once_with(["cli"], Path("work"), Path("turn"), 3, observe_events=True)
+
     def test_shared_caches_are_readable_but_cannot_be_edited_or_written(self):
         settings = bench.actor_settings(Path("/tmp/work"), Path("/tmp/snapshot"), [], "bare", ["/tmp/deps"])
         filesystem = settings["sandbox"]["filesystem"]
@@ -85,6 +218,21 @@ class ProtocolTests(unittest.TestCase):
         self.assertNotIn(str(cache), filesystem["denyRead"])
         self.assertIn(f"Edit(/{cache}/**)", settings["permissions"]["deny"])
         self.assertIn(f"Edit(/{work}/node_modules/**)", settings["permissions"]["deny"])
+
+    def test_private_file_and_directory_rules_deny_exact_and_recursive_tools(self):
+        settings = bench.actor_settings(Path("/tmp/work"), Path("/tmp/snapshot"),
+                                        [Path("/private/receipt.json"), Path("/private/corpus")], "bare",
+                                        ["/private/cache"])
+        for target in ("/private/receipt.json", "/private/corpus"):
+            target = Path(target).resolve()
+            for tool in ("Read", "Edit", "Write"):
+                self.assertIn(f"{tool}(/{target})", settings["permissions"]["deny"])
+                self.assertIn(f"{tool}(/{target}/**)", settings["permissions"]["deny"])
+        for target in ("/private/cache", "/tmp/snapshot"):
+            target = Path(target).resolve()
+            for tool in ("Edit", "Write"):
+                self.assertIn(f"{tool}(/{target})", settings["permissions"]["deny"])
+                self.assertIn(f"{tool}(/{target}/**)", settings["permissions"]["deny"])
 
     def test_verification_files_are_pinned_and_cache_paths_include_wrapper_parent(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -301,6 +449,30 @@ class BlindAndReportTests(unittest.TestCase):
                 bench.main()
             self.assertEqual(trial.call_count, 1)
             report.assert_called_once_with(root.resolve())
+
+    def test_diagnostics_are_explicit_and_do_not_replace_scoring(self):
+        for enabled in (False, True):
+            with self.subTest(enabled=enabled), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                config = {"controller_sha256": bench.sha(bench.__file__), "fixture_sha256": bench.sha(bench.pr_fixtures.__file__),
+                          "framework_sha256": "frozen", "snapshot": "snapshot", "tools": {}, "schedule": []}
+                if enabled:
+                    config["diagnostics"] = True
+                bench.write(root / "run.json", config)
+                argv = ["pr_benchmark.py", "run", "--out", str(root), "--case", "goldengate1038"]
+                if enabled:
+                    argv.append("--diagnostics")
+                with patch.object(sys, "argv", argv), \
+                        patch("pr_benchmark.verify_inputs", return_value=[case()]), \
+                        patch("pr_benchmark.benchmark.tree_hash", return_value="frozen"), \
+                        patch("pr_benchmark.report") as report, \
+                        patch("pr_benchmark.diagnostics.save_report") as diagnostics:
+                    bench.main()
+                report.assert_called_once_with(root.resolve())
+                if enabled:
+                    diagnostics.assert_called_once_with(root.resolve(), ["goldengate1038"])
+                else:
+                    diagnostics.assert_not_called()
 
     def test_error_after_refused_resume_preserves_immutable_result(self):
         with tempfile.TemporaryDirectory() as temporary:

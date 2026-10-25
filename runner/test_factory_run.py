@@ -1,5 +1,6 @@
 """Run: python3 runner/test_factory_run.py"""
 import hashlib
+import shlex
 import subprocess
 import tempfile
 from pathlib import Path
@@ -34,6 +35,26 @@ slices: []
 reconciled: false
 """
 PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
+
+# The default dispatch selects the requested model explicitly, never a provider alias.
+harness_arguments = shlex.split(factory_run.HARNESS)
+assert harness_arguments.count("--model") == 1
+assert harness_arguments[harness_arguments.index("--model") + 1] == "claude-opus-5-5"
+assert "--strict-mcp-config" in harness_arguments
+assert harness_arguments[harness_arguments.index("--setting-sources") + 1] == "user"
+
+# The default Opus lead also pins its helpers; ambient Sonnet settings cannot win.
+with tempfile.TemporaryDirectory() as tmp, patch.dict(factory_run.os.environ, {
+        'CLAUDE_CODE_SUBAGENT_MODEL': 'sonnet', 'CLAUDE_CODE_SUBAGENT_MODEL_FORCE': '0'}):
+    work = Path(tmp) / 'work'
+    work.mkdir()
+    with patch.object(factory_run.subprocess, 'Popen') as launch:
+        launch.return_value.wait.return_value = 0
+        assert factory_run.run_harness(harness_arguments, work, 1) == 0
+    environment = launch.call_args.kwargs['env']
+    assert environment['CLAUDE_CODE_SUBAGENT_MODEL'] == 'claude-opus-5-5'
+    assert environment['CLAUDE_CODE_SUBAGENT_MODEL_FORCE'] == '1'
+    assert environment['CLAUDE_CODE_DISABLE_BACKGROUND_TASKS'] == '1'
 
 # Commands are the first line of an approver's review.
 assert command("approve product\nlooks good") == ("approve", "product")

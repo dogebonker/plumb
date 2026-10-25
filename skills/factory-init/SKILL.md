@@ -94,6 +94,13 @@ Keep its lists of other local branches, remote branches and branches checked out
 
 Codex and Cursor links arrive with S15; say so when step 1 found either.
 
+**Architecture context.** Run `python3 <framework>/kit/archgraph.py doctor` once.
+Record the resolved binary, source pin and checksum when available. If absent or
+unverified, show its exact pinned install line and keep the skipped status; do not
+start a model just to discover tools or silently substitute a same-version build.
+This adds no project approval, installs no extra skills and changes no approved
+Layout. Build and review use the same adapter once a supported module is known.
+
 ## 6. Offer the hard-gate hook
 
 Ask first. On a yes, add to `.claude/settings.local.json`, merging with what is there and replacing any earlier entry whose command ends in `hooks/factory_gate.py`:

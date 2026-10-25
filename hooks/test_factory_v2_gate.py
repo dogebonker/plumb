@@ -47,6 +47,23 @@ class GuardTests(unittest.TestCase):
         self.assertEqual((self.root / 'src/code.py').read_text(), 'sentinel')
         self.assertFalse((self.root / 'src/new.py').exists())
 
+    def test_foreground_helper_is_opt_in_and_cannot_choose_a_cheaper_model(self):
+        request = {'description': 'Check parser', 'prompt': 'Inspect the approved parser scope.',
+                   'subagent_type': 'factory-helper'}
+        self.assertIsNotNone(write_problem(self.policy, 'Agent', request))
+        policy = dict(self.policy, allow_subagents=True)
+        self.assertIsNone(write_problem(policy, 'Agent', request))
+        self.policy_path.write_text(json.dumps(policy))
+        result = self.hook(json.dumps({'tool_name': 'Agent', 'tool_input': request}))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for change in ({'model': 'sonnet'}, {'subagent_type': 'Explore'},
+                       {'run_in_background': True}, {'isolation': 'worktree'},
+                       {'tools': ['Bash']}, {'max_turns': True}):
+            with self.subTest(change=change):
+                self.assertIsNotNone(write_problem(policy, 'Agent', dict(request, **change)))
+        self.assertIsNotNone(write_problem(policy, 'Write', {'file_path': 'readme.txt', 'content': 'x'}))
+        self.assertIsNotNone(write_problem(policy, 'Write', {'file_path': 'src/frozen.py', 'content': 'x'}))
+
     def test_removed_source_tool_settings_and_unknown_mcp_fail_closed(self):
         for value in ('serena', None, 'other'):
             with self.subTest(value=value):

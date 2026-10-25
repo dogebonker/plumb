@@ -21,6 +21,7 @@ from pathlib import Path
 from statistics import median
 
 import benchmark
+import diagnostics
 import pr_fixtures
 from browser_runtime import sandbox_policy
 
@@ -40,7 +41,38 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def shared_input_paths(case):
+    paths = []
+    for item in case.get("shared_inputs", []):
+        path = pr_fixtures._relative(item["path"])
+        if path in paths:
+            raise ValueError("duplicate shared input path")
+        paths.append(path)
+    return paths
+
+
+def verify_policy(case):
+    if case.get("archgraph_rules"):
+        policy = Path(case["archgraph_rules"])
+        if (not policy.is_absolute() or not re.fullmatch(r"[a-f0-9]{64}", case.get("archgraph_rules_sha256", ""))
+                or sha(policy) != case["archgraph_rules_sha256"]):
+            raise ValueError("archgraph rules changed or missing pin")
+
+
 def verify_files(case):
+    verify_policy(case)
+    paths = shared_input_paths(case)
+    for item, relative in zip(case.get("shared_inputs", []), paths):
+        source = Path(item["source"])
+        if (not source.is_absolute() or not re.fullmatch(r"[a-f0-9]{64}", item.get("sha256", ""))
+                or sha(source) != item["sha256"]):
+            raise ValueError(f"shared input source changed: {relative}")
+        for tree in ("actor", "reference"):
+            root = Path(case["prepared_dir"]) / tree
+            target = root / relative
+            pr_fixtures._inside(root, target)
+            if target.is_symlink() or sha(target) != item["sha256"]:
+                raise ValueError(f"shared input changed: {tree}/{relative}")
     for item in case.get("verification_files", []):
         path = Path(item["path"])
         if not path.is_absolute() or not re.fullmatch(r"[a-f0-9]{64}", item.get("sha256", "")) or sha(path) != item["sha256"]:
@@ -109,26 +141,35 @@ def task_prompt(case):
             "APPROVED REQUIREMENTS (historical PR title/body, not its implementation):\n" + requirements(case)
             + "\n\nSHARED TEST SETUP (identical in every arm):\nCommand: " + shlex.join(command)
             + "\nWorking directory relative to repository: " + case.get("test_cwd", ".")
+            + ("\nDECLARED EVALUATION SCOPE (identical in every arm): " + case["scope"] if case.get("scope") else "")
             + "\nPrepared environment: " + json.dumps(environment, sort_keys=True)
-            + "\n" + acceptance + " Shared dependencies and the test wrapper are read-only.")
+            + "\n" + acceptance + " Shared dependencies and the test wrapper are read-only."
+            + ("\nSTANDING CONSTRAINTS AND HISTORY (identical immutable files in every arm): "
+               + ", ".join(map(str, shared_input_paths(case)))
+               + ". Read these before implementation and preserve their bytes." if case.get("shared_inputs") else ""))
 
 
-def actor_settings(work, snapshot, denied, arm, write_denied=(), protected_files=()):
+def actor_settings(work, snapshot, denied, arm, write_denied=(), protected_files=(), *, factory_hooks=False):
     read = lambda path: f"Read(/{Path(path).resolve()}/**)"
     edit = lambda path: f"Edit(/{Path(path).resolve()}/**)"
+    write = lambda path: f"Write(/{Path(path).resolve()}/**)"
     blocked = sorted({str(Path(path).resolve()) for path in denied})
     readonly = sorted({str(Path(path).resolve()) for path in write_denied})
     immutable = sorted({str(Path(path).resolve()) for path in protected_files})
     allowed = [work] + ([snapshot] if arm == "factory" else [])
     excluded_memory = [str(Path.home() / ".claude" / "**"),
                        *(str(parent / "CLAUDE.md") for parent in work.resolve().parents)]
-    return {"autoMemoryEnabled": False, "disableBundledSkills": True,
+    settings = {"autoMemoryEnabled": False, "disableBundledSkills": True,
             "claudeMdExcludes": ["**"] if arm == "bare" else excluded_memory, "enabledPlugins": {},
             "permissions": {"allow": [*(read(path) for path in allowed), edit(work),
                                        "Bash", "Read", "Edit", "Write", "Glob", "Grep", "Skill", "Agent"],
                             "deny": ["AskUserQuestion", "WebFetch", "WebSearch", "ToolSearch", "mcp__*",
                                      *(read(path) for path in blocked), *(edit(path) for path in blocked), edit(snapshot),
-                                     *(edit(path) for path in readonly), f"Edit(/{work.resolve()}/node_modules/**)",
+                                     *(edit(path) for path in readonly), *(write(path) for path in blocked), write(snapshot),
+                                     *(write(path) for path in readonly), f"Write(/{work.resolve()}/node_modules/**)",
+                                     *(f"{tool}(/{path})" for path in blocked for tool in ("Read", "Edit", "Write")),
+                                     *(f"{tool}(/{path})" for path in [*readonly, str(snapshot.resolve())] for tool in ("Edit", "Write")),
+                                     f"Write(/{work.resolve()}/node_modules)", f"Edit(/{work.resolve()}/node_modules/**)",
                                      f"Edit(/{work.resolve()}/node_modules)",
                                      *(f"{tool}(/{path})" for path in immutable for tool in ("Edit", "Write"))]},
             "sandbox": {"enabled": True, "failIfUnavailable": True, "autoAllowBashIfSandboxed": True,
@@ -137,6 +178,30 @@ def actor_settings(work, snapshot, denied, arm, write_denied=(), protected_files
                                        "denyRead": blocked},
                         "network": {"allowedDomains": ["localhost", "127.0.0.1", "::1"],
                                     "strictAllowlist": True, "allowLocalBinding": True}}}
+    if factory_hooks and arm == "factory":
+        hook = Path(snapshot).resolve() / "hooks" / "factory_gate.py"
+        settings["hooks"] = {"PreToolUse": [{"matcher": "Edit|Write|MultiEdit|NotebookEdit", "hooks": [
+            {"type": "command", "command": shlex.join([sys.executable, str(hook)])}]}]}
+    return settings
+
+
+def hook_preflight(snapshot, work):
+    hook = Path(snapshot).resolve() / "hooks" / "factory_gate.py"
+    if not hook.is_file():
+        return {"ready": False, "reason": "factory gate hook missing"}
+    try:
+        result = subprocess.run([sys.executable, str(hook)], cwd=work, input="{}", capture_output=True,
+                                text=True, timeout=30, check=False)
+    except (OSError, subprocess.SubprocessError) as error:
+        return {"ready": False, "reason": str(error)}
+    return {"ready": result.returncode == 0, "sha256": sha(hook), "returncode": result.returncode,
+            "coverage": "installation preflight only; enforcement requires native hook observations"}
+
+
+def invoke_actor(config, command, work, artifact, timeout):
+    if config.get("diagnostics"):
+        return benchmark.invoke(command, work, artifact, timeout, observe_events=True)
+    return benchmark.invoke(command, work, artifact, timeout)
 
 
 @contextmanager
@@ -171,8 +236,11 @@ def command(config, arm, settings, session, prompt, resume=False, probe=False):
 
 
 def actor_environment(config):
-    return {"CLAUDE_CODE_SUBAGENT_MODEL": config["model"], "CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1",
+    environment = {"CLAUDE_CODE_SUBAGENT_MODEL": config["model"], "CLAUDE_CODE_SUBAGENT_MODEL_FORCE": "1",
             "CLAUDE_CODE_EFFORT_LEVEL": config["effort"]}
+    if config.get("factory_hooks") or config.get("diagnostics"):
+        environment["CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"] = "1"
+    return environment
 
 
 def xcode_environment():
@@ -283,14 +351,38 @@ def verify_inputs(out, config):
     return cases
 
 
+def private_input_roots(cases, public_paths):
+    roots = {Path(case["prepared_dir"]).resolve().parent for case in cases}
+    roots.update(Path(item["source"]).resolve().parent for case in cases for item in case.get("shared_inputs", []))
+    public = [Path(path).resolve() for path in public_paths]
+    if any(root == path or root in path.parents or path in root.parents for root in roots for path in public):
+        raise ValueError("private input corpus root overlaps actor/framework; use isolated corpus storage")
+    return sorted(map(str, roots))
+
+
+def persistent_runtime_home(state_root, out, prefix):
+    if state_root is not None:
+        state_root = Path(state_root).resolve()
+        if state_root == out.resolve() or out.resolve() in state_root.parents:
+            raise ValueError("state root cannot be inside denied benchmark output")
+        state_root.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix=prefix, dir=state_root)).resolve()
+
+
 def initialize(args):
     cases = manifest_cases(args.manifest)
     if args.model in {"opus", "sonnet", "haiku", "default"} or "latest" in args.model:
         raise ValueError("pin a full model ID, not a moving alias")
     args.out.mkdir(parents=True, exist_ok=False)
-    snapshot_home = Path(tempfile.mkdtemp(prefix="pr-benchmark-framework-")).resolve()
+    snapshot_home = persistent_runtime_home(getattr(args, "state_root", None), args.out, "pr-benchmark-framework-")
     paths, provenance = benchmark.snapshots(argparse.Namespace(out=snapshot_home, superpowers=None, context_mode=None))
-    runtime_home = Path(tempfile.mkdtemp(prefix="pr-benchmark-actors-")).resolve()
+    if getattr(args, "factory_hooks", False):
+        provenance["adaptations"]["notes"] = (
+            "Read-only one-commit framework snapshot named by each Factory trial factory.lock. "
+            "The Factory arm installs the actual pinned factory_gate.py PreToolUse hook through trial settings. "
+            "Hook installation preflight and native events are retained; this is the sequential workflow, not v2. "
+            "Background agent tasks are disabled for all arms; helpers run in the foreground before completion.")
+    runtime_home = persistent_runtime_home(getattr(args, "state_root", None), args.out, "pr-benchmark-actors-")
     schedule = []
     for index, case in enumerate(cases):
         for arm in ORDER[index % len(ORDER)]:
@@ -307,6 +399,15 @@ def initialize(args):
               "timeout_seconds": args.timeout, "max_questions": args.max_questions,
               "instruction_hashes": {case["id"]: hashlib.sha256(case["claude_md"].encode()).hexdigest() for case in cases},
               "requirements_hashes": {case["id"]: hashlib.sha256(requirements(case).encode()).hexdigest() for case in cases}}
+    if getattr(args, "state_root", None) is not None:
+        config["state_root"] = str(args.state_root.resolve())
+    for option in ("diagnostics", "factory_hooks"):
+        if getattr(args, option, False):
+            config[option] = True
+    if config.get("diagnostics"):
+        config["diagnostics_sha256"] = sha(diagnostics.__file__)
+    if any(case.get("shared_inputs") for case in cases):
+        config["private_input_roots"] = private_input_roots(cases, [runtime_home, *paths.values()])
     config["actor_environment"] = actor_environment(config)
     config["toolchain_environment"] = xcode_environment()
     config["runtime_tools"] = {}
@@ -333,6 +434,7 @@ def initialize(args):
 
 
 def graph_check(config, case, work, artifact):
+    verify_policy(case)
     binary = config["tools"]["archgraph"]["path"]
     if sha(binary) != config["tools"]["archgraph"]["sha256"]:
         raise ValueError("archgraph binary changed")
@@ -345,6 +447,8 @@ def graph_check(config, case, work, artifact):
         graph = artifact / f"{name}-graph.json"
         argv = [binary, "scan", str(target), "--engine", "native", "--language", case.get("archgraph_language", "typescript"),
                 "--no-daemon", "-o", str(graph)]
+        if case.get("archgraph_rules"):
+            argv += ["--rules", case["archgraph_rules"]]
         run = subprocess.run(argv, capture_output=True, text=True, timeout=300, check=False)
         outputs.append({"command": argv, "returncode": run.returncode, "stdout": run.stdout, "stderr": run.stderr})
         if run.returncode != 0:
@@ -355,7 +459,10 @@ def graph_check(config, case, work, artifact):
     outputs.append({"command": argv, "returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr})
     status = "no_new_violations" if result.returncode == 0 else "failed" if result.returncode == 1 else "scan_error"
     return {"status": status, "commands": outputs,
-            "scope": "cycle-only: no policies supplied, so forbidden/unplanned gates are inert; baseline debt retained in base-graph.json"}
+            "scope": ("pinned policy: new forbidden edges, unplanned edges and cycles; baseline debt retained in base-graph.json"
+                      if case.get("archgraph_rules") else
+                      "cycle-only: no policies supplied, so forbidden/unplanned gates are inert; baseline debt retained in base-graph.json"),
+            **({"rules_sha256": case["archgraph_rules_sha256"]} if case.get("archgraph_rules") else {})}
 
 
 def test_counts(output):
@@ -468,7 +575,7 @@ def grade_candidate(config, case, work, prepared, artifact, admission):
 
 def provided_acceptance(case, work):
     paths = pr_fixtures.acceptance_paths(case) + pr_fixtures.support_paths(case) if case.get("provide_acceptance") else []
-    return [Path(work) / path for path in paths]
+    return [Path(work) / path for path in paths + shared_input_paths(case)]
 
 
 def acceptance_integrity(case, work, baseline):
@@ -545,10 +652,20 @@ def trial(config, case, entry, out, resume_incomplete=False):
             denied.append(Path(cache))
     denied += [Path(item["runtime"]) for item in config["schedule"] if item != entry]
     denied += [Path(path) for path in config.get("source_repositories", [])]
+    denied += [Path(path) for path in config.get("private_input_roots", [])]
+    denied += [Path(item["source"]) for item in case.get("shared_inputs", [])]
     if entry["arm"] != "factory":
         denied.append(snapshot)
     settings = artifact / "settings.json"
-    write(settings, actor_settings(work, snapshot, denied, entry["arm"], readonly_caches(case), provided_acceptance(case, work)))
+    hook_options = {"factory_hooks": True} if config.get("factory_hooks") else {}
+    write(settings, actor_settings(work, snapshot, denied, entry["arm"], readonly_caches(case),
+                                   provided_acceptance(case, work), **hook_options))
+    if config.get("factory_hooks") and entry["arm"] == "factory":
+        record["hook_installation"] = hook_preflight(snapshot, work)
+        if not record["hook_installation"]["ready"]:
+            record["status"] = "infrastructure_error"
+            write(record_path, record)
+            return record
     session = record.setdefault("session", str(uuid.uuid4()))
     write(progress, record)
     if not record.get("isolation_probe", {}).get("verified"):
@@ -560,7 +677,7 @@ def trial(config, case, entry, out, resume_incomplete=False):
                   "question empty, recommended_answer empty, summary isolation probe.")
         with clean_environment(case.get("runtime_env")):
             os.environ.update(actor_runtime_environment(config, work))
-            probe = benchmark.invoke(command(config, entry["arm"], settings, str(uuid.uuid4()), prompt, probe=True), work, artifact / "probe", config["timeout_seconds"])
+            probe = invoke_actor(config, command(config, entry["arm"], settings, str(uuid.uuid4()), prompt, probe=True), work, artifact / "probe", config["timeout_seconds"])
         record["isolation_probe"] = isolation_probe(probe["events"], canary, secret)
         record["probe_inventory"] = verify_inventory(probe["events"], entry["arm"], config["model"])
         record["probe_usage"] = benchmark.accounting(probe["events"], probe["timeout"])
@@ -585,7 +702,7 @@ def trial(config, case, entry, out, resume_incomplete=False):
         attempt = len(record["attempts"])
         with clean_environment(case.get("runtime_env")):
             os.environ.update(actor_runtime_environment(config, work))
-            run = benchmark.invoke(command(config, entry["arm"], settings, session, prompt, attempt > 0), work,
+            run = invoke_actor(config, command(config, entry["arm"], settings, session, prompt, attempt > 0), work,
                                    artifact / f"turn-{attempt:03d}", config["timeout_seconds"])
         result = benchmark.response(run["events"])
         inventory = verify_inventory(run["events"], entry["arm"], config["model"])
@@ -793,6 +910,11 @@ def report(out):
              "Quality determines the comparison. Tokens and time are separate. Archgraph is **cycle-only**: no policies are supplied, so forbidden/unplanned gates are inert. It checks new cycles, not zero baseline debt.",
              "", "| Task | Arm | Outcome | Tests | Archgraph | Blind review | Task tokens | Task USD | Task seconds | Probe tokens | Probe USD | Probe seconds |",
              "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    if any(case.get("archgraph_rules") for case in cases):
+        lines[3] = ("Task-specific pinned architecture policies check new forbidden/unplanned edges and cycles where supplied; "
+                    "tasks without policies remain cycle-only. Baseline debt is retained.")
+    if config.get("factory_hooks"):
+        lines.insert(4, "Factory arm installs the actual Edit/Write PreToolUse hook; installation preflight is not proof of enforcement coverage. This is the sequential workflow, not v2.")
     provided_contract = all(case.get("provide_acceptance") for case in cases)
     lines.insert(4, "Acceptance contract: provided immutable tests and support, identical in every arm." if provided_contract else
                  "Legacy or mixed hidden-test pilot: archived diagnostic evidence, not the corrected provided-test experiment.")
@@ -879,6 +1001,7 @@ def main():
     run = commands.add_parser("run")
     run.add_argument("--manifest", type=Path)
     run.add_argument("--out", type=Path, required=True)
+    run.add_argument("--state-root", type=Path, help="Persistent parent for isolated framework and actor directories")
     run.add_argument("--model")
     run.add_argument("--effort", choices=("low", "medium", "high", "max"), default="high")
     run.add_argument("--claude", default="claude")
@@ -889,6 +1012,8 @@ def main():
     run.add_argument("--case")
     run.add_argument("--arm", choices=ARMS)
     run.add_argument("--resume-incomplete", action="store_true", help="Resume timed-out/interrupted sessions; retain stopped records")
+    run.add_argument("--diagnostics", action="store_true", help="Capture native observation timings and write additive offline diagnostics")
+    run.add_argument("--factory-hooks", action="store_true", help="Install actual Factory PreToolUse gates in the Factory arm")
     for name in ("report", "blind-packets", "blind-verdict"):
         sub = commands.add_parser(name)
         sub.add_argument("--out", type=Path, required=True)
@@ -900,6 +1025,12 @@ def main():
         if (args.out / "run.json").exists():
             config = json.loads((args.out / "run.json").read_text())
             cases = verify_inputs(args.out, config)
+            if args.state_root is not None and str(args.state_root.resolve()) != config.get("state_root"):
+                parser.error("cannot change state root on resume")
+            if (args.diagnostics and not config.get("diagnostics")) or (args.factory_hooks and not config.get("factory_hooks")):
+                parser.error("cannot enable diagnostics/hooks on resume; start a new benchmark")
+            if config.get("diagnostics_sha256") and sha(diagnostics.__file__) != config["diagnostics_sha256"]:
+                parser.error("diagnostic profiler changed; start a new benchmark")
             if args.model and args.model != config["model"]:
                 parser.error("cannot change model on resume")
             if sha(__file__) != config["controller_sha256"] or sha(pr_fixtures.__file__) != config["fixture_sha256"]:
@@ -929,6 +1060,8 @@ def main():
                     artifact = args.out / "trials" / entry["case"] / entry["arm"]
                     record_run_error(artifact, entry, error)
         report(args.out)
+        if config.get("diagnostics"):
+            diagnostics.save_report(args.out, [args.case] if args.case else diagnostics.CASES)
     elif args.command == "blind-packets":
         blind_packets(args.out)
     elif args.command == "blind-verdict":

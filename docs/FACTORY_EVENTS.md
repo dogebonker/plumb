@@ -1,6 +1,6 @@
 # Event-driven Factory and bounded replanning
 
-This adopts the requested direction without claiming an unattended swarm is already shipped. Product remains the cold-start stage. Architecture enforcement remains mechanical. Outcome quality decides whether the extra machinery is useful.
+This adopts the requested direction with an Opus 5.5 lead and bounded Opus subagents, without claiming unattended delivery is already shipped. Product remains the cold-start stage. Architecture enforcement remains mechanical. Outcome quality decides whether the extra machinery is useful.
 
 ## What exists
 
@@ -12,7 +12,8 @@ This adopts the requested direction without claiming an unattended swarm is alre
 | Escaped defects, recovery and adoption report | Implemented for explicitly supplied observations; production telemetry not connected |
 | Skill deprecation proposals | Added to retro; retirement remains a human decision |
 | Pond + archgraph context gateway | Interface design below; not an implemented server |
-| Durable event-by-event v2 slice resume / Linear backlog-to-contract adapter | Required next work; current v2 execution must not be restarted per webhook |
+| Durable v2 checkpoint recovery | Host API implemented and crash-tested; original authority, bindings and budgets remain required |
+| Queue-driven v2 recovery / Linear backlog-to-contract adapter | Pending integration; the receiver must not create a fresh v2 run per webhook |
 
 ```mermaid
 flowchart TD
@@ -98,15 +99,15 @@ Return exactly:
  native_list_cost_usd: observed_native_cost}
 ```
 
-At most three proposals name a missing/new or affected slice and concrete evidence in `reason`. The callback is a trusted host seam, not a built-in model adapter: it must enforce its own read-only sandbox and timeout. The controller checks mutation/bindings, native Opus 5.5 receipts, distinct invocation sessions and observed time/token/call limits. Replan spend joins feature totals and the Opus share ceiling. Unknown usage blocks further execution; costs are not inferred from token counts.
+At most three proposals name a missing/new or affected slice and concrete evidence in `reason`. The callback is a trusted host seam, not a built-in model adapter: it must enforce its own read-only sandbox and timeout. The controller checks mutation/bindings, native Opus 5.5 receipts, distinct invocation sessions and observed time/token/call limits. Replan spend joins feature totals and any explicitly approved Opus share ceiling. New Opus-led plans omit that ceiling; older approved limits remain binding. Unknown usage blocks further execution; costs are not inferred from token counts.
 
-After every accepted local integration, `continue` allows the next existing frontier. `propose` writes an artifact and returns `awaiting_replan`; no altered contract executes automatically. Integrated commits and already-paid parallel outputs remain explicitly retained. A revised plan needs only actual changed contract/scope decisions; compatible architecture/security approvals are not reopened for ceremony. The checkpoint does not implement cross-run resume or carry approval across a new plan on its own. Final merge remains separate.
+After every accepted local integration, `continue` allows the next existing frontier. `propose` writes an artifact and returns `awaiting_replan`; no altered contract executes automatically. Accepted commits remain retained in the single isolated clone. Later slices continue in the same lead session after gates and independent review. Within the active slice, the lead may delegate bounded subtasks to Opus helpers. A revised plan needs only actual changed contract/scope decisions; compatible architecture/security approvals are not reopened for ceremony. [Same-plan host recovery](FACTORY_V2.md#recovering-an-interrupted-run) preserves the original authority and budgets; it does not authorize a new plan. Final merge remains separate.
 
 ## Outcomes, baseline and deprecation
 
 Record **confirmed post-merge defects per fully observed feature**, detection-to-recovery with unresolved incidents right-censored, and adoption with a named successful event/eligible population. Use the same declared observation window and attribution rules across controls; incomplete monitoring is unknown. The [Glarity outcome sheet](pilots/glarity-blog-seo/outcomes.md) is pending because it has not merged. Gate failures are diagnostics, not a substitute for escaped defects.
 
-The existing [historical benchmark](research/real-pr-benchmark-2026-10-19.md) remains the honest control: bare and good CLAUDE.md each accepted 14/20, sequential Factory 9/20. This does not establish the new swarm's quality. Keep quality comparisons separate from cost/wall time; no inference rerun or favorable reclassification. That study did not observe production defect rate, recovery or adoption.
+The existing [historical benchmark](research/real-pr-benchmark-2026-10-19.md) remains the honest control: bare and good CLAUDE.md each accepted 14/20, sequential Factory 9/20. This does not establish the simplified Opus-led mode's quality; its native session reuse has not yet been validated live. Keep quality comparisons separate from cost/wall time; no inference rerun or favorable reclassification. That study did not observe production defect rate, recovery or adoption.
 
 Retro can propose improving, creating, consolidating or deprecating a skill. Deprecation requires evidence, active consumers, replacement/migration and rollback, human approval, and preserved historical pins. Low invocation count alone does not prove obsolescence. Context views can expire or supersede lessons; immutable Pond transcripts remain available as historical evidence.
 
@@ -114,7 +115,7 @@ Retro can propose improving, creating, consolidating or deprecating a skill. Dep
 
 Pond already exposes `pond_search`, `pond_get_session`, `pond_get_message`, `pond_sql`, `schema://pond`, `schema://pond-sql` and `stats://pond`. Archgraph already supplies context and architecture evidence. Reuse those backends; do not copy transcripts into a second memory store or pretend these read tools already provide typed writes. This design belongs at the Pond boundary; this change edits no Pond repository/server.
 
-One gateway serves the swarm, Factory reviewer and a future Slack bot with the same response schema:
+One gateway serves the lead and its helpers, Factory reviewer and a future Slack bot with the same response schema:
 
 | Proposed surface | Purpose |
 | --- | --- |
@@ -130,4 +131,4 @@ existing read-only worker/reviewer packets. Direct worker MCP access stays denie
 until explicit typed read methods and project/revision scope checks are added;
 installing a gateway never enables a blanket tool or write permission.
 
-Project/requester identity comes from authenticated transport, not a caller-supplied path or a Slack message. Authorize access before retrieval/expansion and enforce project/tenant boundaries server-side; Pond's substring `project` search filter is not an access-control boundary. The Slack client gets its own constrained read capability, never the swarm's write credentials or arbitrary SQL access. Retrieved prompts/logs are untrusted content. Creating tickets, posting messages and adopting lessons are separate authorized mutations, not side effects of asking for context. No Slack bot or MCP write endpoint is enabled here.
+Project/requester identity comes from authenticated transport, not a caller-supplied path or a Slack message. Authorize access before retrieval/expansion and enforce project/tenant boundaries server-side; Pond's substring `project` search filter is not an access-control boundary. The Slack client gets its own constrained read capability, never the lead's write credentials or arbitrary SQL access. Retrieved prompts/logs are untrusted content. Creating tickets, posting messages and adopting lessons are separate authorized mutations, not side effects of asking for context. No Slack bot or MCP write endpoint is enabled here.

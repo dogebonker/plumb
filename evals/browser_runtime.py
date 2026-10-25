@@ -42,11 +42,11 @@ def sandbox_policy(work, readable, writable, node, protected, browser_runtime=No
         network += ('(allow network-outbound (remote ip "localhost:*"))\n'
                     '(allow network-inbound (local ip "localhost:*"))\n'
                     '(allow network-bind (local ip "localhost:*"))\n')
-    metadata_reads = ""
-    if browser_runtime:
-        ancestors = {parent for key in ("module", "core", "cache") for parent in Path(browser_runtime[key]).parents}
-        metadata_reads = "".join(f"(allow file-read-metadata (literal {json.dumps(str(p))}))\n"
-                                 for p in sorted(ancestors))
+    # Resolving an explicitly readable cache needs ancestor stat access, including
+    # HOME. Metadata permission does not grant directory listing or sibling data.
+    ancestors = {parent for path in readable for parent in Path(path).resolve().parents}
+    metadata_reads = "".join(f"(allow file-read-metadata (literal {json.dumps(str(p))}))\n"
+                             for p in sorted(ancestors))
     policy = ("(version 1)\n(allow default)\n" + network
                        + "(deny file-write* (require-all " + " ".join(f"(require-not {subpath(p)})" for p in writable) + "))\n"
                        + "(deny file-read* (require-all " + subpath(Path.home().resolve()) + " "

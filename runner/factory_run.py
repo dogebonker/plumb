@@ -61,7 +61,7 @@ BRANCH = re.compile(r"^factory/[A-Za-z0-9._/-]+$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
 PACK_ENTRY = re.compile(r"\s+([^\s:#]+):\s*\{([^{}]*)\}\s*(#.*)?")  # the same entry form as bin/factory-packs-fetch
 GIT_SAFE = ("-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false")
-HARNESS = "claude -p --setting-sources user --strict-mcp-config --output-format stream-json --verbose"
+HARNESS = "claude -p --model claude-opus-5-5 --setting-sources user --strict-mcp-config --output-format stream-json --verbose"
 GIT_TIMEOUT = 300
 MAX_REPLY_BYTES = 100_000
 PENDING = "{ state: pending, approved_by: null, approved_at: null, doc_sha256: null }"
@@ -338,9 +338,13 @@ def run_harness(cmd, cwd, timeout):
     """Run the harness in its own process group, so a timeout stops its tools too."""
     observed = Path(cmd[0]).name == "claude" and "stream-json" in cmd
     stream = (Path(cwd).parent / "usage-stream.jsonl").open("ab") if observed else None
+    environment = {**os.environ, "FACTORY_RUNNER_MANAGED": "1"}
+    if Path(cmd[0]).name == 'claude' and '--model' in cmd and cmd[cmd.index('--model') + 1] == 'claude-opus-5-5':
+        environment.update(CLAUDE_CODE_SUBAGENT_MODEL='claude-opus-5-5',
+                           CLAUDE_CODE_SUBAGENT_MODEL_FORCE='1', CLAUDE_CODE_DISABLE_BACKGROUND_TASKS='1')
     try:
         proc = subprocess.Popen(cmd, cwd=cwd, start_new_session=True, stdout=stream,
-                                env={**os.environ, "FACTORY_RUNNER_MANAGED": "1"})
+                                env=environment)
         try:
             return proc.wait(timeout=timeout)
         except BaseException:

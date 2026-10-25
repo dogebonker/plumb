@@ -199,13 +199,16 @@ def validate_plan(plan):
         if any(overlaps(output, path) for output in gate.get('outputs', [])
                for path in [*frozen, policy['layout']['path']]):
             raise ValueError('gate output overlaps frozen input or layout')
-    exact(plan['budget'], 'tokens seconds opus_share_limit')
+    exact(plan['budget'], 'tokens seconds', 'opus_share_limit')
     for key in ('tokens', 'seconds'):
         integer(plan['budget'][key])
-    share = plan['budget']['opus_share_limit']
-    number(share)
-    if not 0 < share <= .25:
-        raise ValueError('opus_share_limit must be > 0 and <= 0.25')
+    # A legacy approved model-mix limit remains binding; new single-agent plans
+    # use total token/time budgets without prescribing a mix of cheaper models.
+    if 'opus_share_limit' in plan['budget']:
+        share = plan['budget']['opus_share_limit']
+        number(share)
+        if not 0 < share <= .25:
+            raise ValueError('opus_share_limit must be > 0 and <= 0.25')
     if 'replan_budget' in plan:
         allocation = plan['replan_budget']
         exact(allocation, 'tokens seconds max_calls')

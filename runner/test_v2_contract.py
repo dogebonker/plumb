@@ -23,12 +23,29 @@ def plan_fixture():
             'policy': {'layout': {'path': 'layout.json', 'sha256': 'b' * 64},
                        'permitted_rule_ids': ['no-cycle'], 'gate_definitions': gates},
             'frozen_inputs': [{'path': 'tests/scenarios.json', 'sha256': 'c' * 64, 'kind': 'fr'}],
-            'budget': {'tokens': 500, 'seconds': 100, 'opus_share_limit': .25},
+            'budget': {'tokens': 500, 'seconds': 100},
             'slices': [item('contracts', 'contract', ['src/contracts.py'], []),
                        item('feature', 'feature', ['src/feature.py'], ['contracts'])]}
 
 
 class ContractTests(unittest.TestCase):
+    def test_new_plan_needs_total_budget_but_no_opus_mix(self):
+        plan = plan_fixture()
+        self.assertNotIn('opus_share_limit', plan['budget'])
+        contract.validate_plan(plan)
+        for key in ('tokens', 'seconds'):
+            changed = copy.deepcopy(plan)
+            del changed['budget'][key]
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                contract.validate_plan(changed)
+
+    def test_explicit_legacy_share_ceiling_remains_in_approval_digest(self):
+        plan = plan_fixture()
+        original = contract.digest(plan)
+        plan['budget']['opus_share_limit'] = .25
+        contract.validate_plan(plan)
+        self.assertNotEqual(original, contract.digest(plan))
+
     def test_replan_allocation_is_explicit_bounded_and_changes_approval_digest(self):
         plan = plan_fixture()
         original = contract.digest(plan)

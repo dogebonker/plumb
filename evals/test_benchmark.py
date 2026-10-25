@@ -880,6 +880,19 @@ class ControllerTests(unittest.TestCase):
             run = benchmark.invoke([sys.executable, "-c", script], root, root / "child", 0.1)
             self.assertTrue(run["timeout"])
 
+    def test_opt_in_receipt_times_preserve_native_event_indexes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            script = "import json,time; print('not-json',flush=True); print(json.dumps({'type':'system','subtype':'init'}),flush=True); time.sleep(.06); print(json.dumps({'type':'result','subtype':'success','structured_output':{'state':'complete','question':'','recommended_answer':'','summary':'Done'}}),flush=True)"
+            run = benchmark.invoke([sys.executable, '-c', script], root, root / 'observed', 5, observe_events=True)
+            rows = [json.loads(line) for line in (root / 'observed.timings.jsonl').read_text().splitlines()]
+            self.assertEqual([row['event_index'] for row in rows], list(range(len(run['events']))))
+            self.assertTrue(all(type(row['timestamp']) in (int, float) for row in rows))
+            self.assertLessEqual(rows[0]['timestamp'], rows[-1]['timestamp'])
+            self.assertEqual(run['invalid_lines'], 1)
+            benchmark.invoke([sys.executable, '-c', 'print(1)'], root, root / 'unobserved', 5)
+            self.assertFalse((root / 'unobserved.timings.jsonl').exists())
+
     def test_structured_response_and_isolation(self):
         response = {"state": "question", "question": "Approve?", "recommended_answer": "Approve", "summary": "Ready"}
         self.assertEqual(benchmark.response([{"type": "result", "structured_output": response}]), response)
