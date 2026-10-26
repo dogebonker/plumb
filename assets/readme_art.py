@@ -39,7 +39,7 @@ def hero(c):
             f"@keyframes st{i} {{ 0%, {pct(at - 0.05, R)} {{ fill: {c['bg']}; }} {pct(at, R)}, 92% {{ fill: {c['accent']}; }} "
             f"100% {{ fill: {c['bg']}; }} }} .st{i} {{ animation: st{i} {R}s linear infinite; }}")
         station_svg.append(
-            f'<circle class="st{i}" cx="{x:.1f}" cy="{rail_y}" r="7" stroke="{c["ink"]}" stroke-width="2"/>'
+            f'<circle class="st{i}" cx="{x:.1f}" cy="{rail_y}" r="7" fill="{c["bg"]}" stroke="{c["ink"]}" stroke-width="2"/>'
             f'<text x="{x:.1f}" y="{rail_y + 34}" text-anchor="middle" font-family="{MONO}" font-size="15" '
             f'letter-spacing="1.5" fill="{c["muted"]}">{name.upper()}</text>')
     travel = rail_x1 - rail_x0
@@ -63,6 +63,8 @@ def hero(c):
       70% {{ transform: translateX({travel}px); opacity: 1; }} 92% {{ transform: translateX({travel}px); opacity: 1; }}
       100% {{ transform: translateX({travel}px); opacity: 0; }} }}
     {' '.join(station_css)}
+    @media (prefers-reduced-motion: reduce) {{ * {{ animation: none !important; }} .trueline {{ stroke-dashoffset: 0; }}
+      .measuring, .runner {{ display: none; }} .target {{ stroke: {c['green']}; }} }}
     """
     ticks = "".join(f'<line x1="{x}" y1="560" x2="{x}" y2="{568 if x % 50 else 574}" stroke="{c["faint"]}" stroke-width="1.5"/>'
                     for x in range(870, 1160, 10))
@@ -141,6 +143,7 @@ def session():
         f".line {{ opacity: 0; }}",
         f"@keyframes blink {{ 0%, 49% {{ opacity: 1; }} 50%, 100% {{ opacity: 0; }} }}",
         f".blink {{ animation: blink 1s steps(1) infinite; }}",
+        "@media (prefers-reduced-motion: reduce) { * { animation: none !important; } .line { opacity: 1; } .cover { display: none; } }",
     ], []
     y = y0
     for n, (kind, at, spans) in enumerate(lines):
@@ -168,7 +171,7 @@ def session():
                 f".c{n} {{ animation: c{n} {T}s infinite; }} .c{n} {{ animation-timing-function: steps({typed}, end); }} "
                 f"@keyframes k{n} {{ 0%, {pct(done + 0.15, T)} {{ opacity: 1; }} {pct(done + 0.2, T)}, 100% {{ opacity: 0; }} }} "
                 f".k{n} {{ animation: k{n} {T}s linear infinite; }}")
-            parts.append(f'<g class="c{n}"><rect x="{start_x:.1f}" y="{y - 19}" width="{width + 900:.1f}" height="{lh}" fill="#0B0E10"/>'
+            parts.append(f'<g class="cover c{n}"><rect x="{start_x:.1f}" y="{y - 19}" width="{width + 900:.1f}" height="{lh}" fill="#0B0E10"/>'
                          f'<g class="k{n}"><rect class="blink" x="{start_x:.1f}" y="{y - 17}" width="9" height="20" fill="{acc}"/></g></g>')
         if kind == "bar":
             bx = x0 + 28 * cw
