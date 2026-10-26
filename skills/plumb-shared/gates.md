@@ -26,7 +26,7 @@ To develop Plumb itself, `framework` may instead be `{ dev_path: <absolute path 
 
 1. `framework.commit: <sha>`: `<kit>` is `~/.plumb/framework/<sha>/kit`, the skills folder is `~/.plumb/framework/<sha>/skills/`, and `<running>` is `<sha>`.
 2. `framework.dev_path: <path>`: `<kit>` is `<path>/kit`, the skills folder is `<path>/skills/`, and `<running>` is `git -C <path> rev-parse HEAD`.
-3. A branch that still has `.software-factory/` or `.factory/` and no `.plumb/`: say "this branch still uses <that folder>/; run /plumb-init to migrate it", and stop. No `plumb.lock`, no cache folder for its commit, or no `dev_path` folder: say which, point to `/plumb-init`, and stop. When `.claude/settings.local.json`, `.claude/settings.json` or `~/.claude/settings.json` runs a `hooks/factory_gate.py`, say "this checkout still runs the hook from before the rename, which does not gate .plumb/; run /plumb-upgrade to repoint it", and stop.
+3. A branch that still has `.software-factory/` or `.factory/` and no `.plumb/`: say "this branch still uses <that folder>/; run /plumb-init to migrate it", and stop. No `plumb.lock`, no cache folder for its commit, or no `dev_path` folder: say which, point to `/plumb-init`, and stop. When `.claude/settings.local.json`, `.claude/settings.json` or `~/.claude/settings.json` runs a `hooks/factory_gate.py`, say "this checkout still runs the hook from before the rename, which does not gate .plumb/; run /plumb-init to repoint it", and stop.
 4. The `realpath` of this gates.md, as you opened it, must be inside the `realpath` of that skills folder. Otherwise name the commit or path actually running (the folder that holds its `skills/`) and stop: the linked skills are not the locked framework.
 
 ## The chain

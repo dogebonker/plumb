@@ -128,12 +128,12 @@ On a no, write the template from step 4 with "the user's taste across projects, 
 
 ## 8. Commit
 
-Committed mode: stage `.plumb/plumb.lock` and `.plumb/principles.md` (the migration is already staged) and commit `chore(plumb): init <the first seven characters of the sha>`, or `chore(plumb): init dev` for a `dev_path`. Ignored mode commits nothing. A commit that fails to sign: ask the user to unlock their signing agent, then retry. Never commit unsigned.
+Committed mode: stage `.plumb/plumb.lock` and `.plumb/principles.md`, and a tracked `.claude/settings.json` that step 3 repointed (the migration is already staged), and commit `chore(plumb): init <the first seven characters of the sha>`, or `chore(plumb): init dev` for a `dev_path`. Ignored mode commits nothing. A commit that fails to sign: ask the user to unlock their signing agent, then retry. Never commit unsigned.
 
 Then offer each branch step 3 listed, one at a time:
 
 - The tree must be clean: `git status --porcelain` shows no tracked change and nothing under `.plumb/`. Otherwise say what is in the way and skip the branches.
-- A local branch: `git checkout <branch>`, `<bin>/plumb-migrate`, commit `chore(plumb): migrate to .plumb`. When the branch has a pull request (`gh pr list --head <branch>`), push it, asking first: the pull request and the runner read the remote branch, and the runner reports a branch that still uses `.software-factory/` or `.factory/`.
+- A local branch: `git checkout <branch>`, repoint its tracked `.claude/settings.json` as step 3 item 1 does, `<bin>/plumb-migrate`, commit `chore(plumb): migrate to .plumb` with that file staged. When the branch has a pull request (`gh pr list --head <branch>`), push it, asking first: the pull request and the runner read the remote branch, and the runner reports a branch that still uses `.software-factory/` or `.factory/`.
 - A remote branch with no local branch of the same name: offer it the same way after `git checkout --track <remote>/<branch>`.
 - A branch checked out in another worktree: skip it, and say to run `/plumb-init` in that worktree.
 
