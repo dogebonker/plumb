@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""GitHub Actions history for factory-ci, read-only.
+"""GitHub Actions history for plumb-ci, read-only.
 
   python3 ci_runs.py fetch <owner/repo> <out> [--days 30]
   python3 ci_runs.py analyze <out> [--since <date or ISO time>]
 
 fetch writes <out>/data.json with gh api GET calls only. analyze writes <out>/summary.json.
-Why this method: docs/research/ci-selection.md (CI-2) in the factory repository.
+Why this method: docs/research/ci-selection.md (CI-2) in the Plumb repository.
 """
 import argparse
 import json

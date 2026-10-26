@@ -10,7 +10,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-SPEC = importlib.util.spec_from_file_location('factory_archgraph', Path(__file__).with_name('archgraph.py'))
+SPEC = importlib.util.spec_from_file_location('plumb_archgraph', Path(__file__).with_name('archgraph.py'))
 
 
 class IntegrationTests(unittest.TestCase):

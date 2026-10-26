@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SPEC = importlib.util.spec_from_file_location('factory_runtime', Path(__file__).resolve().parents[1] / 'kit/runtime.py')
+SPEC = importlib.util.spec_from_file_location('plumb_runtime', Path(__file__).resolve().parents[1] / 'kit/runtime.py')
 runtime = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runtime)
 
@@ -18,7 +18,7 @@ class RuntimeTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.repo = Path(self.tmp.name)
-        self.git('init', '-q', '-b', 'factory/demo')
+        self.git('init', '-q', '-b', 'plumb/demo')
         self.git('config', 'user.name', 'test')
         self.git('config', 'user.email', 'test@example.com')
         (self.repo / 'code').write_text('RED')
@@ -28,10 +28,10 @@ class RuntimeTests(unittest.TestCase):
         (self.repo / 'code').write_text('GREEN')
         self.git('commit', '-qam', 'green')
         self.green = self.git('rev-parse', 'HEAD')
-        self.change = self.repo / '.software-factory/changes/demo'
+        self.change = self.repo / '.plumb/changes/demo'
         self.change.mkdir(parents=True)
         self.status = self.change / 'status.yaml'
-        self.status.write_text(f'branch: factory/demo\nslices:\n  - {{ id: 4, state: green, test_commit: {self.red}, head_commit: {self.green} }}\n')
+        self.status.write_text(f'branch: plumb/demo\nslices:\n  - {{ id: 4, state: green, test_commit: {self.red}, head_commit: {self.green} }}\n')
         self.review = self.change / 'slices/04/review.md'
         self.review.parent.mkdir(parents=True)
         self.review.write_text('Reviewed exact slice path')
@@ -68,7 +68,7 @@ class RuntimeTests(unittest.TestCase):
         self.git('add', 'code')
         (self.repo / 'code').write_text('DIRTY')
         (self.repo / 'untracked').write_text('keep')
-        before = self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.software-factory')
+        before = self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.plumb')
         index = self.git('show', ':code')
         for source, expected in ((base, 1), (head, 0)):
             checkpoint = self.change / f'overlay-{expected}.json'
@@ -87,7 +87,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(timeout.returncode, 124, timeout.stderr)
         self.assertIsNone(json.loads((self.change / 'overlay-timeout.json').read_text())['exit_code'])
         self.assertEqual(self.git('rev-parse', 'HEAD'), head)
-        self.assertEqual(self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.software-factory'), before)
+        self.assertEqual(self.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!.plumb'), before)
         self.assertEqual(self.git('show', ':code'), index)
         self.assertEqual((self.repo / 'code').read_text(), 'DIRTY')
         self.assertEqual((self.repo / 'untracked').read_text(), 'keep')
@@ -103,7 +103,7 @@ class RuntimeTests(unittest.TestCase):
         for options in [('--tests-from', tests), ('--tests-from', ''), ('--test-file', 'tests/test_ok.py'), *[
                 ('--tests-from', tests, '--test-file', path) for path in
                 ('../test.py', '/test.py', 'tests/../test.py', './tests/test_ok.py', '.git/config',
-                 '.software-factory/test.py', 'tests', 'test_link.py', 'linked/test_ok.py', 'missing.py')]]:
+                 '.plumb/test.py', 'tests', 'test_link.py', 'linked/test_ok.py', 'missing.py')]]:
             with self.subTest(options=options):
                 result = self.red_cli(self.red, self.change / 'unsafe.json', *options,
                                       command=[sys.executable, '-c', "raise SystemExit(77)"])
@@ -124,7 +124,7 @@ class RuntimeTests(unittest.TestCase):
         (self.repo / 'code').write_text('OTHER')
         self.git('commit', '-qam', 'other branch')
         unrelated = self.git('rev-parse', 'HEAD')
-        self.git('checkout', '-q', 'factory/demo')
+        self.git('checkout', '-q', 'plumb/demo')
         for source, overlay in ((unrelated, tests), (self.red, unrelated)):
             result = self.red_cli(source, self.change / 'nonancestor.json', '--tests-from', overlay,
                                   '--test-file', 'test_new.py', command=[sys.executable, '-c', 'raise SystemExit(77)'])
@@ -217,8 +217,8 @@ class RuntimeTests(unittest.TestCase):
                                   "const a=require('node:assert');a.equal(require('example'),42);a.equal(require('node:fs').readFileSync('code','utf8'),'RED')"], checkpoint, 10)
         self.assertEqual(code, 0)
         clone = Path(json.loads(checkpoint.read_text())['verification_clone'])
-        self.assertTrue(clone.is_relative_to(self.repo.resolve() / '.software-factory/scratch'))
-        self.assertEqual(self.git('check-ignore', '.software-factory/scratch/owned-file'), '.software-factory/scratch/owned-file')
+        self.assertTrue(clone.is_relative_to(self.repo.resolve() / '.plumb/scratch'))
+        self.assertEqual(self.git('check-ignore', '.plumb/scratch/owned-file'), '.plumb/scratch/owned-file')
         self.assertEqual(self.git('rev-parse', 'HEAD'), self.green)
 
     def test_browser_red_request_pins_recorded_commit_and_safe_checkpoint(self):
@@ -241,7 +241,7 @@ class RuntimeTests(unittest.TestCase):
                                   "from pathlib import Path; import time; assert Path('code').read_text() == 'RED'; time.sleep(10)"], checkpoint, .1)
         self.assertIsNone(code)
         self.assertEqual(self.git('rev-parse', 'HEAD'), self.green)
-        self.assertEqual(self.git('symbolic-ref', '--short', 'HEAD'), 'factory/demo')
+        self.assertEqual(self.git('symbolic-ref', '--short', 'HEAD'), 'plumb/demo')
         self.assertEqual((self.repo / 'code').read_text(), 'DIRTY GREEN')
         self.assertEqual((self.repo / 'untracked').read_text(), 'keep')
         record = json.loads(checkpoint.read_text())

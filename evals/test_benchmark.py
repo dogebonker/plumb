@@ -83,10 +83,10 @@ class CodexIntegrationTests(unittest.TestCase):
         self.assertIn("Never run /immutable/check or /immutable/red through the shell", prompt)
         self.assertIn("Pass this mapping to every child", prompt)
         paths = {"factory": Path("/factory"), "superpowers": Path("/superpowers")}
-        pinned = {("initial_prompt", "factory"): "f0881d8561008674a2d526bfff47ae0c7d0f6c1b4cd29be6a58f578457eef2dd",
-                  ("initial_prompt", "superpowers"): "b533e179ef3e2ce41c12fc6f450eacf5040a0ee4e2c5ae1e6de947d36e17bbfc",
-                  ("codex_prompt", "factory"): "c93750b9fe401a722d922575b07ad0558eeefc9a4c9b87f12fcec0423959e129",
-                  ("codex_prompt", "superpowers"): "d451c3d3c2dac66fe6f18f3b3b12e5a89d1a7e72d6150b078890c8b3949eeaf4"}
+        pinned = {("initial_prompt", "factory"): "e4d7a8a1e94fba3dc8122c90d0062e41b83f8ba8c6be0cbe3c4a16fc6e652d1b",
+                  ("initial_prompt", "superpowers"): "5303eabe788f593fd826abb6fe1c3460ca7512f07be377d2cb9ed31a3963dce3",
+                  ("codex_prompt", "factory"): "e1324fd2ace8830270d9ce0b620d93eb655d3dabac544459ec292ed8a19aaf46",
+                  ("codex_prompt", "superpowers"): "3e45a3541c785a872614d2b2e29c2d4baddcc9e1ec788ca4a5bb1db482358c80"}
         for (name, arm), digest in pinned.items():
             build = getattr(benchmark, name)
             text = build(benchmark.CASES / "support-fullstack", arm, paths, "/immutable/check", "/immutable/red")
@@ -408,11 +408,11 @@ with socket.socket() as connection:
 class SnapshotTests(unittest.TestCase):
     def framework(self, root):
         repository = root / "repository"
-        shared = repository / "skills" / "factory-shared"
+        shared = repository / "skills" / "plumb-shared"
         shared.mkdir(parents=True)
         (shared / "gates.md").write_text("Gate rules.\n")
         (repository / "bin").mkdir()
-        shutil.copy2(benchmark.ROOT / "bin" / "factory-packs-fetch", repository / "bin")
+        shutil.copy2(benchmark.ROOT / "bin" / "plumb-packs-fetch", repository / "bin")
         shutil.copytree(benchmark.ROOT / "hooks", repository / "hooks", ignore=benchmark.IGNORED)
         kit = repository / "kit"
         kit.mkdir()
@@ -422,7 +422,7 @@ class SnapshotTests(unittest.TestCase):
         for tier in ["full", "mini", "nano"]:
             folder = staging / tier
             folder.mkdir()
-            (folder / "SKILL.md").write_text(tier + " ~/.software-factory/user/ ~/.software-factory/packs/\n")
+            (folder / "SKILL.md").write_text(tier + " ~/.plumb/user/ ~/.plumb/packs/\n")
         (staging / "full" / "SKILL.md").chmod(0o755)
         for command in [["init", "-q"], ["add", "-f", "."]]:
             subprocess.run(["git", "-C", str(staging), *command], check=True, capture_output=True)
@@ -445,17 +445,17 @@ class SnapshotTests(unittest.TestCase):
                 paths, provenance = benchmark.snapshots(args)
                 home.assert_not_called()  # bundled books never consult global skills or pack caches
             snapshot = paths["factory"]
-            for relative in ("hooks/factory_gate.py", "bin/factory-packs-fetch"):
+            for relative in ("hooks/plumb_gate.py", "bin/plumb-packs-fetch"):
                 self.assertEqual((snapshot / relative).read_bytes(), (repository / relative).read_bytes())
             self.assertFalse((snapshot / "hooks/hooks.json").exists(), "runtime files must not auto-register gates")
-            help_run = subprocess.run([sys.executable, str(snapshot / "hooks/factory_gate.py"), "repair-check", "--help"],
+            help_run = subprocess.run([sys.executable, str(snapshot / "hooks/plumb_gate.py"), "repair-check", "--help"],
                                       cwd=root, capture_output=True, text=True, check=False)
             self.assertEqual(help_run.returncode, 0, help_run.stderr)
             self.assertIn("--checkpoint {edit,complete}", help_run.stdout)
-            fetch = benchmark.runpy.run_path(str(snapshot / "bin/factory-packs-fetch"))
+            fetch = benchmark.runpy.run_path(str(snapshot / "bin/plumb-packs-fetch"))
             self.assertIn("pins", fetch)
             with patch.dict("os.environ", {"HOME": str(root / "empty-home")}):
-                fetched = subprocess.run([sys.executable, str(snapshot / "bin/factory-packs-fetch"),
+                fetched = subprocess.run([sys.executable, str(snapshot / "bin/plumb-packs-fetch"),
                                           str(snapshot / "kit/packs.lock.yaml")], cwd=root,
                                          capture_output=True, text=True, check=False)
             self.assertEqual(fetched.returncode, 0, fetched.stderr)
@@ -490,19 +490,19 @@ class SnapshotTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             repository = root / "repository"
-            shared = repository / "skills" / "factory-shared"
+            shared = repository / "skills" / "plumb-shared"
             shared.mkdir(parents=True)
             original = shared / "gates.md"
             original.write_text("Original gate rules.\n")
             (repository / "bin").mkdir()
-            shutil.copy2(benchmark.ROOT / "bin" / "factory-packs-fetch", repository / "bin")
+            shutil.copy2(benchmark.ROOT / "bin" / "plumb-packs-fetch", repository / "bin")
             shutil.copytree(benchmark.ROOT / "hooks", repository / "hooks", ignore=benchmark.IGNORED)
             kit = repository / "kit"
             kit.mkdir()
             (kit / "packs.lock.yaml").write_text("packs:\n  lens: { source: o/r, path: lens, hash: " + "a" * 40 + " }\n"
                                                  "  gone: { source: o/r, path: gone, hash: " + "b" * 40 + " }\n")
-            (shared / "packs.md").write_text("Load `~/.software-factory/packs/<name>@<hash>/`.\n")
-            cached = root / "home" / ".software-factory" / "packs" / ("lens@" + "a" * 40)
+            (shared / "packs.md").write_text("Load `~/.plumb/packs/<name>@<hash>/`.\n")
+            cached = root / "home" / ".plumb" / "packs" / ("lens@" + "a" * 40)
             cached.mkdir(parents=True)
             (cached / "SKILL.md").write_text("lens rules\n")
             superpowers = root / "superpowers"
@@ -514,7 +514,7 @@ class SnapshotTests(unittest.TestCase):
             with patch("benchmark.ROOT", repository), patch("benchmark.Path.home", return_value=root / "home"), \
                     patch("benchmark.git_info", return_value={"commit": None, "dirty": None}):
                 paths, provenance = benchmark.snapshots(args)
-            copied = (paths["factory"] / "skills" / "factory-shared" / "gates.md").read_text()
+            copied = (paths["factory"] / "skills" / "plumb-shared" / "gates.md").read_text()
             self.assertEqual(original.read_text(), "Original gate rules.\n")
             self.assertTrue(copied.startswith(original.read_text()))
             self.assertIn("## Synthetic benchmark operator", copied)
@@ -527,11 +527,11 @@ class SnapshotTests(unittest.TestCase):
             self.assertEqual(provenance["installed_packs"]["lens"]["pin"], "a" * 40)
             self.assertEqual(provenance["skipped_packs"], [{"pack": "gone", "reason": "not in pack cache"}])
             self.assertIn(str(paths["factory"] / "packs") + "/<name>@<hash>/",
-                          (paths["factory"] / "skills" / "factory-shared" / "packs.md").read_text())
-            marker = "skills/factory-shared/gates.md: synthetic-operator exception"
+                          (paths["factory"] / "skills" / "plumb-shared" / "packs.md").read_text())
+            marker = "skills/plumb-shared/gates.md: synthetic-operator exception"
             self.assertIn(marker, provenance["adaptations"]["files"])
             self.assertIn(marker, json.loads((output / "provenance.json").read_text())["adaptations"]["files"])
-            # The snapshot is the dev_path a trial's factory.lock names, so it has a HEAD for <running>.
+            # The snapshot is the dev_path a trial's plumb.lock names, so it has a HEAD for <running>.
             head = subprocess.run(["git", "-C", str(paths["factory"]), "rev-parse", "HEAD"], capture_output=True, text=True, check=False)
             self.assertEqual(head.returncode, 0, head.stderr)
 
@@ -943,7 +943,7 @@ class ControllerTests(unittest.TestCase):
             saved = json.loads((artifact / "progress.json").read_text())
             self.assertIn("same neutral requirements", saved["pending_prompt"])
             self.assertEqual(first["stop_reason"], "preflight failed")
-            lock = (artifact / "workspace/.software-factory/factory.lock").read_text()
+            lock = (artifact / "workspace/.plumb/plumb.lock").read_text()
             self.assertIn(f"dev_path: {plugin.resolve()}", lock)
             benchmark.write_json(args.out / "run-config.json", {"args": {**vars(args), "out": str(args.out)},
                                                                "paths": {"factory": str(plugin)}})

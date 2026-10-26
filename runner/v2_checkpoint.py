@@ -122,7 +122,7 @@ def host_binding(repo, tools, read_only, callbacks, runtime):
 
 def register(common, plan_digest, run_dir):
     """Caller holds the repository common-dir lock before registration or paid work."""
-    path = Path(common) / 'factory-v2-runs' / (plan_digest + '.json')
+    path = Path(common) / 'plumb-v2-runs' / (plan_digest + '.json')
     if path.exists():
         if json.loads(path.read_text()) != {'run_dir': str(run_dir)}:
             raise ValueError('plan already registered to another run_dir; resume its original run')

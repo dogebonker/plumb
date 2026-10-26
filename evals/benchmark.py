@@ -120,7 +120,7 @@ def retain_workspace(work, artifact, record):
     record["checkpoints"] = [line for line in git("log", "--all", "--format=%H %s").splitlines()
                              if re.search(r"\b(red|green|test)\b", line, re.IGNORECASE)]
     record["slice_checkpoints"] = {str(path.relative_to(work)): re.findall(r"^\s*-.*(?:state:|head_commit:).*$", path.read_text(), re.MULTILINE)
-                                   for path in work.glob(".software-factory/changes/*/status.yaml")}
+                                   for path in work.glob(".plumb/changes/*/status.yaml")}
     if (artifact / "workspace").exists():
         (artifact / "workspace").rename(artifact / f"workspace-before-resume-{len(list(artifact.glob('workspace-before-resume-*')))}")
     shutil.copytree(work, artifact / "workspace", symlinks=True)
@@ -181,14 +181,14 @@ def snapshots(args):
     packs = factory / "packs"  # actors only read frozen packs, never the operator's cache
     packs.mkdir()
     skipped = []
-    pack_tools = runpy.run_path(str(ROOT / "bin" / "factory-packs-fetch"))
+    pack_tools = runpy.run_path(str(ROOT / "bin" / "plumb-packs-fetch"))
     pack_provenance = {}
     for name, pin in pack_tools["pins"](factory / "kit" / "packs.lock.yaml").items():
         expected = pin["hash"]
         bundled = pin.get("source") == "ciembor/agent-rules-books"
         if bundled and pin.get("path") != name:
             raise ValueError(f"Required book bundle {name} has an unexpected source path; restore kit/packs.lock.yaml.")
-        source = ((ROOT / "kit" / "packs") if bundled else (Path.home() / ".software-factory" / "packs")) / f"{name}@{expected}"
+        source = ((ROOT / "kit" / "packs") if bundled else (Path.home() / ".plumb" / "packs")) / f"{name}@{expected}"
         if bundled:
             try:
                 pack_tools["check_bundle"](factory / "kit" / "packs" / source.name, expected)
@@ -207,10 +207,10 @@ def snapshots(args):
                 raise ValueError(f"Copied book bundle {name}@{expected} failed verification: {error}") from error
         pack_provenance[name] = {"path": str(source), "sha256": tree_hash(frozen_source), "pin": expected,
                                  "source_kind": "bundled" if bundled else "cache"}
-    (factory / "user").mkdir()  # an empty user layer: the trial never reads the operator's ~/.software-factory/user/
-    replacements = {"~/.software-factory/user/": str(factory / "user") + "/", "~/.software-factory/packs/": str(packs) + "/"}
+    (factory / "user").mkdir()  # an empty user layer: the trial never reads the operator's ~/.plumb/user/
+    replacements = {"~/.plumb/user/": str(factory / "user") + "/", "~/.plumb/packs/": str(packs) + "/"}
     adapted = []
-    gates = factory / "skills" / "factory-shared" / "gates.md"
+    gates = factory / "skills" / "plumb-shared" / "gates.md"
     gates.write_text(gates.read_text() + "\n## Synthetic benchmark operator\n\n"
                      "This copied kit runs only in a disposable benchmark repository. The operator's recorded "
                      "SIMULATED USER ANSWER is an explicit benchmark response. When the orchestrator forwards it "
@@ -218,8 +218,8 @@ def snapshots(args):
                      "step agents. Do not require a real person's identity in these fixtures. This exception does "
                      "not authorize production actions, external writes or fabricated answers. Stop at every "
                      "unanswered question as usual.\n")
-    adapted.append("skills/factory-shared/gates.md: synthetic-operator exception")
-    for skill in (factory / "skills").glob("factory-*/SKILL.md"):
+    adapted.append("skills/plumb-shared/gates.md: synthetic-operator exception")
+    for skill in (factory / "skills").glob("plumb-*/SKILL.md"):
         body = skill.read_text()
         if "disable-model-invocation: true" in body:
             skill.write_text(body.replace("disable-model-invocation: true", "disable-model-invocation: false"))
@@ -237,7 +237,7 @@ def snapshots(args):
                 if original != updated:
                     file.write_text(updated)
                     adapted.append(str(file.relative_to(factory)))
-    # The trial's factory.lock names this snapshot as its dev_path, whose HEAD is the framework version that ran.
+    # The trial's plumb.lock names this snapshot as its dev_path, whose HEAD is the framework version that ran.
     for cmd in [["init", "-q"], ["add", "-A"], ["commit", "-qm", "Factory benchmark snapshot"]]:
         subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-c", "commit.gpgsign=false", "-c", "user.name=Benchmark",
                         "-c", "user.email=benchmark@example.invalid", "-C", str(factory), *cmd], check=True, capture_output=True)
@@ -246,7 +246,7 @@ def snapshots(args):
                              "kit_sha256": tree_hash(ROOT / "kit"), **git_info(ROOT)},
                   "installed_packs": pack_provenance, "skipped_packs": skipped,
                   "adaptations": {"replacements": replacements, "files": adapted,
-                                  "notes": "The framework is a read-only one-commit snapshot that each Factory trial's .software-factory/factory.lock names as dev_path; propose kit changes locally. No Factory gate hooks were installed; skills are compared."}}
+                                  "notes": "The framework is a read-only one-commit snapshot that each Factory trial's .plumb/plumb.lock names as dev_path; propose kit changes locally. No Factory gate hooks were installed; skills are compared."}}
     for name, source in [("superpowers", args.superpowers), ("context-mode", args.context_mode)]:
         if source is not None:
             target = support / name
@@ -299,7 +299,7 @@ def settings(work, paths, arm, out, browser=False, browser_command=None, red_com
                         "excludedCommands": [str(command) for command in [browser_command, red_command] if command],
                         "filesystem": {"allowWrite": [str(work)], "denyWrite": [str(ROOT), str(out),
                                                               *([str(Path(browser_command).parent)] if browser_command else [])],
-                                       "denyRead": [str(path) for path in [*protected, *secrets]] + [str(Path.home() / ".software-factory"),
+                                       "denyRead": [str(path) for path in [*protected, *secrets]] + [str(Path.home() / ".plumb"),
                                                     str(Path.home() / ".agents" / "skills"), str(Path.home() / ".claude" / "skills")]},
                         "network": {"allowedDomains": ["127.0.0.1", "localhost"] if browser else [],
                                     "allowLocalBinding": browser, "strictAllowlist": True}}}
@@ -533,7 +533,7 @@ def copy_product(work, destination, source_only=False):
     destination.mkdir(parents=True)
     for file in work.rglob("*"):
         relative = file.relative_to(work)
-        if any(part in {".git", ".software-factory", ".factory", ".claude", ".codex", ".tmp", ".benchmark-data", "__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "node_modules", ".venv", "docs"} for part in relative.parts):
+        if any(part in {".git", ".plumb", ".factory", ".claude", ".codex", ".tmp", ".benchmark-data", "__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache", "node_modules", ".venv", "docs"} for part in relative.parts):
             continue
         if file.is_symlink():
             raise ValueError(f"product symlink cannot be graded safely: {relative}")
@@ -809,7 +809,7 @@ def grade_delivery(args, case, work, artifact, paths):
 
 def workflow_evidence(work, arm, case):
     if arm.startswith("factory"):
-        statuses = list(work.glob(".software-factory/changes/*/status.yaml"))
+        statuses = list(work.glob(".plumb/changes/*/status.yaml"))
         details = []
         for path in statuses:
             text = path.read_text()
@@ -825,8 +825,8 @@ def workflow_evidence(work, arm, case):
 
 
 def initial_prompt(case, arm, paths, browser_command=None, red_command=None):
-    entry = "factory:factory-triage" if arm.startswith("factory") else "superpowers:using-superpowers"
-    skill = paths["factory"] / "skills" / "factory-triage" / "SKILL.md" if arm.startswith("factory") else paths["superpowers"] / "skills" / "using-superpowers" / "SKILL.md"
+    entry = "factory:plumb-triage" if arm.startswith("factory") else "superpowers:using-superpowers"
+    skill = paths["factory"] / "skills" / "plumb-triage" / "SKILL.md" if arm.startswith("factory") else paths["superpowers"] / "skills" / "using-superpowers" / "SKILL.md"
     discovery = json.loads((case / "case.json").read_text()).get("track") == "discovery"
     verify = str(browser_command) if browser_command else shlex.join(json.loads((case / "case.json").read_text())["verify"])
     browser_note = (f"Browser verification command: run exactly {browser_command}, with no arguments, prefixes, suffixes, pipes or redirects. "
@@ -839,7 +839,7 @@ def initial_prompt(case, arm, paths, browser_command=None, red_command=None):
                     "Pass these paths and operator constraints to every agent; do not use a shared /tmp/claude-UID path "
                     "or wait for files that a reviewer could not write.\n") if browser_command else ""
     if red_command:
-        browser_note += f'Set status red_test_command to {red_command}. For RED proof, write exactly two fields to .software-factory/browser-red.json: {{"commit":"FULL_40_CHARACTER_ANCESTOR_COMMIT_SHA","checkpoint":"SAFE_TOKEN"}}. Replace the placeholders; commit must match [0-9a-f]{{40}} and checkpoint must match [A-Za-z0-9_-]{{1,64}}. Then run exactly {red_command} without arguments via Bash. It checks an isolated clone and leaves the live GREEN checkout unchanged.\n'
+        browser_note += f'Set status red_test_command to {red_command}. For RED proof, write exactly two fields to .plumb/browser-red.json: {{"commit":"FULL_40_CHARACTER_ANCESTOR_COMMIT_SHA","checkpoint":"SAFE_TOKEN"}}. Replace the placeholders; commit must match [0-9a-f]{{40}} and checkpoint must match [A-Za-z0-9_-]{{1,64}}. Then run exactly {red_command} without arguments via Bash. It checks an isolated clone and leaves the live GREEN checkout unchanged.\n'
     context_note = ("For large non-browser repository or command outputs, use Context Mode ctx_execute, ctx_batch_execute, "
                     "ctx_index and ctx_search when available; ToolSearch may discover deferred tools. Preserve raw test evidence: "
                     "a retrieval summary is not verification proof. The exact browser checker still runs directly through Bash.\n") if arm == "factory-context" else ""
@@ -855,7 +855,7 @@ Whenever the workflow requires a user choice or approval, stop and return the qu
 
 def codex_prompt(case, arm, paths, browser_command=None, red_command=None):
     factory = arm.startswith("factory")
-    entry = paths["factory"] / "skills/factory-triage/SKILL.md" if factory else paths["superpowers"] / "skills/using-superpowers/SKILL.md"
+    entry = paths["factory"] / "skills/plumb-triage/SKILL.md" if factory else paths["superpowers"] / "skills/using-superpowers/SKILL.md"
     fullstack = json.loads((case / "case.json").read_text()).get("kind") == "fullstack"
     discovery = json.loads((case / "case.json").read_text()).get("track") == "discovery"
     coaching = "" if discovery else "Record stack choices, rationale, explicit FR/NFR agreements, exclusions and unresolved assumptions in DECISIONS.md. Requirements in the shared task cannot be negotiated away. "
@@ -866,7 +866,7 @@ TASK:\n{(case / 'task.md').read_text()}
 TOOL ADAPTATION: Skill/invokeSkill means read the named pinned SKILL.md and execute its instructions; there is no installed Claude Skill tool. Agent/general-purpose means the actual native full-capability subagent interface described in your CLI tool documentation. Use available tool names; never fabricate hooks, unavailable tools or approvals. Native agents may implement their assigned files. All children inherit this session model and effort: do not override either. Interpret Factory ARGUMENTS as the explicit change slug you select; resolve working-directory placeholders to this repository. Forward operator answers verbatim to child stages.
 For Superpowers also read {paths['superpowers'] / 'skills/using-superpowers/references/codex-tools.md'} if present for canonical tool mapping.
 POLICY: {dependency} Local unsigned commits, local read-only research worktrees under .tmp, localhost application serving, and browser verification are allowed. Keep scratch and reviewer artifacts inside .tmp. No remote git, production actions, or changes to pinned workflow snapshots. Report unavailable optional capabilities as skipped. Never bypass the configured sandbox.
-BROWSER: invoke mcp__benchmark_browser__check with zero arguments for browser verification. Write Node/Playwright test*.cjs checks in this workspace; PLAYWRIGHT_MODULE names the installed module. This declared fixed MCP capability invokes the immutable native Seatbelt wrapper outside the actor sandbox. Never run {browser_command} or {red_command} through the shell: nested sandbox-exec cannot launch Chromium. Whenever a workflow/status test_command names {browser_command}, execute the check MCP capability instead, preserving the recorded command identity and full evidence. For RED proof keep red_test_command {red_command}; write .software-factory/browser-red.json with exactly commit (full ancestor SHA) and checkpoint (safe token), then invoke mcp__benchmark_browser__red_check with zero arguments. This changes only the execution surface; all RED/GREEN proof requirements remain. The live GREEN checkout must remain unchanged. Pass this mapping to every child.
+BROWSER: invoke mcp__benchmark_browser__check with zero arguments for browser verification. Write Node/Playwright test*.cjs checks in this workspace; PLAYWRIGHT_MODULE names the installed module. This declared fixed MCP capability invokes the immutable native Seatbelt wrapper outside the actor sandbox. Never run {browser_command} or {red_command} through the shell: nested sandbox-exec cannot launch Chromium. Whenever a workflow/status test_command names {browser_command}, execute the check MCP capability instead, preserving the recorded command identity and full evidence. For RED proof keep red_test_command {red_command}; write .plumb/browser-red.json with exactly commit (full ancestor SHA) and checkpoint (safe token), then invoke mcp__benchmark_browser__red_check with zero arguments. This changes only the execution surface; all RED/GREEN proof requirements remain. The live GREEN checkout must remain unchanged. Pass this mapping to every child.
 {coaching}Completion includes applicable workflow review, fixes and finish. Await every child and close completed child handles before the root terminal response, so descendant usage is observable.
 Whenever a human choice is required return one JSON object matching the response schema, state question, question text and recommended_answer. Do not answer it yourself or use a blocking user-question tool. Controller replies are recorded synthetic operator answers valid only here. Return complete only after the full workflow finishes, or blocked for a bounded obstruction with evidence. An unfinished child is not a blocker. Final response must have exactly state, question, recommended_answer, summary, all strings; state is question|complete|blocked.
 """
@@ -937,8 +937,8 @@ def trial(args, case, arm, repeat, paths):
         if arm.startswith("factory") and not resuming:
             pins = paths["factory"] / "kit" / "packs.lock.yaml"
             pins = pins.read_text().partition("\npacks:\n")[2] if pins.is_file() else ""
-            (work / ".software-factory").mkdir(exist_ok=True)
-            (work / ".software-factory" / "factory.lock").write_text(
+            (work / ".plumb").mkdir(exist_ok=True)
+            (work / ".plumb" / "plumb.lock").write_text(
                 f"framework: {{ dev_path: {Path(paths['factory']).resolve()} }}\npacks:\n{pins}\nskills_linked: []\n")
         for cmd in [["git", "init", "-q", "-b", "main"], ["git", "config", "user.name", "Benchmark"], ["git", "config", "user.email", "benchmark@example.invalid"],
                     ["git", "config", "commit.gpgsign", "false"], ["git", "config", "tag.gpgsign", "false"],

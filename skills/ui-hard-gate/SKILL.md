@@ -5,13 +5,13 @@ description: Pre-review hard gate for UI changes - start from a visual reference
 
 # UI hard gate
 
-Usage: [per-skill accounting](../factory-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
+Usage: [per-skill accounting](../plumb-shared/gates.md#skill-token-accounting) applies to this invocation, including questions and interrupted work.
 
 Goal: the UI approver accepts the change on the first pass. Every rule below was raised repeatedly in real, recorded UI reviews. Product-specific rules (the product's vocabulary, its named good screens, what its colors mean, its theme) belong in the repository's design file (`DESIGN.md`: Words, Positions, Colors), not here; where the design file is more specific, it wins.
 
 ## Workflow
 
-1. **Use references when supplied.** Reuse the optional 2–3 feature examples from [factory-ui-ux/references.md](../factory-ui-ux/references.md), approved branded mockups or this product's good screens. External examples guide useful composition and interactions; DESIGN.md owns brand, density, tokens and component conventions. List what you borrowed, adapted and left out. Without examples, proceed from the approved product job and design system; do not stop for another reference request. Keep all required behavior, rendered-state and accessibility checks.
+1. **Use references when supplied.** Reuse the optional 2–3 feature examples from [plumb-ui-ux/references.md](../plumb-ui-ux/references.md), approved branded mockups or this product's good screens. External examples guide useful composition and interactions; DESIGN.md owns brand, density, tokens and component conventions. List what you borrowed, adapted and left out. Without examples, proceed from the approved product job and design system; do not stop for another reference request. Keep all required behavior, rendered-state and accessibility checks.
 2. **Read the issue.** The acceptance criteria and the out-of-scope list. Nothing out of scope gets touched.
 3. **Build** against the rules below with the project's existing components and tokens. When a visual choice changes data or backend behavior (a count chosen to fill a grid, a code length chosen for looks), name the consequence in the same reply.
 4. **Capture every state** in a real browser: default, loading or running, empty, failed, success, read-only, and the page after a refresh mid-work. Check every tab and breakpoint the change touches.

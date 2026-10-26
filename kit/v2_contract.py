@@ -1,4 +1,4 @@
-"""Factory v2 contracts. Files ending in .yaml contain strict JSON (a YAML subset).
+"""Plumb v2 contracts. Files ending in .yaml contain strict JSON (a YAML subset).
 
 Validation is structural, not approval authority. Review bindings compare exactly;
 callers must also compare gate_evidence_sha256 to their actual evidence digest.
@@ -11,8 +11,8 @@ import stat
 from pathlib import Path
 from unicodedata import normalize
 
-CONTROL_DIRS = {'.git', '.claude', '.software-factory', '.factory'}
-CONTROL_FILES = {'AGENTS.md', 'CLAUDE.md', 'DESIGN.md', 'factory.yaml', 'factory.json'}
+CONTROL_DIRS = {'.git', '.claude', '.plumb', '.factory', '.software-factory'}
+CONTROL_FILES = {'AGENTS.md', 'CLAUDE.md', 'DESIGN.md', 'plumb.yaml', 'plumb.json'}
 
 
 def strict_json(text):

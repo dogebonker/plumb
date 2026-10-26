@@ -89,7 +89,7 @@ class BrowserRuntimeTests(unittest.TestCase):
             git("config", "user.name", "Browser test")
             git("config", "user.email", "browser@example.invalid")
             (work / ".gitignore").write_text(".tmp/\nnode_modules/\n")
-            change = work / ".software-factory/changes/demo"
+            change = work / ".plumb/changes/demo"
             change.mkdir(parents=True)
             (change / "status.yaml").write_text("feature: demo\n")
             dependency = work / "node_modules/fixture-dependency"
@@ -117,14 +117,14 @@ test('actual browser sees GREEN',async()=>{
             (work / "untracked.txt").write_text("preserve me")
             before = git("status", "--porcelain")
             runtime = prepare_browser_check(root / "runtime", work, [])
-            request = work / ".software-factory/browser-red.json"
+            request = work / ".plumb/browser-red.json"
             request.write_text(json.dumps({"commit": red, "checkpoint": "slice-01"}))
             rejected = subprocess.run([runtime["red_command"], "extra"], check=False, capture_output=True)
             self.assertEqual(rejected.returncode, 64)
             result = subprocess.run([runtime["red_command"]], check=False, capture_output=True, text=True, timeout=45)
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("# fail 1", result.stdout, result.stderr)
-            records = list((work / ".software-factory/browser-red-evidence").glob("slice-01-*.json"))
+            records = list((work / ".plumb/browser-red-evidence").glob("slice-01-*.json"))
             self.assertEqual(len(records), 1)
             record = json.loads(records[0].read_text())
             self.assertEqual(record["test_commit"], red)
@@ -140,7 +140,7 @@ test('actual browser sees GREEN',async()=>{
             request.write_text(json.dumps({"commit": "HEAD;touch outside", "checkpoint": "../escape"}))
             invalid = subprocess.run([runtime["red_command"]], check=False, capture_output=True, text=True, timeout=15)
             self.assertNotEqual(invalid.returncode, 0)
-            self.assertEqual(len(list((work / ".software-factory/browser-red-evidence").glob("*.json"))), 1)
+            self.assertEqual(len(list((work / ".plumb/browser-red-evidence").glob("*.json"))), 1)
 
     @unittest.skipUnless(platform.system() == "Darwin" and os.environ.get("PLAYWRIGHT_MODULE"),
                          "requires macOS and installed Playwright")

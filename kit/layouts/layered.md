@@ -1,6 +1,6 @@
 # Layered (n-tier)
 
-ID `layered`, row L3. Sources and reasoning: `docs/research/layouts-selection.md`, pattern 1, in the factory repository.
+ID `layered`, row L3. Sources and reasoning: `docs/research/layouts-selection.md`, pattern 1, in the Plumb repository.
 
 **Fits:** `crud-service` with no framework convention, one business area, a small team. **Does not fit:** several business areas growing in one tree (`modular-monolith`), or rules that must stay free of the database (`hexagonal`).
 

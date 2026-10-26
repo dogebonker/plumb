@@ -46,18 +46,18 @@ def factory_commit():
 
 
 def factory_lock():
-    """factory.lock as /factory-init writes it: this repository's HEAD and the kit's pins at that commit."""
+    """plumb.lock as /plumb-init writes it: this repository's HEAD and the kit's pins at that commit."""
     pins = (git_ok(FACTORY, "show", "HEAD:kit/packs.lock.yaml") or "").partition("\npacks:\n")[2]
     return f"framework: {{ commit: {factory_commit()}, installed: 2026-10-01 }}\npacks:\n{pins}\nskills_linked: []\n"
 
 
 def pack_dir(name):
-    """The pack cache folder of the kit's pin for name at this repository's HEAD (factory-shared/packs.md)."""
+    """The pack cache folder of the kit's pin for name at this repository's HEAD (plumb-shared/packs.md)."""
     pins = git_ok(FACTORY, "show", "HEAD:kit/packs.lock.yaml") or ""
     found = re.search(rf"^  {re.escape(name)}:.*\bhash: ([0-9a-f]{{40}})", pins, re.MULTILINE)
     if not found:
         raise SystemExit(f"kit/packs.lock.yaml at HEAD pins no {name}")
-    return f"~/.software-factory/packs/{name}@{found.group(1)}"
+    return f"~/.plumb/packs/{name}@{found.group(1)}"
 
 
 def new_repo(target, case_dir, exclude=()):
@@ -138,7 +138,7 @@ task: {json.dumps(s['task'])}
 track: {s['track']}
 track_proposed: {s['track']}
 factory_dir: committed
-branch: factory/{s['slug']}
+branch: plumb/{s['slug']}
 change_base_commit: {s['base']}
 factory_commit: {factory_commit()}
 test_command: {json.dumps(TEST_COMMAND)}
@@ -180,17 +180,17 @@ modules:
 
 
 def triage(repo, s, profile, dev_command="none", dev_url=""):
-    """Branch off main, write .software-factory/ (factory.lock, system, the change's status.yaml) and commit it."""
-    git(repo, "checkout", "-q", "-b", f"factory/{s['slug']}")
-    write(repo / ".software-factory/factory.lock", factory_lock())
-    write(repo / ".software-factory/system/lenses.yaml", lenses_yaml(profile, dev_command, dev_url))
-    write(repo / ".software-factory/system/constraints.md", CONSTRAINTS)
+    """Branch off main, write .plumb/ (plumb.lock, system, the change's status.yaml) and commit it."""
+    git(repo, "checkout", "-q", "-b", f"plumb/{s['slug']}")
+    write(repo / ".plumb/plumb.lock", factory_lock())
+    write(repo / ".plumb/system/lenses.yaml", lenses_yaml(profile, dev_command, dev_url))
+    write(repo / ".plumb/system/constraints.md", CONSTRAINTS)
     save(repo, s)
-    return commit(repo, f"chore(factory): triage {s['slug']}", ".software-factory")
+    return commit(repo, f"chore(plumb): triage {s['slug']}", ".plumb")
 
 
 def change_dir(repo, slug):
-    return Path(repo) / ".software-factory/changes" / slug
+    return Path(repo) / ".plumb/changes" / slug
 
 
 def save(repo, s):
@@ -201,9 +201,9 @@ def approve(repo, s, gate, doc_name, text, minute):
     """Write a gate document, approve it in status.yaml and commit as an interactive approval does."""
     doc = write(change_dir(repo, s["slug"]) / doc_name, text)
     s["gates"][gate] = approved(doc, minute)
-    s["history"].append(event(minute - 1, f"factory-{gate}", "step_start"))
+    s["history"].append(event(minute - 1, f"plumb-{gate}", "step_start"))
     save(repo, s)
-    return commit(repo, f"chore(factory): {gate} {s['slug']}", ".software-factory")
+    return commit(repo, f"chore(plumb): {gate} {s['slug']}", ".plumb")
 
 
 def build_slice(repo, slug, stubs, tests, number="01"):
@@ -303,7 +303,7 @@ def workspace_arg():
 
 
 def review_md_ok(path):
-    """review.md follows factory-review's template (its headings and a Range line) and its Sign-off is filled."""
+    """review.md follows plumb-review's template (its headings and a Range line) and its Sign-off is filled."""
     if not path.exists():
         return 0
     text = path.read_text()

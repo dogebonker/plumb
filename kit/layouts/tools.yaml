@@ -92,7 +92,7 @@ rust:
     config: none
     checks: module cycles inside one crate (--acyclic), not layer direction
     command: cargo modules dependencies --lib --acyclic
-ruby:                            # reference only: the factory has no Ruby adapter
+ruby:                            # reference only: Plumb has no Ruby adapter
   packwerk:
     install: packwerk v3.3.1
     config: package.yml per package, package_todo.yml baseline

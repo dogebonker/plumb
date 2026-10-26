@@ -2,13 +2,13 @@
   "id": "RED-01",
   "stage": "red",
   "slug": "red01",
-  "entry": "/factory-build red01 --one-step",
+  "entry": "/plumb-build red01 --one-step",
   "mode": "interactive",
-  "skill": "skills/factory-build/SKILL.md",
+  "skill": "skills/plumb-build/SKILL.md",
   "start": "Track standard, all four gates approved, slice 01 pending with a full packet: Tests first, the frozen signature archive_stale(notes, now), Allowed files notes.py and test_archive.py, and Verify.",
   "stop_when": [
     {
-      "path": ".software-factory/changes/red01/status.yaml",
+      "path": ".plumb/changes/red01/status.yaml",
       "regex": "(?m)^\\s*-\\s*\\{.*\\bid: \"?01\"?.*\\bstate: green\\b"
     }
   ],

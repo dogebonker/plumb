@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plumb Code Review"
+  short_description: "Polish, defect hunting and Plumb conformance"
+  default_prompt: "Use $plumb-code-review for a pre-release defect, polish and Plumb intent review of this branch."

@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from hooks.factory_gate import (
+from hooks.plumb_gate import (
     GATES,
     exact,
     parse_status,
@@ -58,7 +58,7 @@ def fields(text):
 def inventory(repo):
     repo = Path(repo).resolve()
     adrs = []
-    folder = repo / '.software-factory/system/adr'
+    folder = repo / '.plumb/system/adr'
     if folder.exists():
         if folder.is_symlink():
             raise ValueError('ADR folder is a symlink')
@@ -79,7 +79,7 @@ def inventory(repo):
                          'enforcement': f.get('Enforced by', 'human-verified'),
                          'legacy': 'Enforced by' not in f})
     constraints = []
-    path = repo / '.software-factory/system/constraints.md'
+    path = repo / '.plumb/system/constraints.md'
     if path.exists():
         safe_path(repo, path.relative_to(repo).as_posix(), existing=True)
         for line in path.read_text().splitlines():
@@ -92,7 +92,7 @@ def inventory(repo):
 
 
 def source_clean(repo):
-    if git(repo, 'status', '--porcelain', '--', '.', ':!.software-factory', ':!.factory'):
+    if git(repo, 'status', '--porcelain', '--', '.', ':!.plumb', ':!.factory', ':!.software-factory'):
         raise ValueError('ADR checks require clean committed source')
 
 
@@ -194,7 +194,7 @@ def check(repo, manifest, require_lines=False):
 def pending_draft(repo, name):
     path = safe_path(repo, name, existing=True)
     parts = Path(name).parts
-    if len(parts) != 4 or parts[:2] != ('.software-factory', 'changes'):
+    if len(parts) != 4 or parts[:2] != ('.plumb', 'changes'):
         raise ValueError('conformance edits only a pending gate draft')
     gates = {filename: gate for gate, filename in GATES}
     if path.name not in gates:
@@ -282,7 +282,7 @@ def drift(repo, manifest, human, output):
     except ValueError:
         raise ValueError('drift output must be <change>/drift.md') from None
     parts = Path(rel).parts
-    if len(parts) != 4 or parts[:2] != ('.software-factory', 'changes') or parts[-1] != 'drift.md':
+    if len(parts) != 4 or parts[:2] != ('.plumb', 'changes') or parts[-1] != 'drift.md':
         raise ValueError('drift output must be <change>/drift.md')
     output = safe_path(repo, rel)
     if output.exists() and output.stat().st_nlink != 1:
@@ -346,7 +346,7 @@ def report_path(repo, output):
     root = Path(repo).resolve()
     if path.is_relative_to(root):
         rel = path.relative_to(root)
-        if len(rel.parts) != 4 or rel.parts[:2] != ('.software-factory', 'changes'):
+        if len(rel.parts) != 4 or rel.parts[:2] != ('.plumb', 'changes'):
             raise ValueError('in-repository report must be a change evidence artifact')
         safe_path(root, rel.as_posix())
     return path

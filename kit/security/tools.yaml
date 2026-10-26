@@ -1,11 +1,11 @@
-# Scanners for factory-security. Why these and not others: docs/research/security-selection.md (SEC-2).
+# Scanners for plumb-security. Why these and not others: docs/research/security-selection.md (SEC-2).
 #
 # Variables:
 #   $REPO        absolute path of the repository under audit
 #   $NEUTRAL     a fresh empty directory (mktemp -d) used as the working directory, new for every run
-#   $OUT         the run folder, .software-factory/runs/security/<run>/
-#   $CACHE       ~/.cache/factory-security (databases, rule packs, the history mirror), never in the repository
-#   $KIT         <kit>, the framework cache's kit/ (factory-shared/gates.md, Paths)
+#   $OUT         the run folder, .plumb/runs/security/<run>/
+#   $CACHE       ~/.cache/plumb-security (databases, rule packs, the history mirror), never in the repository
+#   $KIT         <kit>, the framework cache's kit/ (plumb-shared/gates.md, Paths)
 #   $TREE        a fresh checkout of the commit under audit, from the history mirror (see gitleaks):
 #                GIT_LFS_SKIP_SMUDGE=1 git -c core.hooksPath=/dev/null clone --quiet --no-checkout
 #                $CACHE/mirror/<repo-slug>.git $TREE && git -C $TREE -c core.hooksPath=/dev/null

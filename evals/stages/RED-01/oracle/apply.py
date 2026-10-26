@@ -1,4 +1,4 @@
-"""Turn a fresh RED-01 setup into the ideal end of one /factory-build step: python3 apply.py <workspace>."""
+"""Turn a fresh RED-01 setup into the ideal end of one /plumb-build step: python3 apply.py <workspace>."""
 
 import re
 import sys
@@ -28,8 +28,8 @@ def build(workspace, red, green):
     status = change_dir(workspace, "red01") / "status.yaml"
     write(status, re.sub(r"state: pending, base_commit: null, test_commit: null, head_commit: null",
                          f"state: green, base_commit: {start}, test_commit: {test}, head_commit: {head}",
-                         status.read_text()).replace("slices approved. Next: /factory-build",
-                                                     "Milestone 1 green. Next: /factory-review"))
+                         status.read_text()).replace("slices approved. Next: /plumb-build",
+                                                     "Milestone 1 green. Next: /plumb-review"))
     write(change_dir(workspace, "red01") / "slices/01/checks.md", f"""# Checks: slice 01, archive stale notes
 
 Range: {start}..{head}

@@ -79,7 +79,7 @@ class ProtocolTests(unittest.TestCase):
     def test_factory_hook_installation_is_explicit_and_factory_only(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            hook = root / "snapshot" / "hooks" / "factory_gate.py"
+            hook = root / "snapshot" / "hooks" / "plumb_gate.py"
             hook.parent.mkdir(parents=True)
             hook.write_text("import json, sys; json.load(sys.stdin)\n")
             work = root / "work"
@@ -124,7 +124,7 @@ class ProtocolTests(unittest.TestCase):
             source = root / "policy.md"
             source.write_text("Money is never float.")
             feature = {**case(), "prepared_dir": str(root / "prepared"), "shared_inputs": [
-                {"path": ".software-factory/system/adr/0007.md", "source": str(source), "sha256": bench.sha(source)}]}
+                {"path": ".plumb/system/adr/0007.md", "source": str(source), "sha256": bench.sha(source)}]}
             for tree in ("actor", "reference"):
                 target = root / "prepared" / tree / feature["shared_inputs"][0]["path"]
                 target.parent.mkdir(parents=True)
@@ -414,10 +414,10 @@ class BlindAndReportTests(unittest.TestCase):
             (snapshot / "kit").mkdir(parents=True)
             (snapshot / "kit" / "packs.lock.yaml").write_text("version: 1\npacks:\n  stack: pinned\n")
             bench.seed_factory(work, snapshot)
-            lock = (work / ".software-factory" / "factory.lock").read_text()
+            lock = (work / ".plumb" / "plumb.lock").read_text()
             self.assertEqual(lock, f"framework: {{ dev_path: {snapshot.resolve()} }}\npacks:\n  stack: pinned\n\nskills_linked: []\n")
             self.assertFalse((work / ".claude").exists())
-            self.assertEqual(list((work / ".software-factory").iterdir()), [work / ".software-factory" / "factory.lock"])
+            self.assertEqual(list((work / ".plumb").iterdir()), [work / ".plumb" / "plumb.lock"])
 
     def test_arm_setup_commits_guide_and_lock_before_actor_and_ignores_runtime(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -547,7 +547,7 @@ class BlindAndReportTests(unittest.TestCase):
                     self.assertEqual(instructions.exists(), entry["arm"] != "bare")
                     if instructions.exists():
                         self.assertEqual(instructions.read_text(), feature["claude_md"])
-                    self.assertEqual((Path(result["workspace"]) / ".software-factory" / "factory.lock").exists(), entry["arm"] == "factory")
+                    self.assertEqual((Path(result["workspace"]) / ".plumb" / "plumb.lock").exists(), entry["arm"] == "factory")
                     count = invoke.call_count
                     self.assertEqual(bench.trial(config, feature, entry, out), result)
                     self.assertEqual(invoke.call_count, count)
@@ -557,7 +557,7 @@ class BlindAndReportTests(unittest.TestCase):
             root = Path(temporary)
             source = root / "input"
             source.mkdir()
-            for filename in ("main.py", "docs/guide.md", "nested/CLAUDE.md", "nested/AGENTS.md", ".git/config", ".software-factory/state", "node_modules/pkg/index.js"):
+            for filename in ("main.py", "docs/guide.md", "nested/CLAUDE.md", "nested/AGENTS.md", ".git/config", ".plumb/state", "node_modules/pkg/index.js"):
                 file = source / filename
                 file.parent.mkdir(parents=True, exist_ok=True)
                 file.write_text("content")

@@ -1,11 +1,11 @@
-# Tools for factory-ci. Why these and not others: docs/research/ci-selection.md (CI-1, CI-4, CI-5).
+# Tools for plumb-ci. Why these and not others: docs/research/ci-selection.md (CI-1, CI-4, CI-5).
 #
 # Variables:
 #   $REPO     absolute path of the repository root
 #   $SLUG     owner/name of its GitHub remote
-#   $OUT      the run folder, .software-factory/runs/ci/<YYYY-MM-DD-HHMM>/, ignored by git
+#   $OUT      the run folder, .plumb/runs/ci/<YYYY-MM-DD-HHMM>/, ignored by git
 #   $NEUTRAL  a fresh empty directory (mktemp -d), new for every run
-#   $KIT      <kit>, the framework cache's kit/ (factory-shared/gates.md, Paths)
+#   $KIT      <kit>, the framework cache's kit/ (plumb-shared/gates.md, Paths)
 #
 # Every gh call runs with GH_TELEMETRY=false and GH_NO_UPDATE_NOTIFIER=1 (ci_runs.py sets both), GET only.
 # A tool that is missing or older than its pin is skipped, with its install line in the report.
@@ -18,7 +18,7 @@ ci_runs:
 zizmor:
   from: >-
     the zizmor entry of $KIT/security/tools.yaml: same pin, install line and run line, with $OUT this run folder.
-    factory-ci shows only the audits below and counts the rest.
+    plumb-ci shows only the audits below and counts the rest.
   show:
     unpinned: [unpinned-uses, unpinned-images, unpinned-tools, ref-version-mismatch]
     token: [excessive-permissions, artipacked, github-app]

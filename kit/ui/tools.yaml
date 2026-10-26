@@ -1,7 +1,7 @@
-# Tools for factory-ui-ux. Why these and not others: docs/research/ui-ux-selection.md (UI-3).
+# Tools for plumb-ui-ux. Why these and not others: docs/research/ui-ux-selection.md (UI-3).
 #
 # Variables: $REPO (absolute repository path), $NEUTRAL (fresh mktemp -d, the working directory), $OUT (the run
-# folder, .software-factory/runs/ui/<run>/), $URL (the running app), $KIT (<kit>, factory-shared/gates.md, Paths).
+# folder, .plumb/runs/ui/<run>/), $URL (the running app), $KIT (<kit>, plumb-shared/gates.md, Paths).
 # Every result is a candidate. What DESIGN.md declares (a brand hue, a chosen face, allowed motion) is a waiver
 # recorded in the report, never an inline ignore in the repository. A missing tool is skipped, with its install line.
 
@@ -68,4 +68,4 @@ mockup_capture:
   note: "the Playwright CLI, run outside the repository: mockups need no test setup in it"
 
 react-doctor:
-  note: "the React language pack's checks (kit/languages/react.yaml) run as they do in factory-review"
+  note: "the React language pack's checks (kit/languages/react.yaml) run as they do in plumb-review"

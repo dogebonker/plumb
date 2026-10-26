@@ -1,6 +1,6 @@
 """Grade an FW-01 workspace: python3 grade.py <workspace>. Prints one JSON line.
 
-Questions and answers are read as numbered items: factory-architecture's form, an answer indented under each
+Questions and answers are read as numbered items: plumb-architecture's form, an answer indented under each
 numbered question, or a numbered list of questions followed by a second list numbered from 1 again.
 """
 

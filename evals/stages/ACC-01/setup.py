@@ -171,14 +171,14 @@ def main(target):
     base = commit(repo, "feat: notes store", ".", ":!app.py", ":!test_app.py")
     s = {"slug": SLUG, "task": TASK, "track": "standard", "base": base, "sent_back": None, "slices": [],
          "gates": {gate: pending_gate() for gate in ("product", "architecture", "interface", "slices")},
-         "history": [event(0, "factory-triage", "step_start")], "notes": f"Triage done. Next: /factory-product {SLUG}."}
+         "history": [event(0, "plumb-triage", "step_start")], "notes": f"Triage done. Next: /plumb-product {SLUG}."}
     with socket.socket() as probe:  # a free port, so parallel trials do not collide
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     triage(repo, s, "crud-service", f"python3 app.py {port}", f"http://127.0.0.1:{port}")
     answers = (CASE / "answers.json").read_text().replace("{port}", str(port))
     write(repo / ".git/acc01-answers.json", json.dumps(json.loads(answers), indent=2) + "\n")
-    s["notes"] = f"product approved. Next: /factory-architecture {SLUG}."
+    s["notes"] = f"product approved. Next: /plumb-architecture {SLUG}."
     approve(repo, s, "product", "01-product.md", product(), 2)
     write(change_dir(repo, SLUG) / "research.md", f"""# Research: {SLUG}
 
@@ -188,14 +188,14 @@ def main(target):
 ## Answers
 1. {FACT}. It imports nothing.
 """)
-    s["notes"] = f"architecture approved. Next: /factory-interface {SLUG}."
+    s["notes"] = f"architecture approved. Next: /plumb-interface {SLUG}."
     approve(repo, s, "architecture", "02-architecture.md", ARCHITECTURE, 4)
     write(change_dir(repo, SLUG) / "challenges.md", CHALLENGES)
-    s["notes"] = f"interface approved. Next: /factory-slices {SLUG}."
+    s["notes"] = f"interface approved. Next: /plumb-slices {SLUG}."
     approve(repo, s, "interface", "03-interface.md", INTERFACE, 6)
     s["slices"] = [{"id": "01", "name": "notes over HTTP", "milestone": 1, "state": "pending",
                     "base_commit": None, "test_commit": None, "head_commit": None}]
-    s["notes"] = f"slices approved. Next: /factory-build {SLUG}."
+    s["notes"] = f"slices approved. Next: /plumb-build {SLUG}."
     approve(repo, s, "slices", "04-slices.md", SLICES, 8)
     start = git(repo, "rev-parse", "HEAD")
     test, head = build_slice(repo, SLUG, {"app.py": STUB}, ["test_app.py"])
@@ -209,13 +209,13 @@ Range: {start}..{head}
 - Lint: pass
 """)
     s["slices"][0].update(state="green", base_commit=start, test_commit=test, head_commit=head)
-    s["history"] += [event(10, "factory-build", "step_start", "01"), event(20, "factory-review", "step_start", "1")]
-    s["notes"] = f"Milestone 1 green. Next: /factory-review {SLUG}."
+    s["history"] += [event(10, "plumb-build", "step_start", "01"), event(20, "plumb-review", "step_start", "1")]
+    s["notes"] = f"Milestone 1 green. Next: /plumb-review {SLUG}."
     save(repo, s)
-    commit(repo, "chore(factory): milestone 1 review", ".software-factory")
+    commit(repo, "chore(plumb): milestone 1 review", ".plumb")
     # Signed off in chat: review.md and the done state stay uncommitted until reconcile commits them.
     s["slices"][0]["state"] = "done"
-    s["notes"] = f"All slices done. Next: /factory-reconcile {SLUG}."
+    s["notes"] = f"All slices done. Next: /plumb-reconcile {SLUG}."
     save(repo, s)
     write(change_dir(repo, SLUG) / "slices/01/review.md", f"""# Review: milestone 1, slices 01 to 01
 

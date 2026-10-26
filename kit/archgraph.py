@@ -213,7 +213,7 @@ def execute(args):
             report['status'] = 'prepared'
         else:
             base = report['base_commit']
-            with tempfile.TemporaryDirectory(prefix='factory-archgraph-base-') as temporary:
+            with tempfile.TemporaryDirectory(prefix='plumb-archgraph-base-') as temporary:
                 temporary = Path(temporary)
                 archive = temporary / 'base.tar'
                 with archive.open('wb') as stream:

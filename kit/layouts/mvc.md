@@ -4,7 +4,7 @@ ID `mvc`, row L2. Sources: `docs/research/layouts-selection.md`, pattern 2.
 
 **Fits:** `crud-service` on a framework with its own convention. Django apps double as modules. **Does not fit:** a rich domain: an ActiveRecord model is a table, while a domain must not depend on its data source. Go has no MVC convention.
 
-The framework's generator decides the tree; record what it creates. The factory has adapters for TypeScript, Python, Go and Rust; Rails, Laravel and Loco trees are reference only.
+The framework's generator decides the tree; record what it creates. Plumb has adapters for TypeScript, Python, Go and Rust; Rails, Laravel and Loco trees are reference only.
 
 ## Layout lines
 

@@ -65,7 +65,7 @@ class CheckpointTests(unittest.TestCase):
 
 class ControllerRecoveryGuards(unittest.TestCase):
     def setUp(self):
-        from test_factory_v2 import ControllerTests
+        from test_plumb_v2 import ControllerTests
         self.fixture = ControllerTests('test_contract_first_serial_three_and_original_dirty_unchanged')
         self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
@@ -73,25 +73,25 @@ class ControllerRecoveryGuards(unittest.TestCase):
     def interrupt(self, phase):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         class Crash(BaseException):
             pass
-        original = factory_v2._save_checkpoint
+        original = plumb_v2._save_checkpoint
         def crash(path, state):
             original(path, state)
             if state['active'].get('phase') == phase or state['phase'] == phase:
                 raise Crash()
-        with patch.object(factory_v2, '_save_checkpoint', crash), self.assertRaises(Crash):
+        with patch.object(plumb_v2, '_save_checkpoint', crash), self.assertRaises(Crash):
             self.fixture.run_change()
 
     def test_unclean_elapsed_interval_consumes_budget_without_another_model(self):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         self.interrupt('worker_done')
         calls = list(self.fixture.calls)
-        current = factory_v2.time.time()
-        with patch.object(factory_v2.time, 'time', return_value=current + 1000):
+        current = plumb_v2.time.time()
+        with patch.object(plumb_v2.time, 'time', return_value=current + 1000):
             result = self.fixture.run_change(resume=True)
         self.assertEqual(result['status'], 'blocked', result)
         self.assertEqual(self.fixture.calls, calls)
@@ -121,10 +121,10 @@ class ControllerRecoveryGuards(unittest.TestCase):
     def test_second_worker_receipt_crash_keeps_nonzero_cumulative_delta(self):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         class Crash(BaseException):
             pass
-        original = factory_v2.receipt
+        original = plumb_v2.receipt
         count = 0
         def crash(*args, **kwargs):
             nonlocal count
@@ -134,11 +134,11 @@ class ControllerRecoveryGuards(unittest.TestCase):
                 if count == 2:
                     raise Crash()
             return row
-        with patch.object(factory_v2, 'receipt', crash), self.assertRaises(Crash):
+        with patch.object(plumb_v2, 'receipt', crash), self.assertRaises(Crash):
             self.fixture.run_change()
         result = self.fixture.run_change(resume=True)
         self.assertEqual(result['status'], 'ready_for_final_merge', result)
-        rows = factory_v2.read_events(self.fixture.run_dir / 'usage.jsonl')
+        rows = plumb_v2.read_events(self.fixture.run_dir / 'usage.jsonl')
         self.assertEqual(len(rows), 4)
         self.assertEqual([row['observed_tokens'] for row in rows if row['skill'] == 'worker'], [64, 64])
         self.assertEqual(result['metrics']['observed_tokens'], 136)
@@ -147,19 +147,19 @@ class ControllerRecoveryGuards(unittest.TestCase):
     def test_accepted_event_crash_is_not_counted_twice(self):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         class Crash(BaseException):
             pass
-        original = factory_v2.append_durable
+        original = plumb_v2.append_durable
         def crash(path, event):
             original(path, event)
             if event.get('kind') == 'accepted':
                 raise Crash()
-        with patch.object(factory_v2, 'append_durable', crash), self.assertRaises(Crash):
+        with patch.object(plumb_v2, 'append_durable', crash), self.assertRaises(Crash):
             self.fixture.run_change()
         result = self.fixture.run_change(resume=True)
         self.assertEqual(result['status'], 'ready_for_final_merge', result)
-        events = factory_v2.read_events(self.fixture.run_dir / 'events.jsonl')
+        events = plumb_v2.read_events(self.fixture.run_dir / 'events.jsonl')
         accepted = [event['slice'] for event in events if event.get('kind') == 'accepted']
         self.assertEqual(accepted, ['contracts', 'feature'])
 
@@ -168,9 +168,9 @@ class ControllerRecoveryGuards(unittest.TestCase):
         import threading
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         self.interrupt('initial')
-        original = factory_v2._load_checkpoint
+        original = plumb_v2._load_checkpoint
         loaded, proceed = threading.Event(), threading.Event()
         outcomes = []
         def pause(path):
@@ -182,7 +182,7 @@ class ControllerRecoveryGuards(unittest.TestCase):
             return state
         def resume():
             outcomes.append(self.fixture.run_change(resume=True))
-        with patch.object(factory_v2, '_load_checkpoint', pause):
+        with patch.object(plumb_v2, '_load_checkpoint', pause):
             stale = threading.Thread(target=resume, name='stale-resume')
             stale.start()
             self.assertTrue(loaded.wait(10))
@@ -201,10 +201,10 @@ class ControllerRecoveryGuards(unittest.TestCase):
     def test_gate_failure_event_crash_is_not_counted_twice(self):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         class Crash(BaseException):
             pass
-        original = factory_v2.append_durable
+        original = plumb_v2.append_durable
         original_gates = self.fixture.gates
         self.fixture.plan['slices'][0]['budget'].update(retries=1, tokens=200)
         failures = 0
@@ -220,27 +220,27 @@ class ControllerRecoveryGuards(unittest.TestCase):
             original(path, event)
             if event.get('kind') == 'gate_failure':
                 raise Crash()
-        with patch.object(factory_v2, 'append_durable', crash), self.assertRaises(Crash):
+        with patch.object(plumb_v2, 'append_durable', crash), self.assertRaises(Crash):
             self.fixture.run_change()
         result = self.fixture.run_change(resume=True)
         self.assertEqual(result['status'], 'ready_for_final_merge', result)
-        failures = [event for event in factory_v2.read_events(self.fixture.run_dir / 'events.jsonl')
+        failures = [event for event in plumb_v2.read_events(self.fixture.run_dir / 'events.jsonl')
                     if event.get('kind') == 'gate_failure']
         self.assertEqual(len(failures), 1)
 
     def test_unpaid_clone_before_checkout_resumes_without_discarding_work(self):
         from unittest.mock import patch
 
-        import factory_v2
+        import plumb_v2
         class Crash(BaseException):
             pass
-        original = factory_v2._git
+        original = plumb_v2._git
         def crash(root, *args):
             output = original(root, *args)
             if args and args[0] == 'clone':
                 raise Crash()
             return output
-        with patch.object(factory_v2, '_git', crash), self.assertRaises(Crash):
+        with patch.object(plumb_v2, '_git', crash), self.assertRaises(Crash):
             self.fixture.run_change()
         self.assertEqual(self.fixture.calls, [])
         result = self.fixture.run_change(resume=True)

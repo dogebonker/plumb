@@ -1,11 +1,11 @@
-# Routing index for factory-security. Why each entry is here: docs/research/security-selection.md.
+# Routing index for plumb-security. Why each entry is here: docs/research/security-selection.md.
 #
 # lens 1 (method, Cloudflare security-audit): the orchestrator reads SKILL.md; each hunter gets HUNTING.md's
 #   method, candidate gate and result contract, one ATTACK-CLASSES.md block and its component file below.
 # lens 2 (knowledge): per agent, the matching `own` checklist plus at most one pack entry: the first pack
 #   entry in this order whose `when` tags match and whose pack is pinned.
-# An entry whose pack is not pinned in the project's factory.lock or not in the pack cache is skipped with a
-# notice (factory-shared/packs.md); `own` entries are factory-security's own files. `read` names the part to
+# An entry whose pack is not pinned in the project's plumb.lock or not in the pack cache is skipped with a
+# notice (plumb-shared/packs.md); `own` entries are plumb-security's own files. `read` names the part to
 # load, under the pack's cache folder (mukul975 entries: SKILL.md,
 # never scripts/); `skip` lists known errors to ignore; `add` lists what the source misses.
 # `role: verifier` entries go to verifiers; `role: after-confirmed` entries run once a finding is confirmed.
@@ -40,7 +40,7 @@ method:
     desktop-mobile: DESKTOP-MOBILE-AND-LOCAL-IPC.md
 
 knowledge:
-  # factory-security's own checklists (skills/factory-security/checklists.md)
+  # plumb-security's own checklists (skills/plumb-security/checklists.md)
   - {id: own-crypto, own: true, read: "checklists.md: Crypto misuse", when: [auth, money]}
   - {id: own-packages, own: true, read: "checklists.md: Malicious or hijacked packages", when: [supply-chain]}
   - {id: own-llm, own: true, read: "checklists.md: LLM and agent features", when: [llm, agent-tools, mcp]}
@@ -55,7 +55,7 @@ knowledge:
   - {id: openai-django, pack: security-best-practices, read: "Django reference, matching rule sections", when: [django]}
   - {id: openai-flask, pack: security-best-practices, read: "Flask reference, matching rule sections", when: [flask]}
 
-  # Trail of Bits (CC-BY-SA-4.0): fetched and pinned unmodified; never copy its text into factory files.
+  # Trail of Bits (CC-BY-SA-4.0): fetched and pinned unmodified; never copy its text into Plumb files.
   - {id: tob-insecure-defaults, pack: insecure-defaults, read: "the one category file the agent hunts", when: [auth, iac, container, web-api]}
   - {id: tob-sharp-edges-go, pack: sharp-edges, read: lang-go.md, when: [go]}
   - {id: tob-sharp-edges-rust, pack: sharp-edges, read: lang-rust.md, when: [rust]}
@@ -98,5 +98,5 @@ knowledge:
   - {id: npm-malicious, pack: detecting-malicious-npm-packages, read: SKILL.md, when: [supply-chain, node]}
   - {id: dependency-confusion, pack: detecting-dependency-confusion, read: SKILL.md, when: [supply-chain]}
 
-  # Money: the factory's money pack, routed as factory-review's Money reviewer routes it.
+  # Money: Plumb's money pack, routed as plumb-review's Money reviewer routes it.
   - {id: money, pack: fin-verification, with: "fin-ledger | fin-payments | fin-onchain | fin-exchange-integration, the one that fits; fin-money-core when none fits", read: SKILL.md, when: [money, evm, chain-other]}

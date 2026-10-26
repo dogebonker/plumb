@@ -182,7 +182,7 @@ function directory(folder) {
   fs.mkdirSync(folder, {recursive: true});
   if (fs.realpathSync(folder) !== folder) throw new Error('Browser RED paths must not contain symlinks');
 }
-const factory = path.join(work, '.software-factory'), requestPath = path.join(factory, 'browser-red.json');
+const factory = path.join(work, '.plumb'), requestPath = path.join(factory, 'browser-red.json');
 if (fs.realpathSync(factory) !== factory || fs.realpathSync(requestPath) !== requestPath) {
   throw new Error('Browser RED request must not contain symlinks');
 }
@@ -201,7 +201,7 @@ directory(scratch); directory(evidence);
 let exclude = git(work, 'rev-parse', '--git-path', 'info/exclude');
 if (!path.isAbsolute(exclude)) exclude = path.join(work, exclude);
 const ignored = fs.readFileSync(exclude, 'utf8').split('\n');
-const missing = ['/.software-factory/scratch/', '/.software-factory/browser-red.json', '/.software-factory/browser-red-evidence/']
+const missing = ['/.plumb/scratch/', '/.plumb/browser-red.json', '/.plumb/browser-red-evidence/']
   .filter(entry => !ignored.includes(entry));
 if (missing.length) fs.appendFileSync(exclude, '\n' + missing.join('\n') + '\n');
 const clone = fs.mkdtempSync(path.join(scratch, 'browser-red-' + request.checkpoint + '-'));

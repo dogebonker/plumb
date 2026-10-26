@@ -1,4 +1,4 @@
-# Go modules: go.mod. Packs from cxuu/golang-skills, unpinned until /factory-packs reads and pins them (factory-shared/packs.md).
+# Go modules: go.mod. Packs from cxuu/golang-skills, unpinned until /plumb-packs reads and pins them (plumb-shared/packs.md).
 index: go-style-core                   # the pack has no index skill; this one covers style and points to the rest
 rules: [go-error-handling, go-interfaces, go-concurrency, go-testing]   # extra packs, each with its own SKILL.md
 linter:

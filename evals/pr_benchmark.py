@@ -179,14 +179,14 @@ def actor_settings(work, snapshot, denied, arm, write_denied=(), protected_files
                         "network": {"allowedDomains": ["localhost", "127.0.0.1", "::1"],
                                     "strictAllowlist": True, "allowLocalBinding": True}}}
     if factory_hooks and arm == "factory":
-        hook = Path(snapshot).resolve() / "hooks" / "factory_gate.py"
+        hook = Path(snapshot).resolve() / "hooks" / "plumb_gate.py"
         settings["hooks"] = {"PreToolUse": [{"matcher": "Edit|Write|MultiEdit|NotebookEdit", "hooks": [
             {"type": "command", "command": shlex.join([sys.executable, str(hook)])}]}]}
     return settings
 
 
 def hook_preflight(snapshot, work):
-    hook = Path(snapshot).resolve() / "hooks" / "factory_gate.py"
+    hook = Path(snapshot).resolve() / "hooks" / "plumb_gate.py"
     if not hook.is_file():
         return {"ready": False, "reason": "factory gate hook missing"}
     try:
@@ -378,8 +378,8 @@ def initialize(args):
     paths, provenance = benchmark.snapshots(argparse.Namespace(out=snapshot_home, superpowers=None, context_mode=None))
     if getattr(args, "factory_hooks", False):
         provenance["adaptations"]["notes"] = (
-            "Read-only one-commit framework snapshot named by each Factory trial factory.lock. "
-            "The Factory arm installs the actual pinned factory_gate.py PreToolUse hook through trial settings. "
+            "Read-only one-commit framework snapshot named by each Factory trial plumb.lock. "
+            "The Factory arm installs the actual pinned plumb_gate.py PreToolUse hook through trial settings. "
             "Hook installation preflight and native events are retained; this is the sequential workflow, not v2. "
             "Background agent tasks are disabled for all arms; helpers run in the foreground before completion.")
     runtime_home = persistent_runtime_home(getattr(args, "state_root", None), args.out, "pr-benchmark-actors-")
@@ -597,8 +597,8 @@ def acceptance_integrity(case, work, baseline):
 def seed_factory(work, snapshot):
     pins = snapshot / "kit" / "packs.lock.yaml"
     pins = pins.read_text().partition("\npacks:\n")[2] if pins.is_file() else ""
-    (work / ".software-factory").mkdir(exist_ok=True)
-    (work / ".software-factory" / "factory.lock").write_text(
+    (work / ".plumb").mkdir(exist_ok=True)
+    (work / ".plumb" / "plumb.lock").write_text(
         f"framework: {{ dev_path: {snapshot.resolve()} }}\npacks:\n{pins}\nskills_linked: []\n")
 
 
@@ -645,7 +645,7 @@ def trial(config, case, entry, out, resume_incomplete=False):
         commit_arm_setup(work)
     denied = [out, benchmark.ROOT, Path.home() / "Work", Path.home() / ".claude" / "projects",
               Path.home() / ".claude" / "skills", Path.home() / ".codex", Path.home() / ".agents",
-              Path.home() / ".software-factory", Path.home() / "Library" / "Caches" / "go-build",
+              Path.home() / ".plumb", Path.home() / "Library" / "Caches" / "go-build",
               Path.home() / ".cache" / "go-build", prepared]
     for environment in (case.get("runtime_env", {}), case.get("test_env", {})):
         if (cache := environment.get("GOCACHE")) and Path(cache).is_absolute() and not Path(cache).resolve().is_relative_to(work.resolve()):

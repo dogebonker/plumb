@@ -159,7 +159,7 @@ esac
     def test_actual_typescript_helper_inside_sandbox(self, actual_archgraph=False, unrelated=False, owned_javascript=False, monorepo=False, final_stage=False):
         import shutil
         node = shutil.which('node')
-        compiler = Path(os.environ.get('FACTORY_TEST_TYPESCRIPT', '/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/typescript/lib/typescript.js'))
+        compiler = Path(os.environ.get('PLUMB_TEST_TYPESCRIPT', '/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/typescript/lib/typescript.js'))
         if not node or not compiler.is_file():
             self.skipTest('installed TypeScript and node required')
         (self.repo / 'app.py').unlink()
@@ -379,7 +379,7 @@ remote.on('connect', () => process.exit(12));
 remote.on('error', e => {
  if (!['EPERM','EACCES'].includes(e.code)) process.exit(13);
  const server = net.createServer(c => c.end('ok'));
- server.listen(Number(process.env.FACTORY_TEST_PORT), '127.0.0.1', () => {
+ server.listen(Number(process.env.PLUMB_TEST_PORT), '127.0.0.1', () => {
   const client = net.connect(server.address().port, '127.0.0.1');
   client.on('data', bytes => { if (String(bytes) !== 'ok') process.exit(14); });
   client.on('end', () => server.close());
@@ -494,9 +494,9 @@ setTimeout(() => process.exit(15), 1500).unref();"""
     @unittest.skipUnless(sys.platform == 'darwin' and Path('/usr/bin/sandbox-exec').exists(), 'requires macOS sandbox-exec')
     def test_sandbox_denies_synthetic_outside_process_arguments(self):
         import ctypes
-        sentinel = 'FACTORY_PROC_SENTINEL=synthetic-test-only'
+        sentinel = 'PLUMB_PROC_SENTINEL=synthetic-test-only'
         host = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(20)'],
-                                env={'FACTORY_PROC_SENTINEL': 'synthetic-test-only'})
+                                env={'PLUMB_PROC_SENTINEL': 'synthetic-test-only'})
         try:
             libc = ctypes.CDLL(None, use_errno=True)
             mib = (ctypes.c_int * 3)(1, 49, host.pid)  # Darwin CTL_KERN/KERN_PROCARGS2.

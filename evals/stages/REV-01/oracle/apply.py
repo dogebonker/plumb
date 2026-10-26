@@ -1,4 +1,4 @@
-"""Turn a fresh REV-01 setup into the ideal end of /factory-review: python3 apply.py <workspace>."""
+"""Turn a fresh REV-01 setup into the ideal end of /plumb-review: python3 apply.py <workspace>."""
 
 import sys
 from pathlib import Path

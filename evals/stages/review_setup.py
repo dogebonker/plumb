@@ -111,21 +111,21 @@ def setup(case_dir, target, slug):
     base = commit(repo, "feat: notes", ".", ":!listing.py", ":!test_listing.py")
     s = {"slug": slug, "task": TASK, "track": "small", "base": base, "sent_back": None, "slices": [],
          "gates": {gate: {"state": "skipped"} for gate in ("product", "architecture", "interface")},
-         "history": [event(0, "factory-triage", "step_start")],
-         "notes": f"Triage done. Next: /factory-slices {slug}."}
+         "history": [event(0, "plumb-triage", "step_start")],
+         "notes": f"Triage done. Next: /plumb-slices {slug}."}
     s["gates"]["slices"] = {"state": "pending", "approved_by": None, "approved_at": None, "doc_sha256": None}
     triage(repo, s, "crud-service")
     s["slices"] = [{"id": "01", "name": "listing summary", "milestone": 1, "state": "pending",
                     "base_commit": None, "test_commit": None, "head_commit": None}]
-    s["notes"] = f"slices approved. Next: /factory-build {slug}."
+    s["notes"] = f"slices approved. Next: /plumb-build {slug}."
     approve(repo, s, "slices", "04-slices.md", slices_doc(slug), 5)
     start = git(repo, "rev-parse", "HEAD")
     test, head = build_slice(repo, slug, {"listing.py": STUB}, ["test_listing.py"])
-    # Interactive mode: build does not commit .software-factory/; the milestone review's first commit carries it.
+    # Interactive mode: build does not commit .plumb/; the milestone review's first commit carries it.
     s["slices"][0].update(state="green", base_commit=start, test_commit=test, head_commit=head)
-    s["history"] += [event(10, "factory-build", "step_start", "01"), event(20, "factory-build", "step_tokens", "01",
+    s["history"] += [event(10, "plumb-build", "step_start", "01"), event(20, "plumb-build", "step_tokens", "01",
                                                                            "agents 3b7d0f12, usage 182340")]
-    s["notes"] = f"Milestone 1 green. Next: /factory-review {slug}."
+    s["notes"] = f"Milestone 1 green. Next: /plumb-review {slug}."
     save(repo, s)
     slice_dir = change_dir(repo, slug) / "slices/01"
     write(slice_dir / "packet.md", packet(slug))

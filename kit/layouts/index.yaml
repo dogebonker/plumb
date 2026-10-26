@@ -1,7 +1,7 @@
 # Reference layouts: which one the architecture gate proposes.
-# Why each row and pattern is here, with sources: docs/research/layouts-selection.md in the factory repository.
+# Why each row and pattern is here, with sources: docs/research/layouts-selection.md in the Plumb repository.
 #
-# Procedure, per root (factory-architecture, Layout):
+# Procedure, per root (plumb-architecture, Layout):
 # - An existing convention wins: record the tree the code already uses as `Pattern: existing`.
 # - A new frontend root: FDA (L10), under any profile, unless a recorded exception fits L8 or L9.
 #   Existing conventions still win; do not migrate them merely to select FDA.
@@ -64,7 +64,7 @@ rows:                             # evaluated top to bottom; ids are stable, ord
     signal: a new frontend application root, including a frontend in a full-stack root, without an existing convention
     propose: fda
     alternative: frontend-small for a tiny prototype or static site; fsd or feature-folders for an explicit team preference
-    reason: Factory defaults to colocated business domains and explicit browser/server contracts; this lightweight policy adapts FDA rather than requiring every upstream layer
+    reason: Plumb defaults to colocated business domains and explicit browser/server contracts; this lightweight policy adapts FDA rather than requiring every upstream layer
   - id: L8
     profile: any
     signal: a documented FDA exception for a tiny prototype, static site or component library, where no shared business domain needs isolation

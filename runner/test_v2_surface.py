@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 HELPER = Path(__file__).resolve().parents[1] / 'kit' / 'v2_surface.cjs'
-TYPESCRIPT = Path(os.environ.get('FACTORY_TEST_TYPESCRIPT',
+TYPESCRIPT = Path(os.environ.get('PLUMB_TEST_TYPESCRIPT',
     '/Users/dan/.nvm/versions/node/v22.15.0/lib/node_modules/typescript/lib/typescript.js'))
 
 

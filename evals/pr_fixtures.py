@@ -16,7 +16,7 @@ import time
 from pathlib import Path, PurePosixPath
 
 INSTRUCTION_FILES = {"CLAUDE.md", "AGENTS.md"}
-PRIVATE_DIRS = {".git", ".claude", ".codex", ".agents", ".software-factory", ".factory", ".omx"}
+PRIVATE_DIRS = {".git", ".claude", ".codex", ".agents", ".plumb", ".software-factory", ".factory", ".omx"}
 SETUP_ERRORS = re.compile(
     r"ModuleNotFoundError|ImportError:|Cannot find module|ERR_MODULE_NOT_FOUND|"
     r"command not found|No such file or directory|SyntaxError:|IndentationError:|"

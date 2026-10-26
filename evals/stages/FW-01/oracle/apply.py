@@ -26,7 +26,7 @@ ANSWERS = [
 
 
 def research(workspace, questions, answers):
-    """Write research.md in factory-architecture's form, one answer indented under each question, and a draft."""
+    """Write research.md in plumb-architecture's form, one answer indented under each question, and a draft."""
     items = "".join(f"{number}. {question}\n" + (f"   Answer: {answers[number - 1]}\n" if number <= len(answers) else "")
                     for number, question in enumerate(questions, 1))
     write(change_dir(workspace, "fw01") / "research.md", f"# Research: fw01\n\n{items}")

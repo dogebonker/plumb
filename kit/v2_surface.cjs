@@ -225,8 +225,8 @@ function main() {
     }
     if (!checks.length) continue;
     // Same directory and extension preserve relative imports and NodeNext module context.
-    let virtual = filename.replace(/\.(tsx?|mts|cts)$/, '.__factory_surface__.$1');
-    while (fs.existsSync(virtual)) virtual = virtual.replace('.__factory_surface__', '.__factory_surface___');
+    let virtual = filename.replace(/\.(tsx?|mts|cts)$/, '.__plumb_surface__.$1');
+    while (fs.existsSync(virtual)) virtual = virtual.replace('.__plumb_surface__', '.__plumb_surface___');
     const specifier = './' + path.basename(filename).replace(/\.(tsx?|mts|cts)$/, (ext) => ext === '.mts' ? '.mjs' : ext === '.cts' ? '.cjs' : '.js');
     const lines = ['export {};'];
     const ranges = [];

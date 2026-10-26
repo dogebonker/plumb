@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Move a repository's Plumb state from .factory/ or .software-factory/ to .plumb/ on the current branch.
+
+    bin/plumb-migrate [--dry-run] [<repo>]
+
+.software-factory/ (the name before Plumb) moves whole, its factory.lock becoming plumb.lock.
+.factory/system and .factory/changes keep their names; .factory/{ci,ui,security,prune}
+go under .plumb/runs/. A folder or file with tracked files moves with git mv,
+which carries its untracked files along; anything else moves with a plain rename.
+Lines of .git/info/exclude that name either folder are rewritten the same way. Nothing is
+committed. It also lists the other local and remote branches whose tree still has
+either folder, and the local ones it skipped because another worktree has them checked out.
+"""
+import argparse
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+NEW = ".plumb"
+# Each older state folder and where its entries land in .plumb/; None moves every entry under its own name.
+SOURCES = {".software-factory": None,
+           ".factory": {"system": "system", "changes": "changes",
+                        "ci": "runs/ci", "ui": "runs/ui", "security": "runs/security", "prune": "runs/prune"}}
+RENAMED = {"factory.lock": "plumb.lock"}
+OLD_NAMES = " or ".join(f"{old}/" for old in SOURCES)
+IN_PROGRESS = ("rebase-merge", "rebase-apply", "MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD")
+EXCLUDE_LINE = re.compile(r"^(!?(?:/|\*\*/)?)(" + "|".join(map(re.escape, SOURCES)) + r")(/.*)?\s*$")
+
+
+def git(repo, *args, may_fail=False):
+    r = subprocess.run(["git", "--no-optional-locks", "-C", str(repo), *args], capture_output=True, text=True, check=False)
+    if r.returncode and may_fail:
+        return ""
+    if r.returncode:
+        sys.exit(f"plumb-migrate: git {' '.join(args)}: {r.stderr.strip()}")
+    return r.stdout
+
+
+def target(old, name):
+    """Where the entry `name` of the old folder lands, or None when the mapping leaves it."""
+    mapping = SOURCES[old]
+    if mapping is None:
+        return f"{NEW}/{RENAMED.get(name, name)}"
+    return f"{NEW}/{mapping[name]}" if name in mapping else None
+
+
+def new_path(old, path):
+    """The .plumb path for a path that is old or starts with old/."""
+    first, slash, rest = path[len(old) + 1:].partition("/")
+    landed = target(old, first) if first else None
+    return f"{landed}{slash}{rest}" if landed else NEW + path[len(old):]
+
+
+def has_old_tree(root, ref):
+    """True when ref's tree has an old state folder (not a file of that name)."""
+    return any(git(root, "ls-tree", ref, "--", old).split()[1:2] == ["tree"] for old in SOURCES)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("repo", nargs="?", default=".")
+    args = parser.parse_args()
+    root = Path(git(args.repo, "rev-parse", "--show-toplevel").strip())
+    for old in SOURCES:
+        if (root / old).is_symlink():
+            sys.exit(f"plumb-migrate: refused: {old} is a symlink to {(root / old).resolve()}; move its content in by hand first")
+
+    moves, left = [], []
+    for old in SOURCES:
+        for entry in sorted((root / old).iterdir()) if (root / old).is_dir() else []:
+            dst = target(old, entry.name)
+            if dst and (entry.is_dir() or SOURCES[old] is None):
+                tracked = bool(git(root, "ls-files", "--", f"{old}/{entry.name}").strip())
+                moves.append((f"{old}/{entry.name}", dst, tracked))
+            else:
+                left.append(f"{old}/{entry.name}")
+
+    refusals = []
+    for name in IN_PROGRESS:
+        if moves and Path(git(root, "rev-parse", "--path-format=absolute", "--git-path", name).strip()).exists():
+            refusals.append(f"a {name} is in progress; finish or abort it first")
+    status = git(root, "status", "--porcelain", "--untracked-files=no").splitlines()
+    inside = tuple(f"{old}/" for old in SOURCES)
+    # Init repoints the hook in .claude/settings*.json just before migrating; that edit is expected.
+    expected = (".claude/settings.json", ".claude/settings.local.json")
+    dirty = [line[3:] for line in status if not line[3:].strip('"').startswith(inside) and line[3:].strip('"') not in expected]
+    if moves and dirty:
+        refusals.append(f"tracked changes outside {OLD_NAMES}: " + ", ".join(dirty) + "; commit or stash them first")
+    broken = [line[3:] for line in status if line[3:].strip('"').startswith(inside)
+              and ("D" in line[:2] or "U" in line[:2] or line[:2] == "AA")]
+    if broken:
+        refusals.append(f"deleted or unmerged files under {OLD_NAMES}: " + ", ".join(broken) + "; restore or commit them first")
+    for i, (src, dst, _) in enumerate(moves):
+        for other, other_dst, _ in moves[i + 1:]:
+            if dst == other_dst or dst.startswith(other_dst + "/") or other_dst.startswith(dst + "/"):
+                refusals.append(f"{src} and {other} would both land in {min(dst, other_dst)}, more than one old folder;"
+                                " merge one into the other by hand first")
+    for src, dst, _ in moves:
+        if (root / dst).exists():
+            refusals.append(f"{dst} already exists; {src} would land inside it")
+    # A registered worktree moved by a plain rename becomes prunable, and a prune would drop its work.
+    for line in git(root, "worktree", "list", "--porcelain").splitlines():
+        path = Path(line.removeprefix("worktree ")) if line.startswith("worktree ") else None
+        if moves and path and any(path.resolve().is_relative_to((root / old).resolve()) for old in SOURCES):
+            refusals.append(f"git worktree {path} lives under an old folder; move it out losslessly with"
+                            f" `git worktree move {path} <a path outside the old folders>` (never prune it)")
+    # The old hook only knows the old folders: after the move it would stop gating this repository.
+    for settings in (root / ".claude/settings.local.json", root / ".claude/settings.json", Path.home() / ".claude/settings.json"):
+        if moves and settings.is_file() and "factory_gate.py" in settings.read_text(errors="replace"):
+            refusals.append(f"{settings} still runs factory_gate.py; point it at plumb_gate.py first")
+    if not refusals:
+        for src, dst, tracked in moves:
+            check = tracked and subprocess.run(["git", "-C", str(root), "mv", "-n", src, dst], capture_output=True, text=True)
+            if check and check.returncode:
+                refusals.append(f"git mv {src} {dst} would fail: {check.stderr.strip()}")
+
+    exclude = Path(git(root, "rev-parse", "--path-format=absolute", "--git-path", "info/exclude").strip())
+    lines = exclude.read_text().splitlines(keepends=True) if exclude.is_file() else []
+    rewritten = []
+    for line in lines:
+        m = EXCLUDE_LINE.match(line.rstrip("\n").rstrip("\r"))
+        moved = m and m.group(1) + new_path(m.group(2), m.group(2) + (m.group(3) or "").rstrip())
+        rewritten.append(moved + ("\n" if line.endswith("\n") else "") if moved else line)
+
+    current = git(root, "symbolic-ref", "--quiet", "--short", "HEAD", may_fail=True).strip()
+    elsewhere = {line.split(" ", 1)[1].removeprefix("refs/heads/")
+                 for line in git(root, "worktree", "list", "--porcelain").splitlines() if line.startswith("branch ")}
+    local = [b for b in git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
+             if b != current and has_old_tree(root, b)]
+    remote = [r.split()[0] for r in git(root, "for-each-ref", "--format=%(refname:short) %(symref)", "refs/remotes").splitlines()
+              if len(r.split()) == 1 and has_old_tree(root, r.split()[0])]
+
+    if refusals:
+        for reason in refusals:
+            print(f"plumb-migrate: refused: {reason}", file=sys.stderr)
+        sys.exit(1)
+
+    verb = "would " if args.dry_run else ""
+    if not moves:
+        print(f"nothing to migrate on {current or 'this checkout'}: no {OLD_NAMES} folder the mapping covers")
+    for src, dst, tracked in moves:
+        print(f"{verb}{'git mv' if tracked else 'mv'} {src} {dst}")
+    for path in left:
+        print(f"{verb}leave {path}: the mapping does not cover it")
+    for before, after in zip(lines, rewritten):
+        if before != after:
+            print(f"{verb}rewrite {exclude}: {before.rstrip()} -> {after.rstrip()}")
+    for old in SOURCES:
+        for name in git(root, "grep", "-lF", old, "--", "*.gitignore", may_fail=True).split():
+            print(f"note: {name} still names {old}; edit it by hand")
+        for symlink in sorted(p for p in (root / old).rglob("*") if p.is_symlink()) if (root / old).is_dir() else []:
+            print(f"warning: {symlink.relative_to(root)} is a symlink; it moves as a link, its target stays")
+    print(f"other local branches with {OLD_NAMES}: " + (" ".join(b for b in local if b not in elsewhere) or "none"))
+    skipped = [b for b in local if b in elsewhere]
+    if skipped:
+        print("skipped, checked out in another worktree: " + " ".join(skipped))
+    print(f"remote branches with {OLD_NAMES}: " + (" ".join(remote) or "none"))
+
+    if args.dry_run:
+        print("dry run: nothing changed")
+        return
+    for src, dst, tracked in moves:
+        (root / dst).parent.mkdir(parents=True, exist_ok=True)
+        if tracked:
+            git(root, "mv", src, dst)
+        else:
+            (root / src).rename(root / dst)
+    for old in SOURCES:
+        if (root / old).is_dir() and not any((root / old).iterdir()):
+            (root / old).rmdir()
+    if rewritten != lines:
+        exclude.write_text("".join(rewritten))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,4 @@
-# Pinned packs. Checked and bumped by /factory-packs; how pins are read: factory-shared/packs.md.
+# Pinned packs. Checked and bumped by /plumb-packs; how pins are read: plumb-shared/packs.md.
 packs:
   a-philosophy-of-software-design: { source: ciembor/agent-rules-books, path: a-philosophy-of-software-design, hash: f8fb69ab4129dc94f77af1e18b3c1cb3bcb3acfb, pinned_at: 2026-09-10 }
   auditing-foundry-smart-contract-security: { source: mukul975/Anthropic-Cybersecurity-Skills, path: skills/auditing-foundry-smart-contract-security, hash: fe716f875e9decfc984de9fcdfe7ac3d7bcca3ce, pinned_at: 2026-08-16 }
@@ -19,7 +19,7 @@ packs:
   fin-onchain: { source: nbailo/financial-engineering-skills, path: skills/fin-onchain, hash: ec3df9712d48169fe09f977a4e6add9b538ce9f9, pinned_at: 2026-08-31 }
   fin-payments: { source: nbailo/financial-engineering-skills, path: skills/fin-payments, hash: 4ca13eed23ddd69d74007d73ea902827a222d692, pinned_at: 2026-08-31 }
   fin-verification: { source: nbailo/financial-engineering-skills, path: skills/fin-verification, hash: 732e5b36c897166eabd8b06fd087c88a089251ac, pinned_at: 2026-08-31 }
-  gang-of-four: { source: dogebonker/software-factory, path: kit/packs/gang-of-four@805739bf64e9478c27b5dd81df1735c8694bf8a3, hash: 805739bf64e9478c27b5dd81df1735c8694bf8a3, pinned_at: 2026-10-15 }
+  gang-of-four: { source: dogebonker/plumb, path: kit/packs/gang-of-four@805739bf64e9478c27b5dd81df1735c8694bf8a3, hash: 805739bf64e9478c27b5dd81df1735c8694bf8a3, pinned_at: 2026-10-15 }
   implementing-api-schema-validation-security: { source: mukul975/Anthropic-Cybersecurity-Skills, path: skills/implementing-api-schema-validation-security, hash: e0de49318dbc9b412996232e2eb3eb9983fe2fa9, pinned_at: 2026-08-16 }
   implementing-jwt-signing-and-verification: { source: mukul975/Anthropic-Cybersecurity-Skills, path: skills/implementing-jwt-signing-and-verification, hash: a4996f1d93669f0625c3d240b0ed05d830263567, pinned_at: 2026-08-16 }
   implementing-kubernetes-pod-security-standards: { source: mukul975/Anthropic-Cybersecurity-Skills, path: skills/implementing-kubernetes-pod-security-standards, hash: 7c3981374bf5d85c1c4b8d886dc82f465771cd78, pinned_at: 2026-10-04 }

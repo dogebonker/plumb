@@ -1,6 +1,6 @@
-# factory-ci catalog
+# plumb-ci catalog
 
-What factory-ci looks for in workflows and run data, and the fix it proposes. IDs match the evidence in `docs/research/ci/C-techniques.md` of the factory repository (T techniques, A anti-patterns); A10 and W1 are factory-ci's own, and A5 to A7 are covered by T18, T11 and T10. Detect: **S** a read of the workflow files is enough, **R** it needs `summary.json`, **S+R** the files find it and the data sizes it.
+What plumb-ci looks for in workflows and run data, and the fix it proposes. IDs match the evidence in `docs/research/ci/C-techniques.md` of the Plumb repository (T techniques, A anti-patterns); A10 and W1 are plumb-ci's own, and A5 to A7 are covered by T18, T11 and T10. Detect: **S** a read of the workflow files is enough, **R** it needs `summary.json`, **S+R** the files find it and the data sizes it.
 
 ## Rules for every proposal
 
@@ -11,7 +11,7 @@ What factory-ci looks for in workflows and run data, and the fix it proposes. ID
 ## Doing less
 
 - **T10 concurrency cancel-in-progress.** S+R. `pull_request` workflows with no `concurrency:`; size with cancelled and superseded runs per head ref. Fix: `concurrency: { group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}, cancel-in-progress: true }`. Guard: never cancel on `push` to the default branch (it loses cache saves and deploys); keep `github.workflow` in the group.
-- **T9 path filters with an always-run gate.** S+R. Expensive `pull_request` workflows with no path filter while many PRs touch only docs or one sub-project. Fix: always trigger; a `changes` job with `dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3`; job-level `if:` on its outputs; one required `check` job with `if: always()` running `re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0` with `allowed-skips:`. The user then makes `check` the required check (a repository setting: factory-ci says so and never changes it). Guard: a workflow-level `paths:` on a required check leaves it pending forever; a plain `needs:` gate is skipped, and so passes, when a job it needs fails. Flag both wherever they exist already.
+- **T9 path filters with an always-run gate.** S+R. Expensive `pull_request` workflows with no path filter while many PRs touch only docs or one sub-project. Fix: always trigger; a `changes` job with `dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3`; job-level `if:` on its outputs; one required `check` job with `if: always()` running `re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0` with `allowed-skips:`. The user then makes `check` the required check (a repository setting: plumb-ci says so and never changes it). Guard: a workflow-level `paths:` on a required check leaves it pending forever; a plain `needs:` gate is skipped, and so passes, when a job it needs fails. Flag both wherever they exist already.
 - **T11 duplicate triggers.** S. `on: [push, pull_request]` with `push` not limited to the default branch; data shows two runs per `head_sha`. Fix: `push: { branches: [main] }`, keep `pull_request` (forks fire only that).
 - **T12 affected-only builds.** S+R. Monorepo markers (`turbo.json`, `nx.json`, `pnpm-workspace.yaml`, Cargo `[workspace]`, `go.work`) with CI running every package. Fix: `turbo run <task> --affected`, `nx affected -t <task>` with `nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1`, or per-package path filters (T9). Guard: a shallow clone silently marks everything changed; root config, lockfile and CI files must map to "everything".
 - **T13 merge queue.** R. Branches must be up to date (`up_to_date_required_by_ruleset`, or the user says so) and PRs re-run several times before merge. Fix: a merge queue with the `merge_group` trigger on every required workflow. Guard: without `merge_group` the required check never reports.
@@ -63,4 +63,4 @@ Besides the zizmor audits in `tools.yaml`:
 
 - **W1 CODEOWNERS.** S. No CODEOWNERS entry covers `.github/workflows/`, so any writer can change what CI runs with its secrets.
 
-Anything that needs a verdict (a privileged trigger, a self-hosted runner on a public repository, cloud keys instead of OIDC) is named and handed to `/factory-security`; factory-ci never confirms a security finding.
+Anything that needs a verdict (a privileged trigger, a self-hosted runner on a public repository, cloud keys instead of OIDC) is named and handed to `/plumb-security`; plumb-ci never confirms a security finding.

@@ -15,7 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "hooks"))
 
-import factory_gate  # noqa: E402
+import plumb_gate  # noqa: E402
 from stagelib import git, git_ok, sha256, tests_at  # noqa: E402
 
 
@@ -33,17 +33,17 @@ def grade(case, workspace):
 
 def check_state(case, metadata, workspace):
     """The status.yaml parses as the hook reads it, approved gates match their hashes, commits exist."""
-    change = workspace / ".software-factory/changes" / metadata["slug"]
-    status = factory_gate.parse_status((change / "status.yaml").read_text())
+    change = workspace / ".plumb/changes" / metadata["slug"]
+    status = plumb_gate.parse_status((change / "status.yaml").read_text())
     assert len(status["gates"]) == 4, "status.yaml: the hook cannot read four gates"
     assert status["branch"] == git(workspace, "symbolic-ref", "--short", "HEAD"), "status.yaml: branch"
-    for gate, doc in factory_gate.GATES:
+    for gate, doc in plumb_gate.GATES:
         if status["gates"][gate]["state"] == "approved":
             assert status["gates"][gate]["doc_sha256"] == sha256(change / doc), f"{gate}: doc_sha256"
     for item in status["slices"]:
         head = item["head_commit"]
         assert head in (None, "null") or git_ok(workspace, "cat-file", "-e", f"{head}^{{commit}}") is not None, head
-    reason = factory_gate.check(change, status, "any.py") or ""
+    reason = plumb_gate.check(change, status, "any.py") or ""
     assert "cannot read" not in reason and "changed after" not in reason, f"hook: {reason}"
     results = tests_at(workspace, "HEAD")
     assert results and all(outcome == "ok" for outcome, _ in results.values()), f"public tests at HEAD: {results}"

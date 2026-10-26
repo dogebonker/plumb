@@ -104,7 +104,7 @@ Both arms get identical requirements, fresh git fixtures, model, effort, tools a
 sandbox. Arm order alternates by repetition. Superpowers retains its startup hook;
 Factory follows its applicable stages through reconcile, using copied kit and pack
 content: the copy is a one-commit git snapshot, and each Factory workspace's
-`.software-factory/factory.lock` names it as `dev_path`, with an empty user layer. Missing optional packs remain visible. Pond and automatic recall are absent
+`.plumb/plumb.lock` names it as `dev_path`, with an empty user layer. Missing optional packs remain visible. Pond and automatic recall are absent
 from this cold-start comparison. The Factory arm currently compares skills without
 the editing gate hook; it does not evaluate enforcement strength.
 
@@ -152,7 +152,7 @@ Ordinary Bash permission remains enabled so native executors can run their check
 the normal Bash sandbox still confines those commands. A native-child probe verified
 workspace writing and syntax checks, and CLI probes verified compound commands stay
 inside the ordinary sandbox rather than gaining the browser wrapper's exemption.
-Scratch and panel files belong under workspace `.tmp`, not a shared global temp path. The prompt supplies `red_test_command`: write `.software-factory/browser-red.json` with exactly `commit` (40 lowercase hexadecimal characters naming an ancestor commit) and `checkpoint` (1–64 letters, digits, `_` or `-`), then invoke the immutable argument-free RED checker through Bash. This request schema is shared by every arm and requires no access to Factory’s kit. It clones locally and retains the live GREEN checkout; both wrapper hashes are checked at finalization.
+Scratch and panel files belong under workspace `.tmp`, not a shared global temp path. The prompt supplies `red_test_command`: write `.plumb/browser-red.json` with exactly `commit` (40 lowercase hexadecimal characters naming an ancestor commit) and `checkpoint` (1–64 letters, digits, `_` or `-`), then invoke the immutable argument-free RED checker through Bash. This request schema is shared by every arm and requires no access to Factory’s kit. It clones locally and retains the live GREEN checkout; both wrapper hashes are checked at finalization.
 
 Technical `measurement_valid` and workflow `comparative_valid` are separate. Inspect
 trajectories for actual workflow adherence before treating measurements as a full

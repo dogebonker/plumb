@@ -1,4 +1,4 @@
-"""Prove the source-tree precondition in factory-review's resume shortcut."""
+"""Prove the source-tree precondition in plumb-review's resume shortcut."""
 import subprocess
 import tempfile
 from pathlib import Path
@@ -10,11 +10,11 @@ with tempfile.TemporaryDirectory() as temporary:
         return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=True).stdout.strip()
 
     def current(head):
-        tracked = subprocess.run(["git", "-C", str(repo), "diff", "--quiet", head, "--", ".", ":!.software-factory"],
+        tracked = subprocess.run(["git", "-C", str(repo), "diff", "--quiet", head, "--", ".", ":!.plumb"],
                                  check=False).returncode == 0
         indexed = subprocess.run(["git", "-C", str(repo), "diff", "--cached", "--quiet", head,
-                                  "--", ".", ":!.software-factory"], check=False).returncode == 0
-        return tracked and indexed and not git("ls-files", "--others", "--exclude-standard", "--", ".", ":!.software-factory")
+                                  "--", ".", ":!.plumb"], check=False).returncode == 0
+        return tracked and indexed and not git("ls-files", "--others", "--exclude-standard", "--", ".", ":!.plumb")
 
     git("init", "-q")
     git("config", "user.name", "Benchmark")
@@ -25,10 +25,10 @@ with tempfile.TemporaryDirectory() as temporary:
     git("commit", "-qm", "reviewed source")
     head = git("rev-parse", "HEAD")
     assert current(head)
-    (repo / ".software-factory").mkdir()
-    (repo / ".software-factory" / "review.md").write_text("awaiting sign-off\n")
+    (repo / ".plumb").mkdir()
+    (repo / ".plumb" / "review.md").write_text("awaiting sign-off\n")
     assert current(head)  # untracked planning artifacts do not change reviewed source
-    git("add", ".software-factory")
+    git("add", ".plumb")
     git("commit", "-qm", "planning only")
     assert current(head)
     (repo / "source.py").write_text("value = 2\n")

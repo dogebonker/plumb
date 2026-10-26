@@ -1,4 +1,4 @@
-# The factory's AI-slop catalog for factory-ui-ux. Source and test fixtures: docs/research/ui-ux/D-detection.md, whose P1 to P22 are S1 to S22 here.
+# Plumb's AI-slop catalog for plumb-ui-ux. Source and test fixtures: docs/research/ui-ux/D-detection.md, whose P1 to P22 are S1 to S22 here.
 #
 # code:     ripgrep -P patterns, run with
 #           -g '*.{tsx,jsx,html,mdx,css,scss,vue,svelte,astro}' -g '!**/*.{test,spec,stories}.*' -g '!**/__fixtures__/**'

@@ -195,21 +195,21 @@ def main(target):
     base = commit(repo, "feat: notes", ".")
     s = {"slug": SLUG, "task": TASK, "track": "standard", "base": base, "sent_back": None, "slices": [],
          "gates": {gate: pending_gate() for gate in ("product", "architecture", "interface", "slices")},
-         "history": [event(0, "factory-triage", "step_start")], "notes": f"Triage done. Next: /factory-product {SLUG}."}
+         "history": [event(0, "plumb-triage", "step_start")], "notes": f"Triage done. Next: /plumb-product {SLUG}."}
     triage(repo, s, "crud-service")
-    s["notes"] = f"product approved. Next: /factory-architecture {SLUG}."
+    s["notes"] = f"product approved. Next: /plumb-architecture {SLUG}."
     approve(repo, s, "product", "01-product.md", PRODUCT, 2)
     write(change_dir(repo, SLUG) / "research.md", RESEARCH)
-    s["notes"] = f"architecture approved. Next: /factory-interface {SLUG}."
+    s["notes"] = f"architecture approved. Next: /plumb-interface {SLUG}."
     approve(repo, s, "architecture", "02-architecture.md", ARCHITECTURE, 4)
-    s["notes"] = f"interface approved. Next: /factory-slices {SLUG}."
+    s["notes"] = f"interface approved. Next: /plumb-slices {SLUG}."
     approve(repo, s, "interface", "03-interface.md", INTERFACE, 6)
     s["slices"] = [{"id": "01", "name": "archive stale notes", "milestone": 1, "state": "pending",
                     "base_commit": None, "test_commit": None, "head_commit": None}]
-    s["notes"] = f"slices approved. Next: /factory-build {SLUG}."
+    s["notes"] = f"slices approved. Next: /plumb-build {SLUG}."
     approve(repo, s, "slices", "04-slices.md", SLICES, 8)
     # Build step 2 wrote the packet; the executor is not dispatched yet, so the slice is still pending.
-    s["history"].append(event(10, "factory-build", "step_start", "01"))
+    s["history"].append(event(10, "plumb-build", "step_start", "01"))
     save(repo, s)
     write(change_dir(repo, SLUG) / "slices/01/packet.md", PACKET)
 

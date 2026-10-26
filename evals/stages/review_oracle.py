@@ -12,7 +12,7 @@ def review(workspace, slug, fixes, findings, planning_commit=True):
     base = re.search(r"\bbase_commit: (\w+)", text).group(1)
     head = re.search(r"\bhead_commit: (\w+)", text).group(1)
     if planning_commit:
-        commit(workspace, "chore(factory): milestone 1 review", ".software-factory")
+        commit(workspace, "chore(plumb): milestone 1 review", ".plumb")
     for path, pairs in fixes.items():
         source = (workspace / path).read_text()
         for old, new in pairs:
@@ -23,7 +23,7 @@ def review(workspace, slug, fixes, findings, planning_commit=True):
         fixed = commit(workspace, f"fix({slug}): milestone 1 review", *fixes)
         text, head = text.replace(f"head_commit: {head}", f"head_commit: {fixed}"), fixed
     write(status, text.replace("state: green", "state: done").replace(
-        "Milestone 1 green. Next: /factory-review", "All slices done. Next: /factory-reconcile"))
+        "Milestone 1 green. Next: /plumb-review", "All slices done. Next: /plumb-reconcile"))
     write(change_dir(workspace, slug) / "slices/01/review.md", f"""# Review: milestone 1, slices 01 to 01
 
 Range: {base}..{head}

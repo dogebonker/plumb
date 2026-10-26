@@ -4,7 +4,7 @@ Archgraph proves export names; the pinned TypeScript compiler helper additionall
 proves signatures. Other signature capabilities remain unsupported. FR coverage
 is a frozen-runner report, not proof against deliberate exploits of that runner.
 NFR reports use {"nfr": {criterion_id: observed_number}}; thresholds mean at_most.
-Commands get one TCP loopback server port through FACTORY_TEST_PORT. Releasing
+Commands get one TCP loopback server port through PLUMB_TEST_PORT. Releasing
 its reservation before launch leaves a race; this is not server identity proof.
 Deadlines terminate the leader/current process group; detached descendants can survive.
 """
@@ -260,12 +260,12 @@ def _sandbox_profile(source, scratch, outputs, read_only, test_port=None):
 def _preflight(source, scratch, read_only):
     if sys.platform != 'darwin' or not Path('/usr/bin/sandbox-exec').is_file():
         raise RuntimeError('native macOS sandbox-exec unavailable; no unsandboxed fallback')
-    with tempfile.TemporaryDirectory(prefix='factory-canary-') as temp:
+    with tempfile.TemporaryDirectory(prefix='plumb-canary-') as temp:
         sentinel = Path(temp).resolve() / 'sentinel'
         sentinel.write_text('protected')
         profile = _sandbox_profile(source, scratch, (), read_only)
         commands = [['/bin/cat', str(sentinel)], ['/usr/bin/touch', str(sentinel)],
-                    ['/usr/bin/touch', str(source / '.factory-write-canary')]]
+                    ['/usr/bin/touch', str(source / '.plumb-write-canary')]]
         for command in commands:
             result = subprocess.run(['/usr/bin/sandbox-exec', '-p', profile, *command], capture_output=True, timeout=10, check=False)
             if result.returncode == 0:
@@ -295,7 +295,7 @@ def _command(argv, root, scratch, outputs, read_only, log, timeout, tool_dirs=()
     with log.open('xb') as stream:
         process = subprocess.Popen(['/usr/bin/sandbox-exec', '-p', profile, *argv], cwd=root,
                                    env={'PATH': ':'.join([*map(str, tool_dirs), '/usr/bin', '/bin', '/usr/sbin', '/sbin']), 'HOME': str(scratch),
-                                        'TMPDIR': str(scratch), 'PYTHONDONTWRITEBYTECODE': '1', 'FACTORY_TEST_PORT': str(test_port),
+                                        'TMPDIR': str(scratch), 'PYTHONDONTWRITEBYTECODE': '1', 'PLUMB_TEST_PORT': str(test_port),
                                         'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null'},
                                    stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                    start_new_session=True)
@@ -413,7 +413,7 @@ def _run_gates(worktree, plan, slice_id, binding, *, artifacts, tools, read_only
         language = next(iter(languages))
         declared_reads = list(dict.fromkeys(Path(p).resolve() for p in read_only))
         trusted = list(dict.fromkeys([*declared_reads, *(Path(tool['path']).resolve() for tool in tools.values())]))
-        with tempfile.TemporaryDirectory(prefix='factory-gates-') as temporary:
+        with tempfile.TemporaryDirectory(prefix='plumb-gates-') as temporary:
             temporary = Path(temporary).resolve()
             candidate, base, scratch = (temporary / name for name in ('candidate', 'base', 'scratch'))
             for path in (candidate, base, scratch):

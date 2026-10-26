@@ -15,7 +15,7 @@ if __name__ == "__main__":
     status = read_status(workspace, "rev02")
     feat = commit_by_subject(workspace, r"^feat\(rev02\): slice 01$")
     subjects = (git_ok(workspace, "log", "--format=%s", f"{feat}..HEAD") or "").splitlines() if feat else []
-    unchanged = feat and git_ok(workspace, "diff", "--quiet", feat, "HEAD", "--", ".", ":!.software-factory") is not None
+    unchanged = feat and git_ok(workspace, "diff", "--quiet", feat, "HEAD", "--", ".", ":!.plumb") is not None
     start, end = review_range(review)
     report({
         "review_md": review_md_ok(review),
@@ -23,6 +23,6 @@ if __name__ == "__main__":
         "no_fix_commit": bool(unchanged) and not any(subject.startswith("fix(") for subject in subjects),
         "head_unchanged": bool(feat) and slice_field(status, "head_commit") == feat,
         "slice_done": slice_field(status, "state") == "done",
-        "review_commit": "chore(factory): milestone 1 review" in subjects,
+        "review_commit": "chore(plumb): milestone 1 review" in subjects,
         "range": same_commit(slice_field(status, "base_commit"), start) and same_commit(feat, end),
     }, ["review_md", "no_block_or_fix", "no_fix_commit", "head_unchanged", "slice_done", "review_commit", "range"])

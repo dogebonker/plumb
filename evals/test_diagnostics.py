@@ -27,10 +27,10 @@ class DiagnosticTests(unittest.TestCase):
 
     def test_stage_time_requires_timestamped_evidence_and_is_not_model_time(self):
         report = diagnostics.profile_events([
-            event("Skill", {"skill": "factory:factory-plan"}, "a", 100),
+            event("Skill", {"skill": "factory:plumb-plan"}, "a", 100),
             event("Read", {"file_path": "private.py"}, "b", 104),
             event("AskUserQuestion", {"questions": [{}, {}]}, "c", 109)])
-        self.assertEqual(report["stage_observed_seconds"], {"factory-plan": 9})
+        self.assertEqual(report["stage_observed_seconds"], {"plumb-plan": 9})
         self.assertEqual(report["question_items"], 2)
         self.assertEqual(report["observed_seconds"], 9)
         self.assertNotIn("model_seconds", report)
@@ -38,33 +38,41 @@ class DiagnosticTests(unittest.TestCase):
     def test_unattributed_calls_remain_unknown_and_artifact_paths_are_evidence(self):
         report = diagnostics.profile_events([
             event("Bash", {"command": "pytest"}, "a"),
-            event("Read", {"file_path": "/work/.software-factory/changes/x/architecture.md"}, "b")])
+            event("Read", {"file_path": "/work/.plumb/changes/x/architecture.md"}, "b")])
         self.assertEqual(report["stage_tool_calls"]["unknown"], 2)
-        self.assertEqual(report["artifact_accesses"][0]["stage_hint"], "factory-architecture")
+        self.assertEqual(report["artifact_accesses"][0]["stage_hint"], "plumb-architecture")
         self.assertEqual(report["stage_evidence"], [])
 
+    def test_runs_from_before_the_rename_keep_their_factory_stage_names(self):
+        report = diagnostics.profile_events([
+            event("Skill", {"skill": "factory:factory-plan"}, "a", 100),
+            event("Read", {"file_path": "/work/.software-factory/changes/x/02-architecture.md"}, "b", 103),
+            event("Bash", {"command": "cat skills/factory-build/SKILL.md"}, "c", 104)])
+        self.assertEqual(report["stage_observed_seconds"], {"factory-plan": 4})
+        self.assertEqual(report["artifact_accesses"][0]["stage_hint"], "factory-architecture")
+
     def test_numbered_artifacts_and_bash_mentions_never_establish_active_stage(self):
-        events = [event("Bash", {"command": "cat /private/factory-build/SKILL.md"}, "a", 100)]
+        events = [event("Bash", {"command": "cat /private/plumb-build/SKILL.md"}, "a", 100)]
         for index, (name, expected) in enumerate((("01-product", "product"), ("02-architecture", "architecture"),
                                                  ("03-interface", "interface"), ("04-slices", "slices"))):
-            events.append(event("Read", {"file_path": f"/private/.software-factory/changes/x/{name}.md"}, str(index), 101 + index))
+            events.append(event("Read", {"file_path": f"/private/.plumb/changes/x/{name}.md"}, str(index), 101 + index))
         report = diagnostics.profile_events(events)
         self.assertEqual([row["stage_hint"] for row in report["artifact_accesses"]],
-                         ["factory-product", "factory-architecture", "factory-interface", "factory-slices"])
-        self.assertEqual(report["skill_file_mentions"][0]["skill"], "factory-build")
+                         ["plumb-product", "plumb-architecture", "plumb-interface", "plumb-slices"])
+        self.assertEqual(report["skill_file_mentions"][0]["skill"], "plumb-build")
         self.assertEqual(report["stage_evidence"], [])
         self.assertEqual(report["stage_tool_calls"], {"unknown": 5})
         self.assertEqual(report["stage_observed_seconds"], {"unknown": 4})
         self.assertNotIn("/private", json.dumps(report))
 
     def test_child_stage_never_changes_root_stage_or_overlapping_root_intervals(self):
-        child = event("Skill", {"skill": "factory-review"}, "child", 101)
+        child = event("Skill", {"skill": "plumb-review"}, "child", 101)
         child["parent_tool_use_id"] = "private-parent-id"
         report = diagnostics.profile_events([
-            event("Skill", {"skill": "factory-build"}, "root", 100), child,
+            event("Skill", {"skill": "plumb-build"}, "root", 100), child,
             event("Read", {"file_path": "source.py"}, "read", 104)])
-        self.assertEqual(report["stage_observed_seconds"], {"factory-build": 4})
-        self.assertEqual(report["stage_tool_calls"], {"factory-build": 2, "factory-review": 1})
+        self.assertEqual(report["stage_observed_seconds"], {"plumb-build": 4})
+        self.assertEqual(report["stage_tool_calls"], {"plumb-build": 2, "plumb-review": 1})
         self.assertNotIn("private-parent-id", json.dumps(report))
 
     def test_default_case_ids_match_actual_retained_trial_layout(self):
@@ -113,7 +121,7 @@ class DiagnosticTests(unittest.TestCase):
     def test_malformed_preamble_does_not_shift_native_timing_indices(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "turn-000.jsonl"
-            path.write_text("not-json\n[]\n" + json.dumps(event("Skill", {"skill": "factory-build"}, "a")) +
+            path.write_text("not-json\n[]\n" + json.dumps(event("Skill", {"skill": "plumb-build"}, "a")) +
                             "\nfalse\n" + json.dumps(event("Bash", {"command": "test"}, "b")) + "\n")
             path.with_suffix(".timings.jsonl").write_text(
                 '{"event_index": 0, "timestamp": 100}\n{"event_index": 1, "timestamp": 103}\n')
@@ -127,7 +135,7 @@ class DiagnosticTests(unittest.TestCase):
     def test_timing_sidecar_uses_receipt_time_without_claiming_execution_duration(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "turn-000.jsonl"
-            path.write_text(json.dumps(event("Skill", {"skill": "factory-build"}, "a")) + "\n" +
+            path.write_text(json.dumps(event("Skill", {"skill": "plumb-build"}, "a")) + "\n" +
                             json.dumps(event("Bash", {"command": "test"}, "b")) + "\n")
             path.with_suffix(".timings.jsonl").write_text(
                 '{"event_index": 0, "timestamp": 100}\n{"event_index": 1, "timestamp": 103}\n')

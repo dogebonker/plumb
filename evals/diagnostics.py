@@ -66,7 +66,7 @@ def read_events(path):
 def stage_for(name, arguments):
     if name == "Skill":
         skill = arguments.get("skill", "")
-        match = re.fullmatch(r"(?:factory:)?(factory-[a-z-]+)", skill) if isinstance(skill, str) else None
+        match = re.fullmatch(r"(?:factory:|plumb:)?((?:plumb|factory)-[a-z-]+)", skill) if isinstance(skill, str) else None
         if match:
             return match[1], "explicit Skill invocation"
     return None, None
@@ -74,13 +74,16 @@ def stage_for(name, arguments):
 
 def artifact_for(arguments):
     path = arguments.get("file_path", "")
-    if isinstance(path, str) and ".software-factory" in Path(path).parts:
+    parts = Path(path).parts if isinstance(path, str) else ()
+    # Runs from before the rename keep .software-factory/ and factory- stage names.
+    prefix = "plumb-" if ".plumb" in parts else "factory-" if ".software-factory" in parts else None
+    if prefix:
         stem = Path(path).stem
         numbered = {"01-product": "product", "02-architecture": "architecture",
                     "03-interface": "interface", "04-slices": "slices"}
         stage = numbered.get(stem, ARTIFACTS.get(stem))
         if stage:
-            return "factory-" + stage
+            return prefix + stage
     return None
 
 
@@ -140,7 +143,7 @@ def profile_events(events):
                 artifacts.append({"event_index": index, "stage_hint": artifact, "tool": name, "context": context,
                                   "basis": "artifact access only; not an active-stage claim"})
             if name == "Bash" and isinstance(arguments.get("command"), str):
-                for skill in sorted(set(re.findall(r"(factory-[a-z-]+)/SKILL\.md", arguments["command"]))):
+                for skill in sorted(set(re.findall(r"((?:plumb|factory)-[a-z-]+)/SKILL\.md", arguments["command"]))):
                     mentions.append({"event_index": index, "skill": skill, "context": context,
                                      "basis": "literal skill-file mention; not invocation or execution proof"})
             tools[name] += 1

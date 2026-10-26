@@ -19,9 +19,9 @@ class UsageTests(unittest.TestCase):
     def test_cumulative_resume_and_children_are_not_added(self):
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Path(tmp) / 'usage.jsonl'
-            first = receipt(ledger, 'task', 'factory-product', [result(), result(999, parent='child')])
-            again = receipt(ledger, 'task', 'factory-product', [result()])
-            next_step = receipt(ledger, 'task', 'factory-product', [result(15)])
+            first = receipt(ledger, 'task', 'plumb-product', [result(), result(999, parent='child')])
+            again = receipt(ledger, 'task', 'plumb-product', [result()])
+            next_step = receipt(ledger, 'task', 'plumb-product', [result(15)])
             self.assertEqual(first['tokens'], 37)
             self.assertEqual(again['tokens'], 0)
             self.assertEqual(next_step['tokens'], 5)
@@ -80,7 +80,7 @@ class UsageTests(unittest.TestCase):
     def test_capture_uses_parent_directory_and_keeps_process_group(self):
         from unittest.mock import Mock, patch
 
-        import factory_run
+        import plumb_run
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp) / 'work'
             work.mkdir()
@@ -88,22 +88,22 @@ class UsageTests(unittest.TestCase):
             proc.wait.return_value = 0
             def start(cmd, **kwargs):
                 self.assertTrue(kwargs['start_new_session'])
-                self.assertEqual(kwargs['env']['FACTORY_RUNNER_MANAGED'], '1')
+                self.assertEqual(kwargs['env']['PLUMB_RUNNER_MANAGED'], '1')
                 kwargs['stdout'].write((json.dumps(result()) + '\n').encode())
                 return proc
-            with patch.object(factory_run.subprocess, 'Popen', side_effect=start):
-                self.assertEqual(factory_run.run_harness(
-                    ['claude', '-p', '--output-format', 'stream-json', '--verbose', '/factory-product t'], work, 2), 0)
+            with patch.object(plumb_run.subprocess, 'Popen', side_effect=start):
+                self.assertEqual(plumb_run.run_harness(
+                    ['claude', '-p', '--output-format', 'stream-json', '--verbose', '/plumb-product t'], work, 2), 0)
             self.assertEqual(json.loads((Path(tmp) / 'usage-stream.jsonl').read_text())['type'], 'result')
 
     def test_interactive_entry_snapshot_is_not_charged_to_skill(self):
         from usage import report
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Path(tmp) / 'usage.jsonl'
-            entry = receipt(ledger, 'task', 'factory-review', [result(100)], baseline_only=True)
+            entry = receipt(ledger, 'task', 'plumb-review', [result(100)], baseline_only=True)
             self.assertIsNone(entry['tokens'])
             self.assertIsNone(report(ledger)['observed_tokens'])
-            receipt(ledger, 'task', 'factory-review', [result(110)])
+            receipt(ledger, 'task', 'plumb-review', [result(110)])
             self.assertEqual(report(ledger)['tokens'], 10)
             self.assertEqual(report(ledger)['skills'][0]['token_classes']['inputTokens'], 10)
 

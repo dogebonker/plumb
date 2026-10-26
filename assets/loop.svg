@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" role="img" aria-label="The factory loop on the standard track: triage, plan with discovery questions, one approval, build every slice test-first, review with acceptance, sign off, reconcile">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 440" width="760" height="440" role="img" aria-label="Plumb loop on the standard track: triage, plan with discovery questions, one approval, build every slice test-first, review with acceptance, sign off, reconcile">
   <style>
     text { font-family: Inter, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
     .bg { fill: #F5F7F8; }

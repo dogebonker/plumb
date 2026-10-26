@@ -69,7 +69,7 @@ def copy_dependencies(work, product):
             if name in {'node_modules', '.venv'}:
                 roots.append(Path(directory) / name)
                 names.remove(name)
-            elif name in {'.git', '.software-factory', '.factory', '.claude', '.tmp', '__pycache__'}:
+            elif name in {'.git', '.plumb', '.software-factory', '.factory', '.claude', '.tmp', '__pycache__'}:
                 names.remove(name)
     for source in roots:
         if not source.resolve().is_relative_to(work):

@@ -2,17 +2,17 @@
   "id": "FW-01",
   "stage": "firewall",
   "slug": "fw01",
-  "entry": "/factory-architecture fw01",
+  "entry": "/plumb-architecture fw01",
   "mode": "interactive",
-  "skill": "skills/factory-architecture/SKILL.md",
+  "skill": "skills/plumb-architecture/SKILL.md",
   "start": "Track standard, product gate approved. 01-product.md uses domain words (grading/forbidden_words.txt) that appear nowhere in the code.",
   "stop_when": [
     {
-      "path": ".software-factory/changes/fw01/research.md",
+      "path": ".plumb/changes/fw01/research.md",
       "regex": ""
     },
     {
-      "path": ".software-factory/changes/fw01/02-architecture.md",
+      "path": ".plumb/changes/fw01/02-architecture.md",
       "regex": ""
     }
   ],
@@ -21,11 +21,11 @@
   "measures": "The research firewall: no product word reaches the questions, and the answers cite path:line.",
   "planted": [],
   "scores": {
-    "research_md": ".software-factory/changes/fw01/research.md exists",
+    "research_md": ".plumb/changes/fw01/research.md exists",
     "questions_clean": "no question matches a pattern in grading/forbidden_words.txt",
     "questions_on_code": "at least one question names delete or Notebook",
     "answers_complete": "as many answers as questions, each citing path:line, a Pond session id or not found",
     "answers_cite": "at least one path:line, and every cited path is a tracked file"
   },
-  "not_graded": "the forbidden words in the research sub-agent's prompt and the worktree having no .software-factory/changes/: both need the run's trajectory"
+  "not_graded": "the forbidden words in the research sub-agent's prompt and the worktree having no .plumb/changes/: both need the run's trajectory"
 }

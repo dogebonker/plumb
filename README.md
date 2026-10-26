@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/readme-hero-dark.svg">
-    <img src="assets/readme-hero-light.svg" alt="Software Factory — a workflow from intent through checks to review" width="100%">
+    <img src="assets/readme-hero-light.svg" alt="Plumb — a workflow from intent through checks to review" width="100%">
   </picture>
 </p>
 
@@ -14,12 +14,12 @@
 <p align="center">
   <a href="#start-a-change">Get started</a> ·
   <a href="#review-a-branch-or-pr">Review a branch</a> ·
-  <a href="#what-makes-it-a-factory">How it works</a> ·
+  <a href="#how-it-works">How it works</a> ·
   <a href="#results-so-far">Results</a> ·
   <a href="#documentation">Documentation</a>
 </p>
 
-Software Factory is a set of agent skills, versioned documents and execution tools for software development. It asks the questions that change the product, turns the answers into contracts, and coordinates implementation, independent review and acceptance.
+Plumb (named Software Factory until October 2026) is a set of agent skills, versioned documents and execution tools for software development. It asks the questions that change the product, turns the answers into contracts, and coordinates implementation, independent review and acceptance.
 
 On the standard track, you approve one plan and sign off the result. An Opus 5.5 lead handles slices and scoped repairs, delegating bounded subtasks to Opus subagents when useful; an independent reviewer checks gate-green work. Changed promises, security decisions and missing authority come back to you.
 
@@ -30,27 +30,27 @@ On the standard track, you approve one plan and sign off the result. An Opus 5.5
 The primary setup is **Claude Code**, with **Git** and **Python 3.10+**. PR and headless workflows also use the GitHub CLI. Project runtimes and checks come from your repository.
 
 ```sh
-git clone https://github.com/dogebonker/software-factory.git
-cd software-factory
-./bin/factory-install HEAD
+git clone https://github.com/dogebonker/plumb.git
+cd plumb
+./bin/plumb-install HEAD
 
 mkdir -p "$HOME/.claude/skills"
-ln -s "$PWD/skills/factory-init" "$HOME/.claude/skills/factory-init"
-ln -s "$PWD/skills/factory-upgrade" "$HOME/.claude/skills/factory-upgrade"
+ln -s "$PWD/skills/plumb-init" "$HOME/.claude/skills/plumb-init"
+ln -s "$PWD/skills/plumb-upgrade" "$HOME/.claude/skills/plumb-upgrade"
 ```
 
 Then open the repository you want to change in Claude Code:
 
 ```text
-/factory-init
-/factory-triage Add a CSV export for the current filtered table
+/plumb-init
+/plumb-triage Add a CSV export for the current filtered table
 ```
 
-Init pins the framework and links its skills into that project. Enable the editing hook when init offers it; it guards the harness’s editing tools against unapproved or out-of-scope changes. Existing installations use `/factory-upgrade`; [installation details](skills/README.md#install) cover setup and development links.
+Init pins the framework and links its skills into that project. Enable the editing hook when init offers it; it guards the harness’s editing tools against unapproved or out-of-scope changes. Existing installations use `/plumb-upgrade`; [installation details](skills/README.md#install) cover setup and development links.
 
 The skills use the open Agent Skills format. Automatic project linking currently targets Claude Code; other clients need manual integration. The standalone review skill also includes Codex metadata.
 
-## What makes it a factory
+## How it works
 
 ### The questions become contracts
 
@@ -93,7 +93,7 @@ A constraint names its enforcement: a test, lint rule, architecture rule, monito
 
 Selected layout checkers enforce import boundaries. [Archgraph](https://github.com/dogebonker/archgraph) can supply cross-stack rules, blast radius and reading order; the repository stays readable beyond that initial context. Missing tools and incomplete graph coverage stay explicit.
 
-The [shared archgraph adapter](skills/factory-shared/archgraph.md#shared-adapter) now prepares bounded context for the Opus lead and reviewers, and checks new forbidden edges, cycles and unplanned edges when the approved layout selects it. Setup detects the pinned tool; context and gate reports bind the source, rules and binary. Helpers receive only their permitted context.
+The [shared archgraph adapter](skills/plumb-shared/archgraph.md#shared-adapter) now prepares bounded context for the Opus lead and reviewers, and checks new forbidden edges, cycles and unplanned edges when the approved layout selects it. Setup detects the pinned tool; context and gate reports bind the source, rules and binary. Helpers receive only their permitted context.
 
 Approved documents are bound to exact hashes. When installed, the editing hook protects them and the current slice's allowed files. Supplemental evidence lives separately. Compatible unchanged approvals survive a revision; changed contracts need their actual decision. [Authority and limits](skills/README.md#hard-gates)
 
@@ -105,19 +105,19 @@ A bounded review exercise caught a float conversion against an integer-money ADR
 
 ## Review a branch or PR
 
-You can use the review layer without starting a Factory change:
+You can use the review layer without starting a Plumb change:
 
 ```text
-/factory-code-review origin/main review
+/plumb-code-review origin/main review
 ```
 
-Pass a PR URL to review a pull request, or name code and documentation paths to narrow the scope. In Codex, invoke `$factory-code-review` with the same request in prose.
+Pass a PR URL to review a pull request, or name code and documentation paths to narrow the scope. In Codex, invoke `$plumb-code-review` with the same request in prose.
 
-The [review skill](skills/factory-code-review/SKILL.md) combines:
+The [review skill](skills/plumb-code-review/SKILL.md) combines:
 
 - **Polish:** cleanliness, design/reuse, efficiency and side-effect gating.
 - **Defect hunting:** installed scanners and the bug-review checklist, with concrete failure scenarios, severity and effort.
-- **Factory conformance:** docs, accepted ADRs, standing constraints, frozen contracts, ownership and approval integrity.
+- **Plumb conformance:** docs, accepted ADRs, standing constraints, frozen contracts, ownership and approval integrity.
 
 One shared packet and one deduplicated report. Small reviews stay lean; large reviews can split into four lanes. Fixes and PR posting follow explicit authorization. No new planning ceremony is required.
 
@@ -135,19 +135,19 @@ One shared packet and one deduplicated report. Small reviews stay lean; large re
 | Automatic queue recovery and Linear ticket admission | Pending integration |
 | Shared Pond/archgraph context gateway | Design only |
 
-The [v2 controller](docs/FACTORY_V2.md) reuses one Opus 5.5 lead session across slices and repairs in one isolated clone, with bounded native Opus helpers. It gates scope, frozen tests, types, lint, architecture and declared exports before a separate Opus review; each slice must clear its gates and independent review before the next slice starts. The [event-driven extension](docs/FACTORY_EVENTS.md) describes wake-ups, replanning, outcome metrics and the remaining integration work.
+The [v2 controller](docs/PLUMB_V2.md) reuses one Opus 5.5 lead session across slices and repairs in one isolated clone, with bounded native Opus helpers. It gates scope, frozen tests, types, lint, architecture and declared exports before a separate Opus review; each slice must clear its gates and independent review before the next slice starts. The [event-driven extension](docs/PLUMB_EVENTS.md) describes wake-ups, replanning, outcome metrics and the remaining integration work.
 
 ## Results so far
 
-The sequential Factory trailed both controls in the published **20-task, three-arm benchmark**:
+The sequential workflow, run under the Software Factory name, trailed both controls in the published **20-task, three-arm benchmark**:
 
 | Arm | Accepted tasks |
 | --- | ---: |
 | Bare agent | **14 / 20** |
 | Agent + a good CLAUDE.md | **14 / 20** |
-| Sequential Factory | **9 / 20** |
+| Sequential Plumb | **9 / 20** |
 
-That is **45% accepted for Factory versus 70% for each control: five fewer tasks, or 25 percentage points lower**. This measured the previous sequential workflow; it does not measure the current Opus-led simplification. Quality, tokens and wall time are reported separately; Factory's incomplete cost accounting stays unknown. Raw artifacts were later deleted, which limits independent re-audit. [Full table, protocol and limitations →](docs/research/real-pr-benchmark-2026-10-19.md)
+That is **45% accepted for Plumb versus 70% for each control: five fewer tasks, or 25 percentage points lower**. This measured the previous sequential workflow; it does not measure the current Opus-led simplification. Quality, tokens and wall time are reported separately; Plumb's incomplete cost accounting stays unknown. Raw artifacts were later deleted, which limits independent re-audit. [Full table, protocol and limitations →](docs/research/real-pr-benchmark-2026-10-19.md)
 
 The [recovery and engineering-quality evaluation](docs/research/recovery-evaluation-2026-10-20.md) is in progress: all 20 tasks are recalibrated, with executable guarantee checks and separate architecture, rule-compliance and history measurements. The maintenance chain is reported; there is no new twenty-task acceptance result yet.
 
@@ -160,7 +160,7 @@ The next outcome is a merged, observed feature: **escaped defects per feature, t
 | [Skills](skills/README.md) | Commands, installation, hooks and headless operation |
 | [Kit](kit/README.md) | Layouts, adapters, principles and pinned packs |
 | [Design](docs/DESIGN.md) · [Decisions](docs/DECISIONS.md) | The specification and the reasoning behind it |
-| [Factory v2](docs/FACTORY_V2.md) · [Events and context](docs/FACTORY_EVENTS.md) | Experimental execution and the next integrations |
+| [Plumb v2](docs/PLUMB_V2.md) · [Events and context](docs/PLUMB_EVENTS.md) | Experimental execution and the next integrations |
 | [Benchmark](docs/research/real-pr-benchmark-2026-10-19.md) · [Changelog](CHANGELOG.md) | Measurements and changes |
 
 ## Built on

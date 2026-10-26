@@ -1,4 +1,4 @@
-"""Turn a fresh ACC-01 setup into the ideal end of /factory-reconcile when the user calls FR-02 a defect.
+"""Turn a fresh ACC-01 setup into the ideal end of /plumb-reconcile when the user calls FR-02 a defect.
 
 It starts the product, tries the three examples over HTTP, writes acceptance.md from the responses and sends the
 change back. Usage: python3 apply.py <workspace>.
@@ -29,7 +29,7 @@ def call(url, method, path, body=None):
 
 def try_examples(workspace):
     """Run dev_command, try each example, and return the three evidence lines."""
-    lenses = (workspace / ".software-factory/system/lenses.yaml").read_text()
+    lenses = (workspace / ".plumb/system/lenses.yaml").read_text()
     command = re.search(r'dev_command: "(.*)"', lenses).group(1)
     url = re.search(r'dev_url: "(.*)"', lenses).group(1)
     server = subprocess.Popen(command.split(), cwd=workspace, start_new_session=True,
@@ -66,11 +66,11 @@ def record(workspace, url, fr1, fr2, fr3):
     status = change / "status.yaml"
     text = re.sub(r"^(  slices:\s+)\{.*\}$", lambda m: m.group(1) + flow(pending_gate()), status.read_text(), flags=re.M)
     text = text.replace("sent_back: null", "sent_back: " + flow({"gate": "slices", "slice": None, "reason": REASON}))
-    text = text.replace("All slices done. Next: /factory-reconcile", "Sent back to slices. Next: /factory-slices")
-    text += f"  - {flow(event(40, 'factory-reconcile', 'step_start'))}\n"
-    text += f"  - {flow(event(41, 'factory-reconcile', 'sent_back', '-', 'slices: ' + REASON))}\n"
+    text = text.replace("All slices done. Next: /plumb-reconcile", "Sent back to slices. Next: /plumb-slices")
+    text += f"  - {flow(event(40, 'plumb-reconcile', 'step_start'))}\n"
+    text += f"  - {flow(event(41, 'plumb-reconcile', 'sent_back', '-', 'slices: ' + REASON))}\n"
     write(status, text)
-    commit(workspace, "chore(factory): send back acc01 to slices", ".software-factory")
+    commit(workspace, "chore(plumb): send back acc01 to slices", ".plumb")
 
 
 if __name__ == "__main__":

@@ -58,9 +58,9 @@ def main(target):
     base = commit(repo, "feat: notebook", ".")
     s = {"slug": SLUG, "task": TASK, "track": "standard", "base": base, "sent_back": None, "slices": [],
          "gates": {gate: pending_gate() for gate in ("product", "architecture", "interface", "slices")},
-         "history": [event(0, "factory-triage", "step_start")], "notes": f"Triage done. Next: /factory-product {SLUG}."}
+         "history": [event(0, "plumb-triage", "step_start")], "notes": f"Triage done. Next: /plumb-product {SLUG}."}
     triage(repo, s, "domain-core")
-    s["notes"] = f"product approved. Next: /factory-architecture {SLUG}."
+    s["notes"] = f"product approved. Next: /plumb-architecture {SLUG}."
     approve(repo, s, "product", "01-product.md", PRODUCT, 2)
 
 

@@ -4,7 +4,7 @@ ID `fda`, row L10. The strong default for a **new frontend application root**, i
 
 FDA groups code by business domain, repeats that structure in subdomains when useful, and keeps UI, state, transport and persistence responsibilities explicit. Sources: [FDA documentation](https://fda-docs.vercel.app), [upstream README and examples at the reviewed revision](https://github.com/chord-ts/fda/tree/29ce5852cf1cf3a5fa487767e493776d0d24aaa4), and `docs/research/layouts-selection.md`, pattern 11.
 
-**Factory adaptation:** upstream recommends FDA for medium-sized, long-lived applications and considers it excessive for landing pages and prototypes. Our stronger default is a lightweight policy: keep domain colocation and browser/server boundaries, but create only files with a present responsibility. No empty layers, mandatory repository wrappers or speculative subdomains. This chooses a layout, not React, Python, an ORM or a framework.
+**Plumb adaptation:** upstream recommends FDA for medium-sized, long-lived applications and considers it excessive for landing pages and prototypes. Our stronger default is a lightweight policy: keep domain colocation and browser/server boundaries, but create only files with a present responsibility. No empty layers, mandatory repository wrappers or speculative subdomains. This chooses a layout, not React, Python, an ORM or a framework.
 
 ## Layout lines
 
@@ -55,7 +55,7 @@ Next.js App Router, in place of the Vite tree:
 12. `public/`: assets
 13. `next.config.ts`: framework configuration
 
-Use [Next.js colocation/private folders](https://nextjs.org/docs/app/getting-started/project-structure), [route handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route) and [server/client boundaries](https://nextjs.org/docs/app/getting-started/server-and-client-components). `page.tsx` is a Server Component by default; `page.server.tsx` is not a Next route convention. Place an API handler at a distinct segment such as `app/api/<domain>/route.ts`. Do not use process-wide mutable state for an SSR user's session or controller. The Next mapping is Factory's adaptation; upstream's Next example is marked unfinished.
+Use [Next.js colocation/private folders](https://nextjs.org/docs/app/getting-started/project-structure), [route handlers](https://nextjs.org/docs/app/api-reference/file-conventions/route) and [server/client boundaries](https://nextjs.org/docs/app/getting-started/server-and-client-components). `page.tsx` is a Server Component by default; `page.server.tsx` is not a Next route convention. Place an API handler at a distinct segment such as `app/api/<domain>/route.ts`. Do not use process-wide mutable state for an SSR user's session or controller. The Next mapping is Plumb's adaptation; upstream's Next example is marked unfinished.
 
 ## Layers
 

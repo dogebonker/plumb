@@ -19,7 +19,7 @@ from pathlib import Path, PurePosixPath
 import benchmark
 
 ROOT = Path(__file__).resolve().parents[1]
-HOOK = ROOT / "hooks/factory_v2_gate.py"
+HOOK = ROOT / "hooks/plumb_v2_gate.py"
 DIMENSIONS = ("correctness", "architecture", "history", "rule_compliance")
 TOOLS = ("Read", "Grep", "Glob")
 DENIED = ("Agent", "Bash", "Edit", "Write", "MultiEdit", "NotebookEdit", "Skill", "AskUserQuestion",

@@ -34,8 +34,8 @@ def validate_handoff(repo, report, slug, task_id, agent_id, slice_id, expected_s
         raise ValueError('native child completion has not been observed')
     if {c['id'] for c in children} != {c['id'] for c in observed_children}:
         raise ValueError('reported child list does not match observed native tasks')
-    change = repo / '.software-factory/changes' / slug
-    if change.resolve().parent != (repo / '.software-factory/changes').resolve():
+    change = repo / '.plumb/changes' / slug
+    if change.resolve().parent != (repo / '.plumb/changes').resolve():
         raise ValueError('invalid change slug')
     status = change / 'status.yaml'
     if report.get('status_sha256') != hashlib.sha256(status.read_bytes()).hexdigest():
@@ -44,7 +44,7 @@ def validate_handoff(repo, report, slug, task_id, agent_id, slice_id, expected_s
     if report['state'] == 'completed':
         if any(c['state'] != 'completed' for c in children):
             raise ValueError('completed step has unresolved child questions or blockers')
-        if git(repo, 'status', '--porcelain', '--', '.', ':!.software-factory', ':!.factory'):
+        if git(repo, 'status', '--porcelain', '--', '.', ':!.plumb', ':!.factory', ':!.software-factory'):
             raise ValueError('completed step has dirty or untracked source')
         rows = re.findall(r'^\s*-\s*\{([^}\n]+)\}', text, re.MULTILINE)
         rows = [r for r in rows if re.search(r'\bid:\s*[\"\']?0*' + str(int(slice_id)) + r'\b', r)]
@@ -56,7 +56,7 @@ def validate_handoff(repo, report, slug, task_id, agent_id, slice_id, expected_s
                 if not match:
                     raise ValueError('completed slice lacks a committed RED/GREEN checkpoint')
                 git(repo, 'merge-base', '--is-ancestor', match[1], 'HEAD')
-                if name == 'head_commit' and git(repo, 'diff', '--name-only', match[1], 'HEAD', '--', '.', ':!.software-factory', ':!.factory'):
+                if name == 'head_commit' and git(repo, 'diff', '--name-only', match[1], 'HEAD', '--', '.', ':!.plumb', ':!.factory', ':!.software-factory'):
                     raise ValueError('slice proof does not cover the current committed source')
     artifacts = report.get('artifacts')
     if not isinstance(artifacts, list) or not artifacts:
@@ -81,7 +81,7 @@ def prepare_browser_red(repo, commit, checkpoint):
         raise ValueError('browser RED requires a full commit SHA and safe checkpoint slug')
     git(repo, 'rev-parse', '--verify', f'{commit}^{{commit}}')
     git(repo, 'merge-base', '--is-ancestor', commit, 'HEAD')
-    request = repo / '.software-factory/browser-red.json'
+    request = repo / '.plumb/browser-red.json'
     if request.resolve() != request:
         raise ValueError('browser RED request must not be a symlink')
     request.parent.mkdir(parents=True, exist_ok=True)
@@ -91,8 +91,8 @@ def prepare_browser_red(repo, commit, checkpoint):
 
 def verify_red(repo, commit, command, checkpoint, timeout, tests_from=None, test_files=None):
     repo, checkpoint = Path(repo).resolve(), Path(checkpoint).resolve()
-    if not checkpoint.is_relative_to(repo / '.software-factory/changes'):
-        raise ValueError('checkpoint must live under .software-factory/changes')
+    if not checkpoint.is_relative_to(repo / '.plumb/changes'):
+        raise ValueError('checkpoint must live under .plumb/changes')
     if command and Path(command[0]).name == 'browser-check':
         raise ValueError('fixed live browser wrapper cannot prove RED; run red_test_command directly')
     if (tests_from is None) != (test_files is None) or tests_from == '' or test_files == []:
@@ -105,7 +105,7 @@ def verify_red(repo, commit, command, checkpoint, timeout, tests_from=None, test
         git(repo, 'merge-base', '--is-ancestor', tests_from, 'HEAD')
         for name in test_files:
             if (not isinstance(name, str) or not name or '\\' in name or '\x00' in name or
-                    any(part in ('', '.', '..') or part.casefold() in ('.git', '.software-factory')
+                    any(part in ('', '.', '..') or part.casefold() in ('.git', '.plumb', '.factory', '.software-factory')
                         for part in name.split('/'))):
                 raise ValueError(f'test file must be an exact repository-relative path: {name}')
             blobs = []
@@ -137,7 +137,7 @@ def verify_red(repo, commit, command, checkpoint, timeout, tests_from=None, test
     if tests_from:
         record.update(tests_commit=tests_from, test_files=file_hashes)
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
-    scratch = repo / '.software-factory/scratch'
+    scratch = repo / '.plumb/scratch'
     if scratch.resolve() != scratch:
         raise ValueError('verification scratch must not be a symlink')
     scratch.mkdir(parents=True, exist_ok=True)
@@ -146,9 +146,9 @@ def verify_red(repo, commit, command, checkpoint, timeout, tests_from=None, test
         exclude = repo / exclude
     exclude.parent.mkdir(parents=True, exist_ok=True)
     ignored = exclude.read_text() if exclude.exists() else ''
-    if '/.software-factory/scratch/' not in ignored.splitlines():
-        exclude.write_text(ignored + '\n/.software-factory/scratch/\n')
-    with tempfile.TemporaryDirectory(prefix='factory-red-', dir=scratch) as tmp:
+    if '/.plumb/scratch/' not in ignored.splitlines():
+        exclude.write_text(ignored + '\n/.plumb/scratch/\n')
+    with tempfile.TemporaryDirectory(prefix='plumb-red-', dir=scratch) as tmp:
         work = Path(tmp) / 'work'
         record['verification_clone'] = str(work)
         checkpoint.write_text(json.dumps(record, indent=2) + '\n')

@@ -42,7 +42,7 @@ class GuaranteeReportTests(unittest.TestCase):
             policy.write_text(json.dumps({'schema_version': 1, 'run_id': 'fixture', 'slice_id': 'feature',
                                           'root': str(root), 'owns': ['tests/'], 'reads': [], 'frozen': frozen}))
             for name in frozen:
-                result = subprocess.run([sys.executable, str(guarantees.ROOT / 'hooks/factory_v2_gate.py'),
+                result = subprocess.run([sys.executable, str(guarantees.ROOT / 'hooks/plumb_v2_gate.py'),
                                          '--policy', str(policy)], input=json.dumps({
                                              'tool_name': 'Write', 'tool_input': {'file_path': name, 'content': 'weakened'}}),
                                         text=True, capture_output=True, check=False)
