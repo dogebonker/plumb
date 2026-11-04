@@ -1,0 +1,1 @@
+For this simulation the legal owner confirms LEGAL-203 governs current v1 records. Keep v1 payload and authorization boundary. Change only audit retention to 7 days, then update module knowledge to record the legal decision and superseded 30-day Confluence policy. Captured sources remain immutable. This is a simulated source-selection decision, not permission to apply edits.

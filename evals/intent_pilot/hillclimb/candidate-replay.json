@@ -1,0 +1,18 @@
+{
+  "reason": "Strengthen snapshot checks to inspect actual iteration workspace, not seed",
+  "reused_receipts": [
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0001.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0002.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0003.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0004.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0005.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0006.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0007.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0008.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0009.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0010.json"
+  ],
+  "new_model_calls": 0,
+  "each_system_and_payload_compared_exactly": true,
+  "original_evaluator_binding": "frozen-v1.json"
+}

@@ -1,0 +1,9 @@
+test_all_supported_sizes_and_iterables (test_ingester.AcceptTests.test_all_supported_sizes_and_iterables) ... ok
+test_existing_accepted_batches (test_ingester.AcceptTests.test_existing_accepted_batches) ... ok
+test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK
+Exit code: 0

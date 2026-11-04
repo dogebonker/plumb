@@ -1,0 +1,188 @@
+{
+  "arm": "raw",
+  "citations": [
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 20,
+      "original_quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")",
+      "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+    },
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 30,
+      "original_quote": "an\nastral character collapses to *two* dashes. Handled with `len_utf16()`",
+      "quote": "an astral character collapses to *two* dashes. Handled with `len_utf16()`"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 216,
+      "line_in_excerpt": 32,
+      "quote": "if c.is_ascii_alphanumeric() {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 221,
+      "line_in_excerpt": 37,
+      "quote": "for _ in 0..c.len_utf16() {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 235,
+      "line_in_excerpt": 47,
+      "quote": "if let Some(rest) = slug.strip_prefix(\"--\") {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    }
+  ],
+  "id": "85218bca3bd4",
+  "prompt_sha256": "0a61dc96145ac7f1b3aba04a9bb636b86ff489376d99b075bca048e80b2ee29b",
+  "protocol_sha256": "3ad0519275dd1af43d3c5b37e0bcbac663da3abb0604eeaa552cb98f9463112d",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 7904,
+    "duration_ms": 8042,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 3865,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 37364,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 37364,
+        "cacheReadInputTokens": 1053,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.15717530000000002,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 761,
+        "provider": "firstParty",
+        "thinkingTokens": 135,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"an astral character collapses to *two* dashes. Handled with `len_utf16()`\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if let Some(rest) = slug.strip_prefix(\\\"--\\\") {\"}],\"explanation\":\"The active correction commit says Claude Code collapses every non-alphanumeric UTF-16 code unit to a dash, with no NFC normalization. It also says the fallback decoder recovers posix, drive-letter and UNC prefixes. The implementation matches all of this. encode_project emits one dash per UTF-16 unit for each non-ASCII-alphanumeric character. decode_project handles UNC, drive-letter and posix slugs, and its lossiness is accepted. The old plan is only a future proposal, so its NFC and MSIX claims are not active promises.\",\"question\":\"\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "314220f0-6547-475f-a9ee-0a7cd9c650fb",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_status": "aligned",
+      "evidence": [
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+        },
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "an astral character collapses to *two* dashes. Handled with `len_utf16()`"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "if c.is_ascii_alphanumeric() {"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "for _ in 0..c.len_utf16() {"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "if let Some(rest) = slug.strip_prefix(\"--\") {"
+        }
+      ],
+      "explanation": "The active correction commit says Claude Code collapses every non-alphanumeric UTF-16 code unit to a dash, with no NFC normalization. It also says the fallback decoder recovers posix, drive-letter and UNC prefixes. The implementation matches all of this. encode_project emits one dash per UTF-16 unit for each non-ASCII-alphanumeric character. decode_project handles UNC, drive-letter and posix slugs, and its lossiness is accepted. The old plan is only a future proposal, so its NFC and MSIX claims are not active promises.",
+      "needs_human": false,
+      "question": "",
+      "source_status": "compatible"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 138,
+    "total_cost_usd": 0.15717530000000002,
+    "ttft_ms": 5156,
+    "ttft_stream_ms": 3865,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 37364,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 37364,
+      "cache_read_input_tokens": 1053,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 37364,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 37364,
+          "cache_read_input_tokens": 1053,
+          "input_tokens": 2,
+          "output_tokens": 761,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 761,
+      "output_tokens_details": {
+        "thinking_tokens": 135
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "b8f1c56b-005f-4e00-a220-b4aa93fae78f"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 8.76632795803016,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":7904,\"stop_reason\":\"tool_use\",\"session_id\":\"314220f0-6547-475f-a9ee-0a7cd9c650fb\",\"total_cost_usd\":0.15717530000000002,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":37364,\"cache_read_input_tokens\":1053,\"output_tokens\":761,\"output_tokens_details\":{\"thinking_tokens\":135},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":37364,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":761,\"cache_read_input_tokens\":1053,\"cache_creation_input_tokens\":37364,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":37364},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":761,\"cacheReadInputTokens\":1053,\"cacheCreationInputTokens\":37364,\"webSearchRequests\":0,\"costUSD\":0.15717530000000002,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":135,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":37364,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"code_status\\\":\\\"aligned\\\",\\\"source_status\\\":\\\"compatible\\\",\\\"needs_human\\\":false,\\\"evidence\\\":[{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\\\\\"-\\\\\\\")\\\"},{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"an astral character collapses to *two* dashes. Handled with `len_utf16()`\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"if c.is_ascii_alphanumeric() {\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"for _ in 0..c.len_utf16() {\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"if let Some(rest) = slug.strip_prefix(\\\\\\\"--\\\\\\\") {\\\"}],\\\"explanation\\\":\\\"The active correction commit says Claude Code collapses every non-alphanumeric UTF-16 code unit to a dash, with no NFC normalization. It also says the fallback decoder recovers posix, drive-letter and UNC prefixes. The implementation matches all of this. encode_project emits one dash per UTF-16 unit for each non-ASCII-alphanumeric character. decode_project handles UNC, drive-letter and posix slugs, and its lossiness is accepted. The old plan is only a future proposal, so its NFC and MSIX claims are not active promises.\\\",\\\"question\\\":\\\"\\\"}\",\"structured_output\":{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"an astral character collapses to *two* dashes. Handled with `len_utf16()`\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if let Some(rest) = slug.strip_prefix(\\\"--\\\") {\"}],\"explanation\":\"The active correction commit says Claude Code collapses every non-alphanumeric UTF-16 code unit to a dash, with no NFC normalization. It also says the fallback decoder recovers posix, drive-letter and UNC prefixes. The implementation matches all of this. encode_project emits one dash per UTF-16 unit for each non-ASCII-alphanumeric character. decode_project handles UNC, drive-letter and posix slugs, and its lossiness is accepted. The old plan is only a future proposal, so its NFC and MSIX claims are not active promises.\",\"question\":\"\"},\"ttft_ms\":5156,\"type\":\"result\",\"duration_ms\":8042,\"uuid\":\"b8f1c56b-005f-4e00-a220-b4aa93fae78f\",\"ttft_stream_ms\":3865,\"time_to_request_ms\":138,\"first_content_frame_ms\":3865,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "validation": "valid"
+}

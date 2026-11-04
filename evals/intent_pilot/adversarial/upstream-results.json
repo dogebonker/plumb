@@ -1,0 +1,161 @@
+{
+  "method": "fake API + scripted model controls; no model inference/network",
+  "production_connector_implemented": false,
+  "cases": [
+    {
+      "name": "stable_guarded_apply",
+      "applied": true,
+      "status": "applied",
+      "outcome": "applied",
+      "actual_code_days": 7,
+      "upstream_revision": 1,
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "local_core_cannot_see_remote_change",
+      "applied": true,
+      "status": "applied",
+      "outcome": "remaining_gap",
+      "actual_code_days": 7,
+      "upstream_revision": 2,
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "freshness_gate_rejects_remote_change",
+      "applied": false,
+      "reason": "Captured source is stale",
+      "outcome": "blocked",
+      "actual_code_days": 30,
+      "upstream_revision": 2,
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "read_failure_403",
+      "action_invocations": 0,
+      "outcome": "blocked",
+      "reason": "Source unavailable: 403",
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 403
+        }
+      ]
+    },
+    {
+      "name": "read_failure_404",
+      "action_invocations": 0,
+      "outcome": "blocked",
+      "reason": "Source unavailable: 404",
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "name": "read_failure_429",
+      "action_invocations": 0,
+      "outcome": "blocked",
+      "reason": "Source unavailable: 429",
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 429
+        }
+      ]
+    },
+    {
+      "name": "read_failure_503",
+      "action_invocations": 0,
+      "outcome": "blocked",
+      "reason": "Source unavailable: 503",
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "writeback_after_approval_race",
+      "outcome": "blocked",
+      "newer_document_preserved": true,
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "PATCH",
+          "status": 409
+        }
+      ]
+    },
+    {
+      "name": "fresh_conditional_writeback",
+      "outcome": "updated",
+      "revision": 2,
+      "events": [
+        {
+          "method": "GET",
+          "status": 200
+        },
+        {
+          "method": "PATCH",
+          "status": 200
+        },
+        {
+          "method": "GET",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "check_then_remote_change_race",
+      "outcome": "remaining_gap",
+      "actual_code_days": 7,
+      "current_remote_days": 30,
+      "meaning": "A freshness read cannot make a later local edit atomic with remote policy changes."
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "arm": "raw",
+  "id": "6daf1c227a42",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 529,
+    "response": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "    let raw_session_id = rows\n        .iter()\n        .find_map(|row| row.value.get(\"sessionId\").and_then(Value::as_str))\n        .map(ToOwned::to_owned);",
+      "explanation": "session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.",
+      "intent_quote": "Scan the rows for the first `sessionId` instead of demanding it on\nrecord 0. Subagents derive their id from the path regardless, so they\ntolerate the id being absent entirely; only a top-level session still\nrequires one.",
+      "question": "Does the fixture round-trip test pass for the fork transcript?",
+      "verdict": "consistent"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "1e75b3f9ba4b597c656d4e3a0d3fa60f00fe1555ff02a3938db7564948228e42",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 12169,
+    "duration_ms": 12387,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 8581,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 18650,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 18650,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0808153,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 613,
+        "provider": "firstParty",
+        "thinkingTokens": 190,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"Scan the rows for the first `sessionId` instead of demanding it on\\nrecord 0. Subagents derive their id from the path regardless, so they\\ntolerate the id being absent entirely; only a top-level session still\\nrequires one.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    let raw_session_id = rows\\n        .iter()\\n        .find_map(|row| row.value.get(\\\"sessionId\\\").and_then(Value::as_str))\\n        .map(ToOwned::to_owned);\",\"explanation\":\"session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.\",\"question\":\"Does the fixture round-trip test pass for the fork transcript?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "c22db288-dbca-416d-8371-1f8b761ed3d3",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "    let raw_session_id = rows\n        .iter()\n        .find_map(|row| row.value.get(\"sessionId\").and_then(Value::as_str))\n        .map(ToOwned::to_owned);",
+      "explanation": "session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.",
+      "intent_quote": "Scan the rows for the first `sessionId` instead of demanding it on\nrecord 0. Subagents derive their id from the path regardless, so they\ntolerate the id being absent entirely; only a top-level session still\nrequires one.",
+      "question": "Does the fixture round-trip test pass for the fork transcript?",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 198,
+    "total_cost_usd": 0.0808153,
+    "ttft_ms": 10001,
+    "ttft_stream_ms": 8579,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 18650,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 18650,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 18650,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 18650,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 613,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 613,
+      "output_tokens_details": {
+        "thinking_tokens": 190
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "a0626e8e-b856-41bd-a925-9d0e5cb9d3e2"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 15.253455540980212,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":12169,\"stop_reason\":\"tool_use\",\"session_id\":\"c22db288-dbca-416d-8371-1f8b761ed3d3\",\"total_cost_usd\":0.0808153,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":18650,\"cache_read_input_tokens\":813,\"output_tokens\":613,\"output_tokens_details\":{\"thinking_tokens\":190},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":18650,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":613,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":18650,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":18650},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":613,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":18650,\"webSearchRequests\":0,\"costUSD\":0.0808153,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":190,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":18650,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"Scan the rows for the first `sessionId` instead of demanding it on\\\\nrecord 0. Subagents derive their id from the path regardless, so they\\\\ntolerate the id being absent entirely; only a top-level session still\\\\nrequires one.\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"    let raw_session_id = rows\\\\n        .iter()\\\\n        .find_map(|row| row.value.get(\\\\\\\"sessionId\\\\\\\").and_then(Value::as_str))\\\\n        .map(ToOwned::to_owned);\\\",\\\"explanation\\\":\\\"session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.\\\",\\\"question\\\":\\\"Does the fixture round-trip test pass for the fork transcript?\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"Scan the rows for the first `sessionId` instead of demanding it on\\nrecord 0. Subagents derive their id from the path regardless, so they\\ntolerate the id being absent entirely; only a top-level session still\\nrequires one.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    let raw_session_id = rows\\n        .iter()\\n        .find_map(|row| row.value.get(\\\"sessionId\\\").and_then(Value::as_str))\\n        .map(ToOwned::to_owned);\",\"explanation\":\"session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.\",\"question\":\"Does the fixture round-trip test pass for the fork transcript?\"},\"ttft_ms\":10001,\"type\":\"result\",\"duration_ms\":12387,\"uuid\":\"a0626e8e-b856-41bd-a925-9d0e5cb9d3e2\",\"ttft_stream_ms\":8579,\"time_to_request_ms\":198,\"first_content_frame_ms\":8581,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

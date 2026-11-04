@@ -1,0 +1,170 @@
+<div id="plumb-architecture-challenge">
+  <h3>Plumb: proposed revisions</h3>
+  <div class="text-small text-muted">Design challenge · recommendations not applied</div>
+  <div class="nav nav-pills" role="tablist" aria-label="Architecture diagrams">
+    <button class="nav-link active" id="plumb-pipeline-tab" role="tab" aria-controls="plumb-pipeline-panel" aria-selected="true" type="button">Pipeline</button>
+    <button class="nav-link" id="plumb-trust-tab" role="tab" aria-controls="plumb-trust-panel" aria-selected="false" type="button">Trust boundary</button>
+    <button class="nav-link" id="plumb-status-tab" role="tab" aria-controls="plumb-status-panel" aria-selected="false" type="button">Run outcomes</button>
+  </div>
+  <div id="plumb-pipeline-panel" role="tabpanel" aria-labelledby="plumb-pipeline-tab">
+    <svg class="plumb-diagram" id="plumb-pipeline" role="img" aria-label="Recommended minimal pipeline: selected intent and pinned Git, declared scope, bounded context, model assessment, citation validation, report and human resolution."></svg>
+  </div>
+  <div id="plumb-trust-panel" role="tabpanel" aria-labelledby="plumb-trust-tab" hidden>
+    <svg class="plumb-diagram" id="plumb-trust" role="img" aria-label="Repository documents and repository policy are evidence. Only an independently operator-selected policy controls precedence. Git age does not grant authority."></svg>
+  </div>
+  <div id="plumb-status-panel" role="tabpanel" aria-labelledby="plumb-status-tab" hidden>
+    <div class="viz-controls">
+      <label class="form-label" for="plumb-scenario">Review scenario
+        <select class="form-select" id="plumb-scenario">
+          <option value="rewrite">Code and spec revised together</option>
+          <option value="caller">Relevant caller unavailable</option>
+          <option value="timeout">Provider times out</option>
+          <option value="clean">Complete review, no mismatch</option>
+          <option value="mismatch">Complete review, mismatch</option>
+          <option value="preflight">Invalid range or credentials</option>
+        </select>
+      </label>
+    </div>
+    <svg class="plumb-diagram" id="plumb-status" role="img" aria-label="Analysis completion and human resolution are separate; shell exit reflects both."></svg>
+    <div class="text-small" id="plumb-status-detail" aria-live="polite">Review finished · person confirms intended policy change</div>
+  </div>
+</div>
+<style>
+  #plumb-architecture-challenge { color: var(--foreground); }
+  #plumb-architecture-challenge .plumb-diagram { display: block; width: 100%; overflow: visible; }
+  #plumb-architecture-challenge .plumb-node { fill: color-mix(in srgb, var(--viz-series-1) 7%, transparent); stroke: var(--border); stroke-width: 1; }
+  #plumb-architecture-challenge .plumb-node-selected { fill: color-mix(in srgb, var(--viz-series-1) 16%, transparent); }
+  #plumb-architecture-challenge .plumb-edge { fill: none; stroke: var(--muted-foreground); stroke-width: 1.4; }
+  #plumb-architecture-challenge .plumb-label { fill: var(--foreground); font-size: 13px; font-weight: 500; }
+  #plumb-architecture-challenge .plumb-detail { fill: var(--muted-foreground); font-size: 13px; }
+</style>
+<script>
+(() => {
+  const root = document.getElementById('plumb-architecture-challenge');
+  const ns = 'http://www.w3.org/2000/svg';
+  const selector = root.querySelector('#plumb-scenario');
+  const detail = root.querySelector('#plumb-status-detail');
+  const scenarios = {
+    rewrite: { analysis: 'Analysis complete', decision: 'Human decision needed', exit: 1, detail: 'Review finished · person confirms intended policy change' },
+    caller: { analysis: 'Analysis incomplete', decision: 'Evidence still missing', exit: 3, detail: 'Relevant caller unavailable · no complete verdict' },
+    timeout: { analysis: 'Analysis incomplete', decision: 'Decision not established', exit: 3, detail: 'Provider timed out · preserve any valid partial evidence' },
+    clean: { analysis: 'Analysis complete', decision: 'No questions found', exit: 0, detail: 'Declared scope reviewed · no retained mismatch' },
+    mismatch: { analysis: 'Analysis complete', decision: 'Human decision needed', exit: 1, detail: 'Cited mismatch · person chooses code or spec correction' },
+    preflight: { analysis: 'Preflight failed', decision: 'Review not started', exit: 2, detail: 'Input or acquisition failure · no analysis verdict' }
+  };
+  const scenarioFor = key => scenarios[key] || scenarios.rewrite;
+  let scenario = 'rewrite';
+
+  function element(name, attributes, text) {
+    const node = document.createElementNS(ns, name);
+    Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function start(svg, height, title) {
+    const width = Math.max(280, root.getBoundingClientRect().width);
+    svg.replaceChildren(element('title', {}, title));
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('height', height);
+    const defs = element('defs', {});
+    const marker = element('marker', { id: `${svg.id}-arrow`, viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' });
+    marker.append(element('path', { d: 'M 0 0 L 8 4 L 0 8 Z', fill: 'var(--muted-foreground)' }));
+    defs.append(marker);
+    svg.append(defs);
+    return width;
+  }
+
+  function text(svg, x, y, lines, className = 'plumb-label') {
+    const label = element('text', { x, y, 'text-anchor': 'middle', class: className });
+    lines.forEach((line, index) => label.append(element('tspan', { x, dy: index === 0 ? 0 : '1.25em' }, line)));
+    svg.append(label);
+  }
+
+  function node(svg, x, y, width, lines, selected = false) {
+    const height = lines.length > 2 ? 82 : lines.length > 1 ? 66 : 54;
+    svg.append(element('rect', { x: x - width / 2, y, width, height, rx: 5, class: selected ? 'plumb-node plumb-node-selected' : 'plumb-node' }));
+    text(svg, x, y + (lines.length > 1 ? 26 : 32), lines);
+    return { x, y, width, height };
+  }
+
+  function edge(svg, from, to, orientation = 'down') {
+    let d;
+    if (orientation === 'right') d = `M ${from.x + from.width / 2} ${from.y + from.height / 2} L ${to.x - to.width / 2 - 3} ${to.y + to.height / 2}`;
+    else if (orientation === 'left') d = `M ${from.x - from.width / 2} ${from.y + from.height / 2} L ${to.x + to.width / 2 + 3} ${to.y + to.height / 2}`;
+    else d = `M ${from.x} ${from.y + from.height} L ${to.x} ${to.y - 4}`;
+    svg.append(element('path', { d, class: 'plumb-edge', 'marker-end': `url(#${svg.id}-arrow)` }));
+  }
+
+  function drawPipeline() {
+    const svg = root.querySelector('#plumb-pipeline');
+    const narrow = root.getBoundingClientRect().width < 560;
+    const width = start(svg, narrow ? 690 : 354, 'Proposed minimal first release, with optional disproof deferred to evaluation');
+    const labels = [['Selected intent', '+ pinned Git'], ['Declare scope', 'Include / omit'], ['Bounded context', 'Docs + code'], ['Model assessment', 'Cited hypotheses'], ['Citation check', 'Quote / revision'], ['Report', 'Findings + gaps'], ['Person resolves', 'Code / spec /', 'source conflict']];
+    const nodes = labels.map((lines, index) => {
+      if (narrow) return node(svg, width / 2, 18 + index * 86, Math.min(260, width - 24), lines, index === 1);
+      const positions = [[0,0], [1,0], [2,0], [2,1], [1,1], [0,1], [0,2]];
+      const [column, row] = positions[index];
+      return node(svg, width * (column + 0.5) / 3, 20 + row * 110, width / 3 - 34, lines, index === 1);
+    });
+    for (let index = 1; index < nodes.length; index++) {
+      edge(svg, nodes[index - 1], nodes[index], narrow || index === 3 || index === 6 ? 'down' : index < 3 ? 'right' : 'left');
+    }
+    text(svg, narrow ? width / 2 : width * 2 / 3, narrow ? 649 : 278, ['Optional disproof trial', 'Only if evaluations show a gain'], 'plumb-detail text-small');
+  }
+
+  function drawTrust() {
+    const svg = root.querySelector('#plumb-trust');
+    const width = start(svg, 370, 'Evidence and operator authority are separate inputs');
+    const boxWidth = Math.min(220, width / 2 - 24);
+    const left = width / 4;
+    const right = width * 3 / 4;
+    const repo = node(svg, left, 42, boxWidth, ['Repo docs', '+ repo policy']);
+    const operator = node(svg, right, 42, boxWidth, ['Operator', 'Trusted policy'], true);
+    const evidence = node(svg, left, 155, boxWidth, ['Quoted text', 'Evidence only']);
+    const precedence = node(svg, right, 155, boxWidth, ['Precedence', 'Operator picks'], true);
+    const assessment = node(svg, width / 2, 285, Math.min(250, width - 32), ['Assessment + question']);
+    edge(svg, repo, evidence);
+    edge(svg, operator, precedence);
+    edge(svg, evidence, assessment);
+    edge(svg, precedence, assessment);
+    text(svg, width / 2, 17, ['Git age ≠ operator trust'], 'plumb-detail text-small');
+  }
+
+  function drawStatus() {
+    const current = scenarioFor(scenario);
+    const svg = root.querySelector('#plumb-status');
+    const narrow = root.getBoundingClientRect().width < 560;
+    const width = start(svg, narrow ? 284 : 136, 'Recommended separation of analysis completion, human decision and shell exit');
+    const labels = [current.analysis.split(/ (?=[^ ]+$)/), current.decision.split(/ (?=[^ ]+$)/), [`Exit ${current.exit}`]];
+    const nodes = labels.map((lines, index) => node(svg, narrow ? width / 2 : width * (index + 0.5) / 3, narrow ? 16 + index * 86 : 36, narrow ? Math.min(270, width - 24) : width / 3 - 30, lines, index === 2));
+    edge(svg, nodes[0], nodes[1], narrow ? 'down' : 'right');
+    edge(svg, nodes[1], nodes[2], narrow ? 'down' : 'right');
+    detail.textContent = current.detail;
+  }
+
+  function redraw() {
+    drawPipeline();
+    drawTrust();
+    drawStatus();
+  }
+
+  function restore(state) {
+    const saved = state && state.modelContent && state.modelContent.scenario;
+    scenario = Object.hasOwn(scenarios, saved) ? saved : 'rewrite';
+    selector.value = scenario;
+    redraw();
+  }
+
+  selector.addEventListener('change', () => {
+    scenario = selector.value;
+    drawStatus();
+    if (window.openai && window.openai.setWidgetState) window.openai.setWidgetState({ modelContent: { scenario }, privateContent: null }).catch(() => {});
+  });
+  window.addEventListener('openai:set_globals', event => {
+    if (event.detail && event.detail.globals && event.detail.globals.widgetState) restore(event.detail.globals.widgetState);
+  });
+  new ResizeObserver(redraw).observe(root);
+  restore(window.openai && window.openai.widgetState);
+})();
+</script>

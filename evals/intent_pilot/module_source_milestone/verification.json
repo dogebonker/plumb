@@ -1,0 +1,16 @@
+{
+  "commit": "b049b2e8ba3a418ad54eebe738c9d8fbe8a8d1c3",
+  "source_blob": "9ff4dca9355d75b338737d8150b077dadb58e163",
+  "source_bytes": 115498,
+  "selected_section_bytes": 2464,
+  "code_files": 3,
+  "all_code_and_source_match_committed_blobs": true,
+  "section_is_verbatim": true,
+  "okf_draft_metadata_checked": true,
+  "status": "current",
+  "refresh": "unchanged",
+  "refresh_changed_files": [],
+  "original_repo_status_unchanged": true,
+  "new_model_calls": 0,
+  "scope": "Committed snapshot and local Git freshness; no semantic alignment verdict"
+}

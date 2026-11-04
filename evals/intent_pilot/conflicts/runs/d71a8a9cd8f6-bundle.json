@@ -1,0 +1,187 @@
+{
+  "arm": "bundle",
+  "citations": [
+    {
+      "id": "corrected-plan",
+      "kind": "source",
+      "line": 58,
+      "original_quote": "every non-alphanumeric character becomes `-`",
+      "quote": "every non-alphanumeric character becomes `-`"
+    },
+    {
+      "id": "corrected-plan",
+      "kind": "source",
+      "line": 61,
+      "original_quote": "NFC normalization does not apply.",
+      "quote": "NFC normalization does not apply."
+    },
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 30,
+      "original_quote": "an\nastral character collapses to *two* dashes",
+      "quote": "an astral character collapses to *two* dashes"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 216,
+      "line_in_excerpt": 32,
+      "quote": "if c.is_ascii_alphanumeric() {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 221,
+      "line_in_excerpt": 37,
+      "quote": "for _ in 0..c.len_utf16() {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    }
+  ],
+  "id": "d71a8a9cd8f6",
+  "prompt_sha256": "6f63df8cf515fadc81dfd6abc652f7642dfa4fa942f623cc1af4e8df7ffb1a8c",
+  "protocol_sha256": "3ad0519275dd1af43d3c5b37e0bcbac663da3abb0604eeaa552cb98f9463112d",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 6912,
+    "duration_ms": 7049,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 2690,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 3518,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 3518,
+        "cacheReadInputTokens": 1053,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0213713,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 719,
+        "provider": "firstParty",
+        "thinkingTokens": 209,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"corrected-plan\",\"quote\":\"every non-alphanumeric character becomes `-`\"},{\"kind\":\"source\",\"id\":\"corrected-plan\",\"quote\":\"NFC normalization does not apply.\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"an astral character collapses to *two* dashes\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\"}],\"explanation\":\"encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 unit and does no NFC normalization, as the active sources require. The older plan bullet (NFC, specific character list) is explicitly corrected by the same document and the commit. The fallback decoder recovers posix, drive-letter and UNC prefixes and is acknowledged as lossy.\",\"question\":\"\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "2563c82c-a07c-4fe2-bc75-6b3cc0c660be",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_status": "aligned",
+      "evidence": [
+        {
+          "id": "corrected-plan",
+          "kind": "source",
+          "quote": "every non-alphanumeric character becomes `-`"
+        },
+        {
+          "id": "corrected-plan",
+          "kind": "source",
+          "quote": "NFC normalization does not apply."
+        },
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "an astral character collapses to *two* dashes"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "if c.is_ascii_alphanumeric() {"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "for _ in 0..c.len_utf16() {"
+        }
+      ],
+      "explanation": "encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 unit and does no NFC normalization, as the active sources require. The older plan bullet (NFC, specific character list) is explicitly corrected by the same document and the commit. The fallback decoder recovers posix, drive-letter and UNC prefixes and is acknowledged as lossy.",
+      "needs_human": false,
+      "question": "",
+      "source_status": "compatible"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 136,
+    "total_cost_usd": 0.0213713,
+    "ttft_ms": 4807,
+    "ttft_stream_ms": 2690,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 3518,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 3518,
+      "cache_read_input_tokens": 1053,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 3518,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 3518,
+          "cache_read_input_tokens": 1053,
+          "input_tokens": 2,
+          "output_tokens": 719,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 719,
+      "output_tokens_details": {
+        "thinking_tokens": 209
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "8f7e6434-d5e0-451f-a5ca-3dbdca8731e9"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 7.757755167025607,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":6912,\"stop_reason\":\"tool_use\",\"session_id\":\"2563c82c-a07c-4fe2-bc75-6b3cc0c660be\",\"total_cost_usd\":0.0213713,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":3518,\"cache_read_input_tokens\":1053,\"output_tokens\":719,\"output_tokens_details\":{\"thinking_tokens\":209},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":3518,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":719,\"cache_read_input_tokens\":1053,\"cache_creation_input_tokens\":3518,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":3518},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":719,\"cacheReadInputTokens\":1053,\"cacheCreationInputTokens\":3518,\"webSearchRequests\":0,\"costUSD\":0.0213713,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":209,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":3518,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"code_status\\\":\\\"aligned\\\",\\\"source_status\\\":\\\"compatible\\\",\\\"needs_human\\\":false,\\\"evidence\\\":[{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"corrected-plan\\\",\\\"quote\\\":\\\"every non-alphanumeric character becomes `-`\\\"},{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"corrected-plan\\\",\\\"quote\\\":\\\"NFC normalization does not apply.\\\"},{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"an astral character collapses to *two* dashes\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"if c.is_ascii_alphanumeric() {\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"for _ in 0..c.len_utf16() {\\\"}],\\\"explanation\\\":\\\"encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 unit and does no NFC normalization, as the active sources require. The older plan bullet (NFC, specific character list) is explicitly corrected by the same document and the commit. The fallback decoder recovers posix, drive-letter and UNC prefixes and is acknowledged as lossy.\\\",\\\"question\\\":\\\"\\\"}\",\"structured_output\":{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"corrected-plan\",\"quote\":\"every non-alphanumeric character becomes `-`\"},{\"kind\":\"source\",\"id\":\"corrected-plan\",\"quote\":\"NFC normalization does not apply.\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"an astral character collapses to *two* dashes\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\"}],\"explanation\":\"encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 unit and does no NFC normalization, as the active sources require. The older plan bullet (NFC, specific character list) is explicitly corrected by the same document and the commit. The fallback decoder recovers posix, drive-letter and UNC prefixes and is acknowledged as lossy.\",\"question\":\"\"},\"ttft_ms\":4807,\"type\":\"result\",\"duration_ms\":7049,\"uuid\":\"8f7e6434-d5e0-451f-a5ca-3dbdca8731e9\",\"ttft_stream_ms\":2690,\"time_to_request_ms\":136,\"first_content_frame_ms\":2690,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "validation": "valid"
+}

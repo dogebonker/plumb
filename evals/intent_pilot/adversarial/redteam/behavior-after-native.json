@@ -1,0 +1,23 @@
+{
+  "method": "actual synthetic source execution, prewritten maintainer policy; stdlib test doubles",
+  "csv": {
+    "pass": true,
+    "checks": [
+      "authorized CSV contains only invoice id and exact cents",
+      "unauthorized actor denied before serializer",
+      "source captures unchanged",
+      "OKF references governing and superseded decisions"
+    ]
+  },
+  "event": {
+    "pass": true,
+    "checks": [
+      "authorized close emits v1 account_id-only payload",
+      "topic routes to actual audit consumer",
+      "archive receives exactly seven-day retention",
+      "wrong owner and missing permission deny before state/event",
+      "source captures unchanged",
+      "OKF references governing and superseded decisions"
+    ]
+  }
+}

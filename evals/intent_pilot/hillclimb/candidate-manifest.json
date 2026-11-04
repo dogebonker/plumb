@@ -1,0 +1,24 @@
+{
+  "actor_turns": 12,
+  "claude_calls": 12,
+  "current_workflow": "iterations/0004/evaluation.json",
+  "holdout_pass": true,
+  "implementation_files": {
+    "plumb/README.md": "e9d53dc4287d9479cc0aae783abd7d8757342e0036b0fe0c073ac46f369656fb",
+    "plumb/__init__.py": "825e841b1561e95715c17603d2edccf2ea5c1d37ea5233c83819f2835d66f069",
+    "plumb/__main__.py": "5b8f52106f65ca9561651af33abd3fc722d5598ba9cd9b86795dfc3e1d582095",
+    "plumb/artifacts.py": "2f99996da361a75e18ddfe319cae64f7c1bc6cd31edb300acb8388102fd9dce3",
+    "plumb/core.py": "3c2e5a3f012f4ba7cde492f970c8b5b8356cd0b469ae63b7fee73fc32b7244b1",
+    "plumb/model.py": "898856eb7fbfcd7d4487f2cf0b19411f1e49e6d5cab0165d0e0f517bd34a4cfe",
+    "plumb/reconcile.md": "65e490153bec538085a3de11c3b752e801d47a01d4c655d8a18e55fd8bde2689",
+    "plumb/test_cli.py": "5d3bff9cee117c619ed53932f8806079003fbac1db5acc3df53c3838609899eb",
+    "plumb/test_core.py": "2504cd3ea08a7ee5080807452f20cbd2372176af68b579ba618952217a668e5c",
+    "plumb/test_model.py": "b6a84f2953d0d409fa06f5e78ef8eaa6f32ad97eb65363b15b44d69acdc73781"
+  },
+  "model_ids": [
+    "claude-fable-5-1"
+  ],
+  "no_further_inference": true,
+  "review": "FINAL_REVIEW.md",
+  "workflow_pass": true
+}

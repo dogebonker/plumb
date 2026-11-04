@@ -1,0 +1,160 @@
+{
+  "model": "claude-fable-5-1",
+  "tag": "holdout",
+  "list_cost_usd": 0.04158675,
+  "tokens": 2623,
+  "status": "completed",
+  "prompt_path": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0011.prompt.json",
+  "stdout": "{\"duration_api_ms\":5966,\"stop_reason\":\"end_turn\",\"session_id\":\"21146d30-0f82-45d6-ac1c-7f1b3af16856\",\"total_cost_usd\":0.04158675,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":1346,\"cache_read_input_tokens\":987,\"output_tokens\":288,\"output_tokens_details\":{\"thinking_tokens\":24},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":1346,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":288,\"cache_read_input_tokens\":987,\"cache_creation_input_tokens\":1346,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":1346},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-fable-5-1\":{\"inputTokens\":2,\"outputTokens\":288,\"cacheReadInputTokens\":987,\"cacheCreationInputTokens\":1346,\"webSearchRequests\":0,\"costUSD\":0.04158675,\"contextWindow\":1000000,\"maxOutputTokens\":64000,\"thinkingTokens\":24,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":1346,\"canonicalModel\":\"claude-fable-5-1\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":1,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"action\\\": \\\"inspect\\\", \\\"reads\\\": [{\\\"path\\\": \\\"README.md\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"code/__init__.py\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"code/documents.py\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"code/storage.py\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"knowledge/module.md\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"sources/current.md\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}, {\\\"path\\\": \\\"sources/proposal.md\\\", \\\"start_line\\\": 0, \\\"end_line\\\": 0}], \\\"searches\\\": [], \\\"outcome\\\": \\\"\\\", \\\"explanation\\\": \\\"\\\", \\\"question\\\": \\\"\\\", \\\"evidence\\\": [], \\\"links\\\": [], \\\"edits\\\": []}\",\"ttft_ms\":2736,\"type\":\"result\",\"duration_ms\":6075,\"uuid\":\"1abb4d4a-7fd8-4335-8e9d-d05813725a42\",\"ttft_stream_ms\":2188,\"time_to_request_ms\":108,\"first_content_frame_ms\":2188,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "stderr": "",
+  "returncode": 0,
+  "seconds": 6.828788415994495,
+  "provider": {
+    "duration_api_ms": 5966,
+    "stop_reason": "end_turn",
+    "session_id": "21146d30-0f82-45d6-ac1c-7f1b3af16856",
+    "total_cost_usd": 0.04158675,
+    "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 1346,
+      "cache_read_input_tokens": 987,
+      "output_tokens": 288,
+      "output_tokens_details": {
+        "thinking_tokens": 24
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 1346,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 288,
+          "cache_read_input_tokens": 987,
+          "cache_creation_input_tokens": 1346,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 1346
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-fable-5-1": {
+        "inputTokens": 2,
+        "outputTokens": 288,
+        "cacheReadInputTokens": 987,
+        "cacheCreationInputTokens": 1346,
+        "webSearchRequests": 0,
+        "costUSD": 0.04158675,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "thinkingTokens": 24,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 1346,
+        "canonicalModel": "claude-fable-5-1",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "safety_stops": 0,
+    "is_error": false,
+    "num_turns": 1,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"action\": \"inspect\", \"reads\": [{\"path\": \"README.md\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"code/__init__.py\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"code/documents.py\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"code/storage.py\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"knowledge/module.md\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"sources/current.md\", \"start_line\": 0, \"end_line\": 0}, {\"path\": \"sources/proposal.md\", \"start_line\": 0, \"end_line\": 0}], \"searches\": [], \"outcome\": \"\", \"explanation\": \"\", \"question\": \"\", \"evidence\": [], \"links\": [], \"edits\": []}",
+    "ttft_ms": 2736,
+    "type": "result",
+    "duration_ms": 6075,
+    "uuid": "1abb4d4a-7fd8-4335-8e9d-d05813725a42",
+    "ttft_stream_ms": 2188,
+    "time_to_request_ms": 108,
+    "first_content_frame_ms": 2188,
+    "queued_turn_count": 0,
+    "result_index": 0
+  },
+  "response": {
+    "action": "inspect",
+    "reads": [
+      {
+        "path": "README.md",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "code/__init__.py",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "code/documents.py",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "code/storage.py",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "knowledge/module.md",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "sources/current.md",
+        "start_line": 0,
+        "end_line": 0
+      },
+      {
+        "path": "sources/proposal.md",
+        "start_line": 0,
+        "end_line": 0
+      }
+    ],
+    "searches": [],
+    "outcome": "",
+    "explanation": "",
+    "question": "",
+    "evidence": [],
+    "links": [],
+    "edits": []
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "arm": "raw",
+  "id": "638da979433c",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 315,
+    "response": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "    let watermark = if session_id.is_some() {\n        driver.peek_watermark(path)\n    } else {",
+      "explanation": "peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.",
+      "intent_quote": "Zero-byte files and claude-code transcripts with no timestamped row\n  gate Empty: provably nothing to ingest",
+      "question": "Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?",
+      "verdict": "mismatch"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "c0ee5d3da45f9a9b40ed0093a6e2c8b72d8878da304ff28baab19d480a3136cc",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 8572,
+    "duration_ms": 8715,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 2561,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 40210,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 40210,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.1704753,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 955,
+        "provider": "firstParty",
+        "thinkingTokens": 546,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"Zero-byte files and claude-code transcripts with no timestamped row\\n  gate Empty: provably nothing to ingest\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"    let watermark = if session_id.is_some() {\\n        driver.peek_watermark(path)\\n    } else {\",\"explanation\":\"peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.\",\"question\":\"Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "0cb2eb04-d556-4d77-83af-8a5c2eb06776",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "    let watermark = if session_id.is_some() {\n        driver.peek_watermark(path)\n    } else {",
+      "explanation": "peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.",
+      "intent_quote": "Zero-byte files and claude-code transcripts with no timestamped row\n  gate Empty: provably nothing to ingest",
+      "question": "Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 172,
+    "total_cost_usd": 0.1704753,
+    "ttft_ms": 6767,
+    "ttft_stream_ms": 2560,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 40210,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 40210,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 40210,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 40210,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 955,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 955,
+      "output_tokens_details": {
+        "thinking_tokens": 546
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "66029d58-a2e4-48bc-a7d6-a5ba3457da39"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 9.740683416021056,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":8572,\"stop_reason\":\"tool_use\",\"session_id\":\"0cb2eb04-d556-4d77-83af-8a5c2eb06776\",\"total_cost_usd\":0.1704753,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":40210,\"cache_read_input_tokens\":813,\"output_tokens\":955,\"output_tokens_details\":{\"thinking_tokens\":546},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":40210,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":955,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":40210,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":40210},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":955,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":40210,\"webSearchRequests\":0,\"costUSD\":0.1704753,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":546,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":40210,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"Zero-byte files and claude-code transcripts with no timestamped row\\\\n  gate Empty: provably nothing to ingest\\\",\\\"code_path\\\":\\\"src/adapter/jsonl.rs\\\",\\\"code_quote\\\":\\\"    let watermark = if session_id.is_some() {\\\\n        driver.peek_watermark(path)\\\\n    } else {\\\",\\\"explanation\\\":\\\"peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.\\\",\\\"question\\\":\\\"Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"Zero-byte files and claude-code transcripts with no timestamped row\\n  gate Empty: provably nothing to ingest\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"    let watermark = if session_id.is_some() {\\n        driver.peek_watermark(path)\\n    } else {\",\"explanation\":\"peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.\",\"question\":\"Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?\"},\"ttft_ms\":6767,\"type\":\"result\",\"duration_ms\":8715,\"uuid\":\"66029d58-a2e4-48bc-a7d6-a5ba3457da39\",\"ttft_stream_ms\":2560,\"time_to_request_ms\":172,\"first_content_frame_ms\":2561,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

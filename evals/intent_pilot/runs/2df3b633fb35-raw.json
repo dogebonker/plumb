@@ -1,0 +1,126 @@
+{
+  "arm": "raw",
+  "id": "2df3b633fb35",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "error": "intent quote absent from bound document",
+    "status": "invalid"
+  },
+  "prompt_sha256": "f8c391d4f41f03178d0e0343a9063f9d5cba78a4094cf4e7c7442f836323e81e",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 7625,
+    "duration_ms": 7830,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 5240,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 15309,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 15309,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0656613,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 434,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`)\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    if subagents_dir.file_name()?.to_str()? != \\\"subagents\\\" {\\n        return None;\\n    }\",\"explanation\":\"subagent_ids requires the file's immediate parent directory to be named \\\"subagents\\\", so nested paths like subagents/workflows/<wf-id>/agent-<hash>.jsonl return None. The id format is still only \\\"{parent_uuid}/agent-{hash}\\\". The nested file therefore falls back to the content sessionId, which is the old bug. There is also no Unsupported skip for unrecognized subagents/ layouts.\",\"question\":\"Is there another code path (outside this snapshot) that handles nested workflow paths?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "eb038f36-02d6-4036-85f4-5a83b4d376eb",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "    if subagents_dir.file_name()?.to_str()? != \"subagents\" {\n        return None;\n    }",
+      "explanation": "subagent_ids requires the file's immediate parent directory to be named \"subagents\", so nested paths like subagents/workflows/<wf-id>/agent-<hash>.jsonl return None. The id format is still only \"{parent_uuid}/agent-{hash}\". The nested file therefore falls back to the content sessionId, which is the old bug. There is also no Unsupported skip for unrecognized subagents/ layouts.",
+      "intent_quote": "The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`)",
+      "question": "Is there another code path (outside this snapshot) that handles nested workflow paths?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 222,
+    "total_cost_usd": 0.0656613,
+    "ttft_ms": 7782,
+    "ttft_stream_ms": 5240,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 15309,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 15309,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 15309,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 15309,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 434,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 434,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "bc96ced0-89e1-41c6-8f50-c8b8d5c25c41"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 12.027012207952794,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":7625,\"stop_reason\":\"tool_use\",\"session_id\":\"eb038f36-02d6-4036-85f4-5a83b4d376eb\",\"total_cost_usd\":0.0656613,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":15309,\"cache_read_input_tokens\":813,\"output_tokens\":434,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":15309,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":434,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":15309,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":15309},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":434,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":15309,\"webSearchRequests\":0,\"costUSD\":0.0656613,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":15309,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`)\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"    if subagents_dir.file_name()?.to_str()? != \\\\\\\"subagents\\\\\\\" {\\\\n        return None;\\\\n    }\\\",\\\"explanation\\\":\\\"subagent_ids requires the file's immediate parent directory to be named \\\\\\\"subagents\\\\\\\", so nested paths like subagents/workflows/<wf-id>/agent-<hash>.jsonl return None. The id format is still only \\\\\\\"{parent_uuid}/agent-{hash}\\\\\\\". The nested file therefore falls back to the content sessionId, which is the old bug. There is also no Unsupported skip for unrecognized subagents/ layouts.\\\",\\\"question\\\":\\\"Is there another code path (outside this snapshot) that handles nested workflow paths?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`)\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    if subagents_dir.file_name()?.to_str()? != \\\"subagents\\\" {\\n        return None;\\n    }\",\"explanation\":\"subagent_ids requires the file's immediate parent directory to be named \\\"subagents\\\", so nested paths like subagents/workflows/<wf-id>/agent-<hash>.jsonl return None. The id format is still only \\\"{parent_uuid}/agent-{hash}\\\". The nested file therefore falls back to the content sessionId, which is the old bug. There is also no Unsupported skip for unrecognized subagents/ layouts.\",\"question\":\"Is there another code path (outside this snapshot) that handles nested workflow paths?\"},\"ttft_ms\":7782,\"type\":\"result\",\"duration_ms\":7830,\"uuid\":\"bc96ced0-89e1-41c6-8f50-c8b8d5c25c41\",\"ttft_stream_ms\":5240,\"time_to_request_ms\":222,\"first_content_frame_ms\":5240,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

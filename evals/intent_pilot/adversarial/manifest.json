@@ -1,0 +1,12 @@
+{
+  "core_sha256": "a2125d81bbf2116713c96ff37c1ab5851d8ec43617f23cd580e073fc4c792ff8",
+  "claude_calls_still": 12,
+  "native_semantic_cases": 2,
+  "simulated_upstream_observations": 10,
+  "unresolved_limits": [
+    "uncaptured upstream changes",
+    "check-then-change race",
+    "semantic authority",
+    "real adoption and effort"
+  ]
+}

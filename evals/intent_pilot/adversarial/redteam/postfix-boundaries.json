@@ -1,0 +1,108 @@
+{
+  "method": "scripted control tests; zero provider calls; temporary local workspaces only",
+  "core_sha256": "5757bfcd60c7b90bfb3ed5e0697595a7f36d1bfab52683b66c2696d40e33ec5d",
+  "findings": [
+    {
+      "name": "sources_conflict_can_apply",
+      "expected": "reject unresolved proposal",
+      "report_outcome": "sources_conflict",
+      "observed": {
+        "admitted": false,
+        "error": "A resolved actionable check is required; resolve intent/evidence and recheck first",
+        "model_calls": 0
+      }
+    },
+    {
+      "name": "unknown_can_apply",
+      "expected": "reject unresolved proposal",
+      "report_outcome": "unknown",
+      "observed": {
+        "admitted": false,
+        "error": "A resolved actionable check is required; resolve intent/evidence and recheck first",
+        "model_calls": 0
+      }
+    },
+    {
+      "name": "unavailable_source_can_align",
+      "expected": "incomplete capture blocks alignment",
+      "observed": {
+        "outcome": "unknown",
+        "skipped": [
+          {
+            "path": "sources/legal.md",
+            "reason": "File exceeds snapshot limit: sources/legal.md"
+          }
+        ],
+        "model_calls": 0,
+        "model_told_skipped": false,
+        "model_file_listing": []
+      }
+    },
+    {
+      "name": "model_guess_admitted",
+      "expected": "semantic authority requires a person",
+      "report_outcome": "code_wrong",
+      "observed": {
+        "admitted": true,
+        "status": "applied",
+        "proposal_outcome": "code_wrong",
+        "operator_decision": null,
+        "model_calls": 2
+      },
+      "classification": "prompt-only semantic boundary; scripted acceptance is not model error rate"
+    },
+    {
+      "name": "source_revision_controls",
+      "captured_local": {
+        "admitted": false,
+        "error": "Workspace input changed since proposal: sources/design.md"
+      },
+      "uncaptured_remote": {
+        "admitted": true,
+        "status": "applied"
+      },
+      "classification": "local binding positive control; remote is a simulated documented unsupported freshness boundary"
+    },
+    {
+      "name": "new_unreadable_source_ignored_during_apply",
+      "expected": "new unavailable selected source invalidates proposal",
+      "observed": {
+        "admitted": false,
+        "error": "Workspace is not fully readable since proposal"
+      }
+    },
+    {
+      "name": "invalid_terminal_outcomes_from_actionable_report",
+      "expected": "reject nonactionable model proposal after inspection",
+      "cases": [
+        {
+          "check_outcome": "code_wrong",
+          "proposal_outcome": "unknown",
+          "observed": {
+            "admitted": false,
+            "error": "A resolved actionable proposal result is required before an edit",
+            "model_calls": 2
+          }
+        },
+        {
+          "check_outcome": "code_wrong",
+          "proposal_outcome": "sources_conflict",
+          "observed": {
+            "admitted": false,
+            "error": "A resolved actionable proposal result is required before an edit",
+            "model_calls": 2
+          }
+        },
+        {
+          "check_outcome": "code_wrong",
+          "proposal_outcome": "aligned",
+          "observed": {
+            "admitted": false,
+            "error": "A resolved actionable proposal result is required before an edit",
+            "model_calls": 2
+          }
+        }
+      ]
+    }
+  ]
+}

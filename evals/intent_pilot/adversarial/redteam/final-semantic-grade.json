@@ -1,0 +1,41 @@
+{
+  "pass": true,
+  "method": "Independent semantic reading plus final snapshot byte hashes; runtime and scope proof retained in earlier independent artifacts",
+  "cases": {
+    "csv": {
+      "pass": true,
+      "checks": {
+        "aligned": true,
+        "no_edits": true,
+        "no_unanswered_question": true,
+        "no_skipped_inputs": true,
+        "report_snapshot_matches_resolved_workspace": true,
+        "explicitly_scoped_simulated_authority": true,
+        "manual_semantic_review_passed": true
+      },
+      "report_sha256": "1a323bfd50297c29c996e3e5a3e8c5e9b6ef41a453fb050749cc2e187130d067",
+      "scope": "Current source/code/knowledge agreement under prewritten simulated owner policy; no live authority or general reliability inference."
+    },
+    "event": {
+      "pass": true,
+      "checks": {
+        "aligned": true,
+        "no_edits": true,
+        "no_unanswered_question": true,
+        "no_skipped_inputs": true,
+        "report_snapshot_matches_resolved_workspace": true,
+        "explicitly_scoped_simulated_authority": true,
+        "manual_semantic_review_passed": true
+      },
+      "report_sha256": "b7983d52f4259a89ba6505a0231757a0001b82b44998850816d0af7c4f17b7ac",
+      "scope": "Current source/code/knowledge agreement under prewritten simulated owner policy; no live authority or general reliability inference."
+    }
+  },
+  "reporting_constraints": [
+    "Native checks/corrections were authored by the root actor through the bounded core; they were not new Claude-provider trials.",
+    "Ten upstream cases reproduce expected observations, including failures; do not report ten successful connector behaviors.",
+    "Freshness and conditional write operations exist only in the fake simulator.",
+    "A pre-apply remote read leaves a demonstrated check-then-change race.",
+    "No measured human effort, adoption, real maintainer approval, live vendor behavior, production concurrency or full OKF cross-consumer compatibility was established."
+  ]
+}

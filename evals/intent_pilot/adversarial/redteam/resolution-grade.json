@@ -1,0 +1,116 @@
+{
+  "method": "independent original/resolved byte comparisons, proposal inspection, exact source quote checks, manual knowledge semantic review; runtime checks in behavior-after-native.json",
+  "pass": true,
+  "cases": {
+    "csv_boundary": {
+      "pass": true,
+      "checks": {
+        "same_file_inventory": true,
+        "only_policy_targets_changed": true,
+        "captured_sources_byte_identical": true,
+        "guard_and_service_boundary_code_byte_identical": true,
+        "knowledge_declares_generated_simulation": true,
+        "knowledge_has_type_sources_metadata": true,
+        "knowledge_claims_no_real_human_verification": true,
+        "all_resource_references_resolve": true,
+        "normative_block_quotes_exact": true,
+        "each_proposal_one_scoped_actionable_edit": true
+      },
+      "changed_files": [
+        "code/billing/csv_writer.py",
+        "knowledge/billing-export.md"
+      ],
+      "exact_rule_quotes": [
+        {
+          "source_id": "privacy-current",
+          "quote": "All invoice CSV exports must omit customer_email, including billing support exports.",
+          "exact_source_span": true
+        },
+        {
+          "source_id": "privacy-current",
+          "quote": "No exception for can_export_billing actors is approved.",
+          "exact_source_span": true
+        }
+      ],
+      "proposals": [
+        {
+          "kind": "code",
+          "valid_scope_and_actionable_outcomes": true,
+          "path": "code/billing/csv_writer.py"
+        },
+        {
+          "kind": "knowledge",
+          "valid_scope_and_actionable_outcomes": true,
+          "path": "knowledge/billing-export.md"
+        }
+      ],
+      "resolved_file_sha256": {
+        "code/api/export.py": "d81471e06c9f71578c08bb62fb761b136b07def5c363bc9e9d4f318ca47ac6de",
+        "code/billing/csv_writer.py": "38136a0624ba31794e3031d5d839a6a9075eca1f3d582d8c77189ac84eee26d8",
+        "knowledge/billing-export.md": "404294b494043618134afb2f34bdb4bd3f9f99090fee44e52c62a01c534d660e",
+        "sources/confluence-roadmap.md": "8aaaa1937b002452c5d5b80e81182bb14c65b6351b76f27726ead717b0327d0a",
+        "sources/linear-privacy.md": "1e5addf5b68e86e8eba2c5c0eab2b924dc953be88da221a3f453fb56d8a92c13",
+        "sources/notion-export.md": "82fdb0987ea4006ea53e6694e0963f914b640f16a56240e304685bf867d4616a"
+      }
+    },
+    "event_boundary": {
+      "pass": true,
+      "checks": {
+        "same_file_inventory": true,
+        "only_policy_targets_changed": true,
+        "captured_sources_byte_identical": true,
+        "guard_and_service_boundary_code_byte_identical": true,
+        "knowledge_declares_generated_simulation": true,
+        "knowledge_has_type_sources_metadata": true,
+        "knowledge_claims_no_real_human_verification": true,
+        "all_resource_references_resolve": true,
+        "normative_block_quotes_exact": true,
+        "each_proposal_one_scoped_actionable_edit": true
+      },
+      "changed_files": [
+        "code/audit/consumer.py",
+        "knowledge/account-closure.md"
+      ],
+      "exact_rule_quotes": [
+        {
+          "source_id": "retention-current",
+          "quote": "All account closure audit records must be retained for exactly 7 days, including account.closed.v1 records.",
+          "exact_source_span": true
+        },
+        {
+          "source_id": "retention-current",
+          "quote": "No migration to v2 is required to apply this policy.",
+          "exact_source_span": true
+        },
+        {
+          "source_id": "event-current",
+          "quote": "account.closed.v1 carries account_id only and is consumed by the audit service.",
+          "exact_source_span": true
+        }
+      ],
+      "proposals": [
+        {
+          "kind": "code",
+          "valid_scope_and_actionable_outcomes": true,
+          "path": "code/audit/consumer.py"
+        },
+        {
+          "kind": "knowledge",
+          "valid_scope_and_actionable_outcomes": true,
+          "path": "knowledge/account-closure.md"
+        }
+      ],
+      "resolved_file_sha256": {
+        "code/accounts/close.py": "d771b2c25f5494fb34ecb3f07a875a2bea3a2c4c1fe53b01121d383ef075f04d",
+        "code/audit/consumer.py": "6906b2cab6ffe47f0ddffe9936bc73dd90b4ccec3a393772a1addee7d8079500",
+        "code/events/publisher.py": "0e66d1bc630b445123addca1a3fc546d30e1f2f394e3ccccb68e0542f09d77da",
+        "knowledge/account-closure.md": "296c8eede7ed160aaf34ac2a8e807532d4763e6aeeb25c4557f9a1af1b2a495f",
+        "sources/confluence-retention.md": "20cb7573c8c44cf85f1f8ac66ff0f4257e729d5bffc59e02a34e765ec91e4d95",
+        "sources/linear-legal.md": "1a24dc8775ced30396e438350319161770d2b248178b21e24406be35be9c36bc",
+        "sources/linear-v2.md": "ab28fc62c02b423f0039cec980f8833f30381f7f17a8433323a91a43e2f7f2ee",
+        "sources/notion-event.md": "73d1d4294650eb4f6ad3281e33c8a8df23d6f3cff660f845222ad98cd89b99c5"
+      }
+    }
+  },
+  "metadata_limit": "Presence and referential checks here; full formal OKF specification validation is not claimed by this independent grader."
+}

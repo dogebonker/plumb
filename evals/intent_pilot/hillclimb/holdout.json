@@ -1,0 +1,15 @@
+{
+  "kind": "synthetic held-out authorization module; not a customer repository",
+  "decision": "The operator selects sources/current.md as the governing current agreement. sources/proposal.md is a future proposal, not an active requirement. Inspect the public entry and its called helper before judging authorization.",
+  "expected_outcome": "aligned",
+  "required_link": ["code/documents.py", "code/storage.py"],
+  "files": {
+    "README.md": "# Document deletion module\nThe public entry point is code/documents.py. Source captures and local knowledge are separate inputs.\n",
+    "code/__init__.py": "",
+    "code/documents.py": "from .storage import remove_document\n\ndef delete_document(document, actor_id):\n    if document['owner_id'] != actor_id:\n        raise PermissionError('Only the owner may delete')\n    return remove_document(document)\n",
+    "code/storage.py": "def remove_document(document):\n    return {'deleted_id': document['id']}\n",
+    "knowledge/module.md": "---\ntype: Module Contract\ntitle: Document deletion\n---\n\nOnly a document's owner may delete it. The public entry point owns authorization. See sources/current.md.\n",
+    "sources/current.md": "# Current agreement\nOnly a document's owner may delete that document. Reject other actors before deletion.\n",
+    "sources/proposal.md": "# Unapproved proposal\nAllow workspace administrators to delete any document in a future release. This has not been adopted.\n"
+  }
+}

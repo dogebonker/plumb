@@ -1,0 +1,161 @@
+{
+  "model": "claude-fable-5-1",
+  "tag": "holdout",
+  "list_cost_usd": 0.10224675,
+  "tokens": 5050,
+  "status": "completed",
+  "prompt_path": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0012.prompt.json",
+  "stdout": "{\"duration_api_ms\":11927,\"stop_reason\":\"end_turn\",\"session_id\":\"57afa2da-f739-438c-b5b7-57d7d2bba91f\",\"total_cost_usd\":0.10224675,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":3369,\"cache_read_input_tokens\":987,\"output_tokens\":692,\"output_tokens_details\":{\"thinking_tokens\":52},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":3369,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":692,\"cache_read_input_tokens\":987,\"cache_creation_input_tokens\":3369,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":3369},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-fable-5-1\":{\"inputTokens\":2,\"outputTokens\":692,\"cacheReadInputTokens\":987,\"cacheCreationInputTokens\":3369,\"webSearchRequests\":0,\"costUSD\":0.10224675,\"contextWindow\":1000000,\"maxOutputTokens\":64000,\"thinkingTokens\":52,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":3369,\"canonicalModel\":\"claude-fable-5-1\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":1,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"action\\\":\\\"finish\\\",\\\"reads\\\":[],\\\"searches\\\":[],\\\"outcome\\\":\\\"aligned\\\",\\\"explanation\\\":\\\"The governing source (sources/current.md, per the operator decision) requires that only the owner may delete a document and that other actors are rejected before deletion. The public entry point code/documents.py:delete_document checks document['owner_id'] != actor_id and raises PermissionError before calling remove_document; the storage helper code/storage.py:remove_document performs no authorization itself, which matches knowledge/module.md's statement that the public entry point owns authorization. sources/proposal.md describes an unadopted future change (admin deletion) and is explicitly marked not adopted, so it is not a current requirement and does not create a conflict. Code, knowledge, and the current source agree.\\\",\\\"question\\\":\\\"\\\",\\\"evidence\\\":[{\\\"path\\\":\\\"sources/current.md\\\",\\\"quote\\\":\\\"Only a document's owner may delete that document. Reject other actors before deletion.\\\"},{\\\"path\\\":\\\"code/documents.py\\\",\\\"quote\\\":\\\"    if document['owner_id'] != actor_id:\\\\n        raise PermissionError('Only the owner may delete')\\\\n    return remove_document(document)\\\"},{\\\"path\\\":\\\"code/storage.py\\\",\\\"quote\\\":\\\"def remove_document(document):\\\\n    return {'deleted_id': document['id']}\\\"},{\\\"path\\\":\\\"knowledge/module.md\\\",\\\"quote\\\":\\\"Only a document's owner may delete it. The public entry point owns authorization. See sources/current.md.\\\"},{\\\"path\\\":\\\"sources/proposal.md\\\",\\\"quote\\\":\\\"Allow workspace administrators to delete any document in a future release. This has not been adopted.\\\"}],\\\"links\\\":[{\\\"from_path\\\":\\\"code/documents.py\\\",\\\"to_path\\\":\\\"code/storage.py\\\",\\\"quote\\\":\\\"from .storage import remove_document\\\"},{\\\"from_path\\\":\\\"knowledge/module.md\\\",\\\"to_path\\\":\\\"sources/current.md\\\",\\\"quote\\\":\\\"See sources/current.md.\\\"},{\\\"from_path\\\":\\\"README.md\\\",\\\"to_path\\\":\\\"code/documents.py\\\",\\\"quote\\\":\\\"The public entry point is code/documents.py.\\\"}],\\\"edits\\\":[]}\",\"ttft_ms\":4443,\"type\":\"result\",\"duration_ms\":12072,\"uuid\":\"247ac327-81e8-4edd-897e-609227ef1be2\",\"ttft_stream_ms\":2416,\"time_to_request_ms\":144,\"first_content_frame_ms\":2416,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "stderr": "",
+  "returncode": 0,
+  "seconds": 12.8554517920129,
+  "provider": {
+    "duration_api_ms": 11927,
+    "stop_reason": "end_turn",
+    "session_id": "57afa2da-f739-438c-b5b7-57d7d2bba91f",
+    "total_cost_usd": 0.10224675,
+    "usage": {
+      "input_tokens": 2,
+      "cache_creation_input_tokens": 3369,
+      "cache_read_input_tokens": 987,
+      "output_tokens": 692,
+      "output_tokens_details": {
+        "thinking_tokens": 52
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 3369,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 692,
+          "cache_read_input_tokens": 987,
+          "cache_creation_input_tokens": 3369,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 3369
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-fable-5-1": {
+        "inputTokens": 2,
+        "outputTokens": 692,
+        "cacheReadInputTokens": 987,
+        "cacheCreationInputTokens": 3369,
+        "webSearchRequests": 0,
+        "costUSD": 0.10224675,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 64000,
+        "thinkingTokens": 52,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationEphemeral1hInputTokens": 3369,
+        "canonicalModel": "claude-fable-5-1",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "safety_stops": 0,
+    "is_error": false,
+    "num_turns": 1,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "{\"action\":\"finish\",\"reads\":[],\"searches\":[],\"outcome\":\"aligned\",\"explanation\":\"The governing source (sources/current.md, per the operator decision) requires that only the owner may delete a document and that other actors are rejected before deletion. The public entry point code/documents.py:delete_document checks document['owner_id'] != actor_id and raises PermissionError before calling remove_document; the storage helper code/storage.py:remove_document performs no authorization itself, which matches knowledge/module.md's statement that the public entry point owns authorization. sources/proposal.md describes an unadopted future change (admin deletion) and is explicitly marked not adopted, so it is not a current requirement and does not create a conflict. Code, knowledge, and the current source agree.\",\"question\":\"\",\"evidence\":[{\"path\":\"sources/current.md\",\"quote\":\"Only a document's owner may delete that document. Reject other actors before deletion.\"},{\"path\":\"code/documents.py\",\"quote\":\"    if document['owner_id'] != actor_id:\\n        raise PermissionError('Only the owner may delete')\\n    return remove_document(document)\"},{\"path\":\"code/storage.py\",\"quote\":\"def remove_document(document):\\n    return {'deleted_id': document['id']}\"},{\"path\":\"knowledge/module.md\",\"quote\":\"Only a document's owner may delete it. The public entry point owns authorization. See sources/current.md.\"},{\"path\":\"sources/proposal.md\",\"quote\":\"Allow workspace administrators to delete any document in a future release. This has not been adopted.\"}],\"links\":[{\"from_path\":\"code/documents.py\",\"to_path\":\"code/storage.py\",\"quote\":\"from .storage import remove_document\"},{\"from_path\":\"knowledge/module.md\",\"to_path\":\"sources/current.md\",\"quote\":\"See sources/current.md.\"},{\"from_path\":\"README.md\",\"to_path\":\"code/documents.py\",\"quote\":\"The public entry point is code/documents.py.\"}],\"edits\":[]}",
+    "ttft_ms": 4443,
+    "type": "result",
+    "duration_ms": 12072,
+    "uuid": "247ac327-81e8-4edd-897e-609227ef1be2",
+    "ttft_stream_ms": 2416,
+    "time_to_request_ms": 144,
+    "first_content_frame_ms": 2416,
+    "queued_turn_count": 0,
+    "result_index": 0
+  },
+  "response": {
+    "action": "finish",
+    "reads": [],
+    "searches": [],
+    "outcome": "aligned",
+    "explanation": "The governing source (sources/current.md, per the operator decision) requires that only the owner may delete a document and that other actors are rejected before deletion. The public entry point code/documents.py:delete_document checks document['owner_id'] != actor_id and raises PermissionError before calling remove_document; the storage helper code/storage.py:remove_document performs no authorization itself, which matches knowledge/module.md's statement that the public entry point owns authorization. sources/proposal.md describes an unadopted future change (admin deletion) and is explicitly marked not adopted, so it is not a current requirement and does not create a conflict. Code, knowledge, and the current source agree.",
+    "question": "",
+    "evidence": [
+      {
+        "path": "sources/current.md",
+        "quote": "Only a document's owner may delete that document. Reject other actors before deletion."
+      },
+      {
+        "path": "code/documents.py",
+        "quote": "    if document['owner_id'] != actor_id:\n        raise PermissionError('Only the owner may delete')\n    return remove_document(document)"
+      },
+      {
+        "path": "code/storage.py",
+        "quote": "def remove_document(document):\n    return {'deleted_id': document['id']}"
+      },
+      {
+        "path": "knowledge/module.md",
+        "quote": "Only a document's owner may delete it. The public entry point owns authorization. See sources/current.md."
+      },
+      {
+        "path": "sources/proposal.md",
+        "quote": "Allow workspace administrators to delete any document in a future release. This has not been adopted."
+      }
+    ],
+    "links": [
+      {
+        "from_path": "code/documents.py",
+        "to_path": "code/storage.py",
+        "quote": "from .storage import remove_document"
+      },
+      {
+        "from_path": "knowledge/module.md",
+        "to_path": "sources/current.md",
+        "quote": "See sources/current.md."
+      },
+      {
+        "from_path": "README.md",
+        "to_path": "code/documents.py",
+        "quote": "The public entry point is code/documents.py."
+      }
+    ],
+    "edits": []
+  }
+}

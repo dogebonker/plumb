@@ -1,0 +1,81 @@
+{
+  "method": "scripted control tests; zero provider calls; temporary local workspaces only",
+  "core_sha256": "3c2e5a3f012f4ba7cde492f970c8b5b8356cd0b469ae63b7fee73fc32b7244b1",
+  "findings": [
+    {
+      "name": "sources_conflict_can_apply",
+      "expected": "reject unresolved proposal",
+      "report_outcome": "sources_conflict",
+      "observed": {
+        "admitted": true,
+        "status": "applied",
+        "proposal_outcome": "sources_conflict",
+        "operator_decision": null,
+        "model_calls": 2
+      }
+    },
+    {
+      "name": "unknown_can_apply",
+      "expected": "reject unresolved proposal",
+      "report_outcome": "unknown",
+      "observed": {
+        "admitted": true,
+        "status": "applied",
+        "proposal_outcome": "unknown",
+        "operator_decision": null,
+        "model_calls": 2
+      }
+    },
+    {
+      "name": "unavailable_source_can_align",
+      "expected": "incomplete capture blocks alignment",
+      "observed": {
+        "outcome": "aligned",
+        "skipped": [
+          {
+            "path": "sources/legal.md",
+            "reason": "File exceeds snapshot limit: sources/legal.md"
+          }
+        ],
+        "model_told_skipped": false,
+        "model_file_listing": [
+          "code/main.py",
+          "knowledge/rule.md"
+        ]
+      }
+    },
+    {
+      "name": "model_guess_admitted",
+      "expected": "semantic authority requires a person",
+      "report_outcome": "code_wrong",
+      "observed": {
+        "admitted": true,
+        "status": "applied",
+        "proposal_outcome": "code_wrong",
+        "operator_decision": null,
+        "model_calls": 2
+      },
+      "classification": "prompt-only semantic boundary; scripted acceptance is not model error rate"
+    },
+    {
+      "name": "source_revision_controls",
+      "captured_local": {
+        "admitted": false,
+        "error": "Workspace input changed since proposal: sources/design.md"
+      },
+      "uncaptured_remote": {
+        "admitted": true,
+        "status": "applied"
+      },
+      "classification": "local binding positive control; remote is a simulated documented unsupported freshness boundary"
+    },
+    {
+      "name": "new_unreadable_source_ignored_during_apply",
+      "expected": "new unavailable selected source invalidates proposal",
+      "observed": {
+        "admitted": true,
+        "status": "applied"
+      }
+    }
+  ]
+}

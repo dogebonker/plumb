@@ -1,0 +1,59 @@
+{
+  "action": "finish",
+  "reads": [],
+  "searches": [],
+  "outcome": "code_wrong",
+  "explanation": "The simulated legal owner has now explicitly selected LEGAL-203 for current v1 records. The audit consumer archives for 30 days, contradicting the selected 7-day rule. The publisher and consumer already agree on account.closed.v1 and account_id-only payload. Account ownership and can_close_account are checked at the command boundary; neither schema migration nor consumer-owned authorization is required. Correct retention only, then reconcile the stale local knowledge.",
+  "question": "Prepare the scoped audit-consumer correction from 30 to 7 days while preserving v1 payload and command-boundary authorization?",
+  "evidence": [
+    {
+      "path": "sources/confluence-retention.md",
+      "quote": "Account closure audit records must be retained for exactly 30 days. No email field is required."
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "quote": "All account closure audit records must be retained for exactly 7 days, including account.closed.v1 records."
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "quote": "No migration to v2 is required to apply this policy."
+    },
+    {
+      "path": "code/audit/consumer.py",
+      "quote": "archive.append(event[\"account_id\"], retention_days=30)"
+    },
+    {
+      "path": "code/accounts/close.py",
+      "quote": "if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")"
+    },
+    {
+      "path": "code/events/publisher.py",
+      "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})"
+    },
+    {
+      "path": "code/audit/consumer.py",
+      "quote": "TOPIC = \"account.closed.v1\""
+    },
+    {
+      "path": "sources/notion-event.md",
+      "quote": "The audit consumer need not repeat the account command authorization check."
+    },
+    {
+      "path": "sources/linear-v2.md",
+      "quote": "Do not treat this proposal as the accepted v1 contract."
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/accounts/close.py",
+      "to_path": "code/events/publisher.py",
+      "quote": "from code.events.publisher import publish_closed"
+    },
+    {
+      "from_path": "code/events/publisher.py",
+      "to_path": "code/audit/consumer.py",
+      "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})"
+    }
+  ],
+  "edits": []
+}

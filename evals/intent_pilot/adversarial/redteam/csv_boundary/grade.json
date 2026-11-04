@@ -1,0 +1,15 @@
+{
+  "method": "independent hidden-policy comparison after native report completed; final exclusion criterion manually inspected",
+  "pass": true,
+  "checks": {
+    "expected_outcome": true,
+    "both_conflicting_sources_cited": true,
+    "explicit_policy_question": true,
+    "guard_evidence": true,
+    "import_dependency": true,
+    "no_edits": true,
+    "human_review_excludes_planned_and_historical_rules": true
+  },
+  "prewritten_maintainer_resolution": "For this simulation the privacy owner confirms Linear PRIV-88 governs all exports. Keep entry-point authorization. Remove customer_email from CSV and update OKF to cite both the superseded Notion requirement and governing Linear decision. Do not edit captured sources.",
+  "authority": "synthetic maintainer policy; no actual approval or human labor measurement"
+}

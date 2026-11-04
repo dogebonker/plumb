@@ -1,0 +1,9 @@
+{
+  "method": "scripted direct fixture-policy simulation in temporary copies; validates runtime grader, not fresh model correction quality",
+  "checks": {
+    "csv_correct_policy_passes": true,
+    "csv_planted_column_leak_rejected": true,
+    "event_correct_policy_passes": true,
+    "event_planted_wrong_retention_rejected": true
+  }
+}

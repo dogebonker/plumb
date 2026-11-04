@@ -1,0 +1,134 @@
+{
+  "arm": "bundle",
+  "id": "810ad6972b38",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 221,
+    "response": {
+      "code_path": "packages/pond/src/adapter/claude_code.rs",
+      "code_quote": "            for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.",
+      "intent_quote": "each character outside ASCII a-z, A-Z and 0-9 becomes a dash for each UTF-16 code unit.",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "0b260799f0f168e18db88d465d6fe73493c0a20d8b76e4df458af76edddb45b5",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 3523,
+    "duration_ms": 3693,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 1681,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 20302,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 20302,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0848633,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 357,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"each character outside ASCII a-z, A-Z and 0-9 becomes a dash for each UTF-16 code unit.\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"            for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\",\"explanation\":\"encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.\",\"question\":\"none\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "b47c1706-da90-455e-8dd9-7b6fcf634919",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "packages/pond/src/adapter/claude_code.rs",
+      "code_quote": "            for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.",
+      "intent_quote": "each character outside ASCII a-z, A-Z and 0-9 becomes a dash for each UTF-16 code unit.",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 248,
+    "total_cost_usd": 0.0848633,
+    "ttft_ms": 3646,
+    "ttft_stream_ms": 1681,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 20302,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 20302,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 20302,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 20302,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 357,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 357,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "94281412-b584-4bb5-9f1b-d21b9829ce57"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 5.277214791974984,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":3523,\"stop_reason\":\"tool_use\",\"session_id\":\"b47c1706-da90-455e-8dd9-7b6fcf634919\",\"total_cost_usd\":0.0848633,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":20302,\"cache_read_input_tokens\":813,\"output_tokens\":357,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":20302,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":357,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":20302,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":20302},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":357,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":20302,\"webSearchRequests\":0,\"costUSD\":0.0848633,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":20302,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"each character outside ASCII a-z, A-Z and 0-9 becomes a dash for each UTF-16 code unit.\\\",\\\"code_path\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"            for _ in 0..c.len_utf16() {\\\\n                encoded.push('-');\\\\n            }\\\",\\\"explanation\\\":\\\"encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.\\\",\\\"question\\\":\\\"none\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"each character outside ASCII a-z, A-Z and 0-9 becomes a dash for each UTF-16 code unit.\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"            for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\",\"explanation\":\"encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.\",\"question\":\"none\"},\"ttft_ms\":3646,\"type\":\"result\",\"duration_ms\":3693,\"uuid\":\"94281412-b584-4bb5-9f1b-d21b9829ce57\",\"ttft_stream_ms\":1681,\"time_to_request_ms\":248,\"first_content_frame_ms\":1681,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

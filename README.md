@@ -1,188 +1,192 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
-    <img src="assets/hero-light.svg" alt="PLUMB. Agents that ask before they build, and build what you agreed to. A plumb bob swings and settles true." width="100%">
-  </picture>
-</p>
+# Plumb
 
-<p align="center">
-  <b>Plumb turns a request into agreed contracts, builds against them test-first,<br>and checks the result against what you agreed.</b>
-</p>
+Spec-driven development for the coding agent you already use.
 
-<p align="center">
-  <a href="#start-in-two-minutes">Start</a> ·
-  <a href="#how-it-works">How it works</a> ·
-  <a href="#the-scoreboard">Scoreboard</a> ·
-  <a href="#review-any-branch">Review a branch</a> ·
-  <a href="#documentation">Docs</a>
-</p>
+Plumb is a skill that helps your agent understand a module's existing rules,
+work from the original requirements, make a change, and check what actually
+happened. Lasting module knowledge lives in OKF bundles. Substantial changes
+get requirements, a design, and tasks. Small edits stay small.
 
-<p align="center">
-  <img alt="Status: experimental" src="https://img.shields.io/badge/status-experimental-E5532D?style=flat-square">
-  <img alt="Runs in Claude Code" src="https://img.shields.io/badge/runs_in-Claude_Code-15181A?style=flat-square">
-  <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-15181A?style=flat-square">
-  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-15181A?style=flat-square">
-</p>
+<picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="assets/intent-still.svg">
+  <img src="assets/intent-loop.gif" alt="A plumb line connects module knowledge, a change specification, implementation, verification, and a knowledge update. An illustrative retention change moves from thirty days to the selected seven-day rule." width="960">
+</picture>
 
-<br>
+*An illustration of the workflow, not a recorded run. The animation plays three
+times and stops. [Static diagram](assets/intent-still.svg).*
 
-<p align="center">
-  <img src="assets/session.svg" alt="An illustrative Plumb session: triage, a plan with two scenario questions answered 1A 2A, approval, two slices from red to green, and review with 5 of 5 examples passing" width="100%">
-</p>
-<p align="center"><sub>An illustrative session, condensed. Every line is a real step.</sub></p>
+**Experimental.** The skill and supporting CLI are implemented. General accuracy,
+maintainer time savings, and the cost of keeping bundles current remain unproven.
 
-<br>
+## Use it
 
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <h3>Ask what matters</h3>
-      Questions in your product's own words, each with a short scenario, two outcomes and a recommended pick. Reply <code>1A 2B</code> and move on.
-    </td>
-    <td width="33%" valign="top">
-      <h3>Freeze the answers</h3>
-      Rules, examples, architecture, interfaces and slices become documents bound to exact hashes. An editing hook keeps agents inside the approved plan and the current slice's files.
-    </td>
-    <td width="33%" valign="top">
-      <h3>Build it true</h3>
-      Every slice starts from a failing test. Scripts check first, an independent reviewer second, and the agreed examples run on the live product before you sign off.
-    </td>
-  </tr>
-</table>
+Point your coding agent at the skill in this checkout:
 
-> [!NOTE]
-> **Experimental.** The workflow is implemented. The simplified Opus-led controller has not finished its end-to-end pilot, and [the scoreboard below](#the-scoreboard) shows where the measured version lost. Plumb was named Software Factory until October 2026.
+```text
+Read /path/to/plumb/skills/plumb/SKILL.md and use Plumb to implement this change:
+reject batches above five items before writing anything to storage.
+Preserve the existing behavior for batches of zero through five.
+```
 
-## Start in two minutes
+To make it discoverable for repeated use, copy the entire
+[`skills/plumb`](skills/plumb) directory into your agent's skill directory.
+For Codex, that is `~/.codex/skills/plumb/`; for Claude Code, it is
+`~/.claude/skills/plumb/`. Keep the `references/` directory beside `SKILL.md`.
+Use a new destination so an existing installation's edits are preserved.
 
-You need **Claude Code**, **Git** and **Python 3.10+**. Pull request and headless workflows also use the GitHub CLI.
+Once your agent discovers the skill, invoke it with your request:
+
+```text
+$plumb Add cancellation to the orders module using the linked issue and its module bundle.
+```
+
+Hosts with slash-command skill invocation can use `/plumb`. You can also locate
+or read the skill from the repository without installing anything:
 
 ```sh
-git clone https://github.com/dogebonker/plumb.git
-cd plumb
-./bin/plumb-install HEAD
-
-mkdir -p "$HOME/.claude/skills"
-ln -s "$PWD/skills/plumb-init" "$HOME/.claude/skills/plumb-init"
-ln -s "$PWD/skills/plumb-upgrade" "$HOME/.claude/skills/plumb-upgrade"
+python3 -m plumb skill --path
+python3 -m plumb skill
 ```
 
-Then, in the repository you want to change:
+The skill uses the current host agent. It does not launch another model CLI or
+install a workflow runtime. These two commands only print local documentation.
+
+## What the agent does
+
+1. Reads the affected module's knowledge, original source material, code, and
+   relevant dependencies. Missing context stays explicit.
+2. Separates current commitments, observed behavior, and the requested change.
+   A genuine conflict produces a concrete question about which rule governs.
+3. Keeps a bounded change in one brief note. Substantial behavior changes,
+   cross-module contracts, or consequential uncertainty get requirements,
+   a design, and tasks.
+4. Implements through the host's normal tools, runs targeted checks, and reviews
+   the diff against requirements and preserved behavior.
+5. Updates affected module knowledge with sources and observed results. It reports
+   failed or unrun checks instead of treating them as success.
+
+Existing authorization carries through ordinary reversible work. A source saying
+"approved" does not grant authority, and an imported requirement does not become
+agreed intent because an agent summarized it.
+
+## What lives in the project
+
+Use the project's existing documentation locations. A possible arrangement is:
 
 ```text
-/plumb-init
-/plumb-triage Add a CSV export for the current filtered table
+knowledge/
+  index.md
+  orders/
+    index.md
+    module.md           Purpose, scope, code paths, and contracts
+    cancellation.md     Current rule, rationale, sources, and unknowns
+changes/
+  cancel-order/
+    requirements.md     Requested delta and acceptance examples
+    design.md           Affected contracts and implementation approach
+    tasks.md            Work linked to requirements and actual check results
 ```
 
-Init pins the framework, links its skills into the project and offers the editing hook. Turn the hook on: it is what holds agents to the approved plan. Coming from Software Factory? `/plumb-init` migrates `.software-factory/` in place. [Installation details](skills/README.md#install)
+A module's bundle survives individual changes. Its concepts link to original
+sources and related modules. An in-progress change spec describes proposed work;
+it does not assert that the behavior is already implemented.
 
-## How it works
+Start with a service or module and refine the knowledge gradually. Inspect
+imports, API callers, events, and shared data where relevant. Plumb does not
+claim an exhaustive dependency graph from a list of imports.
 
-<p align="center">
-  <img src="assets/loop.svg" alt="Triage, plan and your approval; test-first build, independent review and repairs; your sign-off and living documentation" width="780">
-</p>
+The format is [OKF](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md):
+Markdown concepts with YAML metadata and links. The module and change layouts
+above are conventions, not additional requirements of the format.
 
-On the standard track you decide twice: once on the plan, once on the result. Between those, agents build, review and repair on their own. Changed promises, security decisions and missing authority come back to you.
+## Where requirements come from
 
-| Stage | What it leaves behind |
-| --- | --- |
-| **Plan** | Product rules with examples, architecture decisions, interfaces and scoped slices |
-| **Build** | Tests, implementation and recorded verification for each slice |
-| **Review** | Script results, independently validated findings and acceptance evidence |
-| **Reconcile** | Shipped decisions, constraints and vocabulary folded into living docs |
+Repository documents, Confluence pages, Notion pages, Linear tickets, GitHub
+issues, and local exports can supply requirements. The agent uses available,
+authorized connectors or reads the exported files. It records source locators,
+passages, available revisions, and uncertainty.
 
-Every question opens with a short recap of what we're making and what's decided, so you can answer after a break without scrolling back. Then a concrete scenario: where a person is, what they do, what happens next. [Try three example questions](docs/examples/pre-build-questions.html).
+Plumb ships a local Git capture helper. It does not ship live SaaS connectors.
+A captured page with no upstream access cannot establish live freshness. Read the
+[four walkthroughs](skills/plumb/references/examples.md) for direct edits, new
+behavior, conflicting sources, and changes to a source during unfinished work.
 
-<details>
-<summary><b>How much process does a task get?</b></summary>
-<br>
+## Optional source and reconciliation tools
 
-| Track | Typical work | Process |
+The Python CLI supports bounded, isolated review workspaces. Run it from this
+repository with Python 3.10 or later and Git. It has no extra Python dependencies.
+
+| Command | What it does | Extra model inference |
 | --- | --- | --- |
-| Trivial | A rename, copy change or one-line config edit | Direct execution |
-| Small | A few files, no new interface | Slices, build and review |
-| Standard | A feature, endpoint, screen or new interface | One combined plan, one approval, build and review |
-| Critical | Money, existing access rules or data migrations | Separate gates, explicit budgets and risk reviews |
+| `skill` | Prints the reusable skill or its path | No |
+| `init` | Copies selected committed code and a source into a new draft workspace | No |
+| `status` | Compares the capture with its selected local Git ref | No |
+| `refresh` | Updates the source capture, preserving code and knowledge | No |
+| `check` | Produces a cited reconciliation report | Yes, through Claude CLI |
+| `propose` | Produces a scoped correction after an explicit choice | Yes, through Claude CLI |
+| `apply` | Applies one correction after input/version checks | No |
 
-Risk sets the verification. Design-book lenses are opt-in and sized to the task. Correctness, architecture, security and money checks always stay.
+For a draft bundle from a local checkout:
 
-</details>
+```sh
+python3 -m plumb init /path/to/new-workspace \
+  --repo /path/to/project --module 'Orders' --code src/orders \
+  --source docs/orders.md --section 'Cancellation'
 
-<details>
-<summary><b>Architecture you can check</b></summary>
-<br>
-
-A constraint names how it is enforced: a test, a lint rule, an architecture rule, a monitor or a human check. Accepted ADRs carry the same mapping, so a review can cite **ADR 0007** the way it cites a requirement or a frozen signature.
-
-Layout checkers enforce import boundaries. [Archgraph](https://github.com/dogebonker/archgraph) adds cross-stack rules, blast radius and reading order through the [shared adapter](skills/plumb-shared/archgraph.md#shared-adapter), and fails new forbidden edges, cycles and unplanned edges when the approved layout selects it. Missing tools and incomplete graph coverage are reported, never assumed away.
-
-Approved documents are bound to exact hashes. Compatible approvals survive a revision; a changed contract needs its actual decision. [Authority and limits](skills/README.md#hard-gates)
-
-</details>
-
-<details>
-<summary><b>Review checks the code and its intent</b></summary>
-<br>
-
-Scanners and project checks run first. Reviewers then inspect the behavior behind the contracts, trace side-effect ordering and validate every finding against the code. Acceptance tries the agreed examples on the running product.
-
-A bounded exercise caught a float conversion against an integer-money ADR and stayed silent on the conforming version. That is a small behavioral check, not proof of general review quality. [Cost and limits](docs/research/intent-review-2026-10-19.md)
-
-</details>
-
-## The scoreboard
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/scoreboard-dark.svg">
-    <img src="assets/scoreboard-light.svg" alt="Accepted on 20 real merged PRs: bare agent 14, agent with a good CLAUDE.md 14, sequential Plumb 9. Critical track: 5, 5 and 2. The other 11 tasks: 9, 9 and 10." width="100%">
-  </picture>
-</p>
-
-The first full benchmark ran the earlier, sequential workflow against a bare agent and an agent with a good CLAUDE.md, on 20 real merged pull requests with blind review. Plumb lost overall, 9 to 14. [Where its time went](docs/research/benchmark-time-2026-10-25.md) explains why: the critical track ran its gates one by one and hit the 30-minute guard on 8 of 9 tasks. On the other 11, Plumb accepted one more than either control, at six to seven times their median time.
-
-The next version plans the critical track in one pass and asks fewer questions. A rerun on 20 new pull requests will score it, published whatever it shows. [Full protocol and limitations](docs/research/real-pr-benchmark-2026-10-19.md)
-
-## Review any branch
-
-The review layer works without starting a Plumb change:
-
-```text
-/plumb-code-review origin/main review
+python3 -m plumb status /path/to/new-workspace --source-repo /path/to/project
 ```
 
-Pass a PR URL to review a pull request, or name paths to narrow the scope. In Codex, call `$plumb-code-review` with the same request. One [review skill](skills/plumb-code-review/SKILL.md), one deduplicated report:
+The workspace's parent must exist. Init reads committed blobs and leaves the
+original repository and dirty files untouched. Check the
+[prepared Pond bundle](examples/pond-claude-code/knowledge/index.md) for a real import.
 
-- **Polish:** cleanliness, design and reuse, efficiency, side-effect gating
-- **Defect hunting:** installed scanners and a bug checklist, each finding with a failure scenario, severity and effort
-- **Conformance:** docs, accepted ADRs, standing constraints, frozen contracts and approval integrity
+The skill can do semantic work in its current host session. Optional `check` and
+`propose` calls consume additional provider allowance and require an available
+allocation. An exhausted budget stays exhausted. [Command and budget guide](plumb/README.md).
 
-## What works today
+## What stays lightweight
 
-| Capability | Where it stands |
-| --- | --- |
-| Skills, versioned plans, editing hook, test-first slices and independent review | Implemented; project setup targets Claude Code |
-| Standalone code review | Implemented for local work and PRs |
-| Headless runner | Implemented for a dedicated clone, with real GitHub approver checks |
-| Signed GitHub and Linear wake-ups | Local receiver and durable queue implemented; live subscriptions need setup |
-| Opus 5.5 lead with bounded subagents, mechanical gates and independent review | Experimental [v2 controller](docs/PLUMB_V2.md); native execution not yet validated |
-| Durable v2 checkpoint recovery | Implemented and crash-tested; live provider restart unvalidated |
-| Automatic queue recovery and Linear ticket admission | Pending integration |
+There is no required IDE, background service, index, local model, or GPU workload.
+The skill selects relevant context rather than loading every bundle. Tests and
+model work run serially unless the task and available resources justify more.
 
-The skills use the open Agent Skills format. Automatic project linking targets Claude Code; other clients need manual setup.
+The optional CLI bounds a text workspace to 256 files, 2 MiB total, and 256 KiB
+per file. Its guards apply to operations routed through those commands. Skill
+instructions are not a sandbox for the host agent.
 
-## Documentation
+Source refresh tracks a selected local Git ref without fetching origin. It does
+not resync code or push corrections upstream. Apply changes one file in an
+isolated workspace; concurrent edits can race its final check and write.
 
-| Start here | For |
-| --- | --- |
-| [Skills](skills/README.md) | Commands, installation, hooks and headless operation |
-| [Kit](kit/README.md) | Layouts, adapters, principles and pinned packs |
-| [Design](docs/DESIGN.md) · [Decisions](docs/DECISIONS.md) | The specification and the reasoning behind it |
-| [Plumb v2](docs/PLUMB_V2.md) · [Events and context](docs/PLUMB_EVENTS.md) | Experimental execution and the next integrations |
-| [Benchmark](docs/research/real-pr-benchmark-2026-10-19.md) · [Changelog](CHANGELOG.md) | Measurements and changes |
+OpenProse remains an optional future way to package a workflow once plain skill
+instructions show a concrete limitation. No OpenProse or Reactor dependency is
+required. [Architecture and direction](docs/ARCHITECTURE.md).
 
-## Built on
+## Evidence and development
 
-The four-gate approach draws from Dex Horthy and [HumanLayer](https://www.humanlayer.com/), including [Why Software Factories Fail](https://www.youtube.com/watch?v=Ib5GBkD555M). [Pond](https://github.com/tenequm/pond) supplies cross-session recall and [archgraph](https://github.com/dogebonker/archgraph) supplies architecture evidence. Pinned third-party packs keep their own attribution.
+The [skill forward test](evals/skill_pilot/RESULTS.md) exercised an isolated code
+change and a conflicting-source case, and exposed overhead we reduced. It is a
+controlled native-agent trial, not evidence of general effectiveness.
 
-<sub>[MIT](LICENSE). Bundled book rubrics keep their upstream [MIT notice](kit/packs/LICENSE.agent-rules-books). The README art is generated by [`assets/readme_art.py`](assets/readme_art.py).</sub>
+The [historical Pond pilot](evals/intent_pilot/RESULTS.md) established no detection
+advantage for curated bundles over the original source material. Controlled
+[correction workflows](evals/intent_pilot/hillclimb/RESULTS.md) and
+[adversarial exercises](evals/intent_pilot/adversarial/RESULTS.md) test selected
+behaviors. The [Git-source milestone](evals/intent_pilot/module_source_milestone/RESULTS.md)
+verifies imports and stale-correction rejection. These do not establish general
+semantic accuracy or everyday adoption.
+
+Run the local command tests without model usage:
+
+```sh
+python3 -m unittest discover -s plumb -p 'test_*.py'
+```
+
+The [animation generator](assets/intent_art.py) uses Pillow only when regenerating
+artwork. The checked-in GIF and static SVG need no rendering service.
+
+Earlier factory skills and experiments remain in the repository for reference.
+The standalone [Plumb skill](skills/plumb/SKILL.md) has no dependency on their
+installers, hooks, or approval files.
+
+[MIT](LICENSE). Bundled book rubrics retain their [upstream notice](kit/packs/LICENSE.agent-rules-books).

@@ -1,0 +1,32 @@
+[
+  {
+    "commit": "a218ef33cb337b2ec8c41bb9b23b02fb76231559",
+    "id": "project-slugs",
+    "sha256": "434280603c5bdf1f1fcc67906314a67289a1a4d8872684cfe30192e33681192e",
+    "url": "https://github.com/tenequm/pond/commit/a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+  },
+  {
+    "commit": "06a2d2725ede538d5016dcae4a6af178fd636e48",
+    "id": "forked-transcripts",
+    "sha256": "bf47b3f68b04e28c46f8fc350c7764da6f8a1ce3746dc91f86f7e7f56f729e99",
+    "url": "https://github.com/tenequm/pond/commit/06a2d2725ede538d5016dcae4a6af178fd636e48"
+  },
+  {
+    "commit": "dba35944d9d3e3f9ad09e225a15600a8b6953528",
+    "id": "trailing-metadata",
+    "sha256": "46c3e7f6592f6d67535e23cfde2492858fe724e13f4d2166a711766918802c48",
+    "url": "https://github.com/tenequm/pond/commit/dba35944d9d3e3f9ad09e225a15600a8b6953528"
+  },
+  {
+    "commit": "94b9beeff58d4badc96017b66df32071e01daf1f",
+    "id": "nested-subagents",
+    "sha256": "ef0903c983df6eeed520a7238492821196315035980ea2d0605629b2f6233f65",
+    "url": "https://github.com/tenequm/pond/commit/94b9beeff58d4badc96017b66df32071e01daf1f"
+  },
+  {
+    "commit": "6a05cd17f0869967d149df42f0b4b961b3d3c0ee",
+    "id": "empty-freshness",
+    "sha256": "9b331fde32a3e3fe44eb2116b7101db413ed9771ec129ffb0f1ba88aecc265c9",
+    "url": "https://github.com/tenequm/pond/commit/6a05cd17f0869967d149df42f0b4b961b3d3c0ee"
+  }
+]

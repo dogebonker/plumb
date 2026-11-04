@@ -1,0 +1,15 @@
+{
+  "reason": "Fix proposal-mode re-question requirement; evaluator and model outputs unchanged",
+  "reused_receipts": [
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0001.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0002.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0003.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0004.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0005.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0006.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0007.json",
+    "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/receipts/call-0008.json"
+  ],
+  "new_inference_for_reused_receipts": 0,
+  "each_system_and_payload_compared_exactly": true
+}

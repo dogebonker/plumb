@@ -1,0 +1,11 @@
+{
+  "after": "5a417af50cc9a4338086467eec45aed181ae519bd5577f439d425ca3c5025b4b",
+  "before": "17ed2cc6b8e1f8ae9de6d2d1460f7a514da9659899a9e5d193a9d09e796102e5",
+  "choice": "knowledge",
+  "path": "knowledge/module.md",
+  "proposal_id": "77fcc7e1d6251175edb23f45c108c7d35189612056d98988b93ab95f3b9cff0f",
+  "scope": "captured_workspace",
+  "status": "applied",
+  "upstream_freshness": "not_checked",
+  "workspace": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/iterations/0006/workspace"
+}

@@ -1,0 +1,36 @@
+{
+  "status": "unchanged",
+  "source": {
+    "blob": "9ff4dca9355d75b338737d8150b077dadb58e163",
+    "body_sha256": "6a296dd69195431deb318e591668dade4117429a0659e82a697b8f386c9aa68c",
+    "commit": "b049b2e8ba3a418ad54eebe738c9d8fbe8a8d1c3",
+    "path": "docs/spec.md",
+    "provider": "git",
+    "ref": "HEAD",
+    "repository": {
+      "local": "local-git:/Users/dan/Work/pond",
+      "origin": "https://github.com/tenequm/pond"
+    },
+    "version": "9ff4dca9355d75b338737d8150b077dadb58e163"
+  },
+  "latest": {
+    "provider": "git",
+    "repository": {
+      "local": "local-git:/Users/dan/Work/pond",
+      "origin": "https://github.com/tenequm/pond"
+    },
+    "path": "docs/spec.md",
+    "ref": "HEAD",
+    "commit": "b049b2e8ba3a418ad54eebe738c9d8fbe8a8d1c3",
+    "blob": "9ff4dca9355d75b338737d8150b077dadb58e163",
+    "version": "9ff4dca9355d75b338737d8150b077dadb58e163",
+    "body_sha256": "6a296dd69195431deb318e591668dade4117429a0659e82a697b8f386c9aa68c"
+  },
+  "capture": {
+    "path": "sources/decision.md",
+    "sha256": "3d8e3461aa4b6aabbda4fb641de11ff554d63078683f171f0b769d8b3b680b84",
+    "body_start_line": 2
+  },
+  "knowledge_updated": false,
+  "review_required": false
+}

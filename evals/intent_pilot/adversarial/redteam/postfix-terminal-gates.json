@@ -1,0 +1,32 @@
+{
+  "method": "independent scripted terminal-result admission controls, actionable input report; no provider calls",
+  "cases": [
+    {
+      "check_outcome": "code_wrong",
+      "proposal_outcome": "unknown",
+      "observed": {
+        "admitted": false,
+        "error": "A resolved actionable proposal result is required before an edit",
+        "model_calls": 2
+      }
+    },
+    {
+      "check_outcome": "code_wrong",
+      "proposal_outcome": "sources_conflict",
+      "observed": {
+        "admitted": false,
+        "error": "A resolved actionable proposal result is required before an edit",
+        "model_calls": 2
+      }
+    },
+    {
+      "check_outcome": "code_wrong",
+      "proposal_outcome": "aligned",
+      "observed": {
+        "admitted": false,
+        "error": "A resolved actionable proposal result is required before an edit",
+        "model_calls": 2
+      }
+    }
+  ]
+}

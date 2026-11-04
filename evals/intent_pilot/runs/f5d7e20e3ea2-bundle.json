@@ -1,0 +1,134 @@
+{
+  "arm": "bundle",
+  "id": "f5d7e20e3ea2",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 112,
+    "response": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "} else if child.extension() == Some(OsStr::new(\"jsonl\")) {",
+      "explanation": "collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.",
+      "intent_quote": "Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.",
+      "question": "Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?",
+      "verdict": "mismatch"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "2bae0cb26706a5e1df3d9ac57bb92adfdf7604552634b5d4570b8d5dfccccd75",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 7020,
+    "duration_ms": 7227,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 3002,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 38108,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 38108,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.1590273,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 651,
+        "provider": "firstParty",
+        "thinkingTokens": 242,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"} else if child.extension() == Some(OsStr::new(\\\"jsonl\\\")) {\",\"explanation\":\"collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.\",\"question\":\"Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "ef190547-15ba-4757-aa71-39445f405239",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "} else if child.extension() == Some(OsStr::new(\"jsonl\")) {",
+      "explanation": "collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.",
+      "intent_quote": "Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.",
+      "question": "Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 258,
+    "total_cost_usd": 0.1590273,
+    "ttft_ms": 4977,
+    "ttft_stream_ms": 3001,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 38108,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 38108,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 38108,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 38108,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 651,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 651,
+      "output_tokens_details": {
+        "thinking_tokens": 242
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "61bb3b6f-daf0-4da5-aad6-152dca74512d"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 9.651763541973196,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":7020,\"stop_reason\":\"tool_use\",\"session_id\":\"ef190547-15ba-4757-aa71-39445f405239\",\"total_cost_usd\":0.1590273,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":38108,\"cache_read_input_tokens\":813,\"output_tokens\":651,\"output_tokens_details\":{\"thinking_tokens\":242},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":38108,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":651,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":38108,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":38108},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":651,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":38108,\"webSearchRequests\":0,\"costUSD\":0.1590273,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":242,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":38108,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\\\",\\\"code_path\\\":\\\"src/adapter/jsonl.rs\\\",\\\"code_quote\\\":\\\"} else if child.extension() == Some(OsStr::new(\\\\\\\"jsonl\\\\\\\")) {\\\",\\\"explanation\\\":\\\"collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.\\\",\\\"question\\\":\\\"Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"} else if child.extension() == Some(OsStr::new(\\\"jsonl\\\")) {\",\"explanation\":\"collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.\",\"question\":\"Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?\"},\"ttft_ms\":4977,\"type\":\"result\",\"duration_ms\":7227,\"uuid\":\"61bb3b6f-daf0-4da5-aad6-152dca74512d\",\"ttft_stream_ms\":3001,\"time_to_request_ms\":258,\"first_content_frame_ms\":3002,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

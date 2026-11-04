@@ -1,0 +1,162 @@
+{
+  "arm": "bundle",
+  "citations": [
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 20,
+      "original_quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")",
+      "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+    },
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 9,
+      "original_quote": "`encode_project` mapped only `/` and `.` to `-`.",
+      "quote": "`encode_project` mapped only `/` and `.` to `-`."
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 209,
+      "line_in_excerpt": 30,
+      "quote": "project.replace(['/', '.'], \"-\")",
+      "revision": "95e8ce4d88a1e9f210811ce8546e9b95503d3ce1"
+    }
+  ],
+  "id": "abba562186c2",
+  "prompt_sha256": "569bd04c9e5da3e4b89e221c0c5a220e5489aa3abfaf7a04256fe049d9f93a6c",
+  "protocol_sha256": "3ad0519275dd1af43d3c5b37e0bcbac663da3abb0604eeaa552cb98f9463112d",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 3782,
+    "duration_ms": 4010,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 1331,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 2227,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 2227,
+        "cacheReadInputTokens": 1053,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.013977299999999998,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 496,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"code_status\":\"mismatch\",\"source_status\":\"compatible\",\"needs_human\":true,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"`encode_project` mapped only `/` and `.` to `-`.\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"project.replace(['/', '.'], \\\"-\\\")\"}],\"explanation\":\"The active source says Claude Code replaces every non-alphanumeric character with \\\"-\\\", counting UTF-16 code units (astral characters become two dashes). The supplied encode_project replaces only '/' and '.', so '_', spaces, '\\\\\\\\', ':' and others survive. Restores for such projects go to a directory Claude Code won't open. The fallback decoder is not supplied.\",\"question\":\"Should encode_project be changed to replace every non-ASCII-alphanumeric character with '-', using two dashes per astral character (len_utf16) and no NFC normalization?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "392c9d79-f2b0-4a9f-850e-5ada0f776152",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_status": "mismatch",
+      "evidence": [
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+        },
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "`encode_project` mapped only `/` and `.` to `-`."
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "project.replace(['/', '.'], \"-\")"
+        }
+      ],
+      "explanation": "The active source says Claude Code replaces every non-alphanumeric character with \"-\", counting UTF-16 code units (astral characters become two dashes). The supplied encode_project replaces only '/' and '.', so '_', spaces, '\\\\', ':' and others survive. Restores for such projects go to a directory Claude Code won't open. The fallback decoder is not supplied.",
+      "needs_human": true,
+      "question": "Should encode_project be changed to replace every non-ASCII-alphanumeric character with '-', using two dashes per astral character (len_utf16) and no NFC normalization?",
+      "source_status": "compatible"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 227,
+    "total_cost_usd": 0.013977299999999998,
+    "ttft_ms": 3978,
+    "ttft_stream_ms": 1331,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 2227,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 2227,
+      "cache_read_input_tokens": 1053,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 2227,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 2227,
+          "cache_read_input_tokens": 1053,
+          "input_tokens": 2,
+          "output_tokens": 496,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 496,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "c52aad09-64f7-47d7-aa00-fbacd8423a9b"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 4.88010791700799,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":3782,\"stop_reason\":\"tool_use\",\"session_id\":\"392c9d79-f2b0-4a9f-850e-5ada0f776152\",\"total_cost_usd\":0.013977299999999998,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":2227,\"cache_read_input_tokens\":1053,\"output_tokens\":496,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":2227,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":496,\"cache_read_input_tokens\":1053,\"cache_creation_input_tokens\":2227,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":2227},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":496,\"cacheReadInputTokens\":1053,\"cacheCreationInputTokens\":2227,\"webSearchRequests\":0,\"costUSD\":0.013977299999999998,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":2227,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"code_status\\\":\\\"mismatch\\\",\\\"source_status\\\":\\\"compatible\\\",\\\"needs_human\\\":true,\\\"evidence\\\":[{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\\\\\"-\\\\\\\")\\\"},{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"`encode_project` mapped only `/` and `.` to `-`.\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"project.replace(['/', '.'], \\\\\\\"-\\\\\\\")\\\"}],\\\"explanation\\\":\\\"The active source says Claude Code replaces every non-alphanumeric character with \\\\\\\"-\\\\\\\", counting UTF-16 code units (astral characters become two dashes). The supplied encode_project replaces only '/' and '.', so '_', spaces, '\\\\\\\\\\\\\\\\', ':' and others survive. Restores for such projects go to a directory Claude Code won't open. The fallback decoder is not supplied.\\\",\\\"question\\\":\\\"Should encode_project be changed to replace every non-ASCII-alphanumeric character with '-', using two dashes per astral character (len_utf16) and no NFC normalization?\\\"}\",\"structured_output\":{\"code_status\":\"mismatch\",\"source_status\":\"compatible\",\"needs_human\":true,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"`encode_project` mapped only `/` and `.` to `-`.\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"project.replace(['/', '.'], \\\"-\\\")\"}],\"explanation\":\"The active source says Claude Code replaces every non-alphanumeric character with \\\"-\\\", counting UTF-16 code units (astral characters become two dashes). The supplied encode_project replaces only '/' and '.', so '_', spaces, '\\\\\\\\', ':' and others survive. Restores for such projects go to a directory Claude Code won't open. The fallback decoder is not supplied.\",\"question\":\"Should encode_project be changed to replace every non-ASCII-alphanumeric character with '-', using two dashes per astral character (len_utf16) and no NFC normalization?\"},\"ttft_ms\":3978,\"type\":\"result\",\"duration_ms\":4010,\"uuid\":\"c52aad09-64f7-47d7-aa00-fbacd8423a9b\",\"ttft_stream_ms\":1331,\"time_to_request_ms\":227,\"first_content_frame_ms\":1331,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "validation": "valid"
+}

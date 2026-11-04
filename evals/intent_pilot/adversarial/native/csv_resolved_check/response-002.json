@@ -1,0 +1,46 @@
+{
+  "action": "finish",
+  "reads": [],
+  "searches": [],
+  "outcome": "code_wrong",
+  "explanation": "The simulated privacy owner has now explicitly selected PRIV-88 as governing all exports. The serializer includes customer_email in both header and rows, contrary to that selected rule. The permission check is already in the public API and must stay there. The Notion email requirement is superseded under this decision, while its authorization-boundary description remains compatible. The unapproved finance-review proposal is not current. Local knowledge also needs a later source-bound update; fix the selected implementation first.",
+  "question": "Prepare the scoped serializer correction to omit customer_email from the header and every row while preserving the API permission check?",
+  "evidence": [
+    {
+      "path": "sources/notion-export.md",
+      "quote": "Current CSV must include customer_email for billing support."
+    },
+    {
+      "path": "sources/linear-privacy.md",
+      "quote": "All invoice CSV exports must omit customer_email, including billing support exports."
+    },
+    {
+      "path": "sources/linear-privacy.md",
+      "quote": "No exception for can_export_billing actors is approved."
+    },
+    {
+      "path": "code/billing/csv_writer.py",
+      "quote": "rows = [\"invoice_id,customer_email,total_cents\"]"
+    },
+    {
+      "path": "code/api/export.py",
+      "quote": "if not actor.can_export_billing:\n        raise PermissionError(\"billing export denied\")"
+    },
+    {
+      "path": "knowledge/billing-export.md",
+      "quote": "Historical note (2025): the serializer must enforce the export permission itself."
+    },
+    {
+      "path": "sources/confluence-roadmap.md",
+      "quote": "This proposal does not change the current permission rule."
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/api/export.py",
+      "to_path": "code/billing/csv_writer.py",
+      "quote": "from code.billing.csv_writer import render_invoice_csv"
+    }
+  ],
+  "edits": []
+}

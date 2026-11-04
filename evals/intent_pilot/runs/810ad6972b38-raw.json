@@ -1,0 +1,134 @@
+{
+  "arm": "raw",
+  "id": "810ad6972b38",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 221,
+    "response": {
+      "code_path": "packages/pond/src/adapter/claude_code.rs",
+      "code_quote": "for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.",
+      "intent_quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "122c9ebb76a60d56b1dcdf87b7472b3b35405a51b239e37aa6aea5b1844350c5",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 6802,
+    "duration_ms": 6915,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 5002,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 23780,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 23780,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0987453,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 354,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\",\"explanation\":\"encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.\",\"question\":\"none\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "1242f6a6-3833-4fe2-8411-b28b5207679f",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "packages/pond/src/adapter/claude_code.rs",
+      "code_quote": "for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.",
+      "intent_quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 105,
+    "total_cost_usd": 0.0987453,
+    "ttft_ms": 6865,
+    "ttft_stream_ms": 5002,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 23780,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 23780,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 23780,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 23780,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 354,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 354,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "95c4386d-d3a7-41d5-8a9f-05f3be557dc7"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 7.805939957965165,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":6802,\"stop_reason\":\"tool_use\",\"session_id\":\"1242f6a6-3833-4fe2-8411-b28b5207679f\",\"total_cost_usd\":0.0987453,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":23780,\"cache_read_input_tokens\":813,\"output_tokens\":354,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":23780,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":354,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":23780,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":23780},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":354,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":23780,\"webSearchRequests\":0,\"costUSD\":0.0987453,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":23780,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\\\\\"-\\\\\\\")\\\",\\\"code_path\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"for _ in 0..c.len_utf16() {\\\\n                encoded.push('-');\\\\n            }\\\",\\\"explanation\\\":\\\"encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.\\\",\\\"question\\\":\\\"none\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\",\"explanation\":\"encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.\",\"question\":\"none\"},\"ttft_ms\":6865,\"type\":\"result\",\"duration_ms\":6915,\"uuid\":\"95c4386d-d3a7-41d5-8a9f-05f3be557dc7\",\"ttft_stream_ms\":5002,\"time_to_request_ms\":105,\"first_content_frame_ms\":5002,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

@@ -1,0 +1,73 @@
+[
+  {
+    "size": 0,
+    "result": 0,
+    "stored": [
+      "existing"
+    ]
+  },
+  {
+    "size": 1,
+    "result": 1,
+    "stored": [
+      "existing",
+      0
+    ]
+  },
+  {
+    "size": 2,
+    "result": 2,
+    "stored": [
+      "existing",
+      0,
+      1
+    ]
+  },
+  {
+    "size": 3,
+    "result": 3,
+    "stored": [
+      "existing",
+      0,
+      1,
+      2
+    ]
+  },
+  {
+    "size": 4,
+    "result": 4,
+    "stored": [
+      "existing",
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  {
+    "size": 5,
+    "result": 5,
+    "stored": [
+      "existing",
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "size": 6,
+    "error": "requests may contain at most five items",
+    "stored": [
+      "existing"
+    ]
+  },
+  {
+    "size": 9,
+    "error": "requests may contain at most five items",
+    "stored": [
+      "existing"
+    ]
+  }
+]

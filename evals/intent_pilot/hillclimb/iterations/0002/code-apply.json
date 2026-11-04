@@ -1,0 +1,9 @@
+{
+  "after": "bb10a43bd00c9605cdbd9b792f9bb070033853d1a5db7e0e6c3e12694c9d6596",
+  "before": "9fc5b4ee1ff64bfe3bd1e37b69b56ab4b575346b9e5f607216553bb3509eed2b",
+  "choice": "code",
+  "path": "code/slug.py",
+  "proposal_id": "ad905c14dea6b5b33d0660a62e38bc93994fc7cb885ab29e419652dee346a810",
+  "status": "applied",
+  "workspace": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/iterations/0002/workspace"
+}

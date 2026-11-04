@@ -1,0 +1,27 @@
+{
+  "method": "Controlled native subagent forward test of the draft Plumb skill",
+  "fixture": "Synthetic finite-ingestion module; not a customer project",
+  "files": {
+    "test_ingester.py": "277c92de4b90e07b13b452f086e81c87a91c67c3917857f31a69cd9f8953f948",
+    "ingester.py": "b608daa2045f36a31036ae5b3b7cddc05048f1ec03fc4c87bbceda1ae78de5bf",
+    "evidence/baseline.txt": "05fa3cafdc8396c95a8ad9cd72e0887eb2ceaa39806cd5606b50ccbe04ccec6e",
+    "evidence/runtime.json": "72d5abb434ced86715755c1dcc10d3d31e147f12d2aceeec9d6eddc49bec9c67",
+    "evidence/syntax.txt": "0f2eef0f7d102f99ccee620939eb7350a230cba854e03c730b31342870200a63",
+    "evidence/red.txt": "fa6026d876ddde7cd17cee44e4dab5b0d18d74a47b78ac5edfa843fc491dbddb",
+    "evidence/green.txt": "77327cdef86a109ccac7c2ef9ad00f83def41978986feccd91edf64ac0d76f6e",
+    "changes/batch-limit/requirements.md": "933c6e186735a26436e0c3b97f29c84872a58ff7b5448e108d39cda2f328755e",
+    "changes/batch-limit/tasks.md": "bee0cc292d3d8fd6bf5c2270728fba3248621f8fedcca8dab0bd27dceb512015",
+    "changes/batch-limit/design.md": "a2415e2085be8cba6f062cb9671912d5bdc5a08fc9e0470d2a96108c09e7ab1c",
+    "baseline/ingester.md": "ccff37d2b01984e3efb00c31f0b6916a7b2513b1d9c3a5c84a2bee9d6368412d",
+    "baseline/test_ingester.py": "db38f47615cbafea32bf36ceb2c12dc1267d7aa1d946422b24a6f3356ff56390",
+    "baseline/ingester.py": "7f88ea0755162fed470443472b42cd9b66d228f26645a5f94a57b301e582ef8a",
+    "docs/knowledge/ingester.md": "638999c4aa7e756e1fe69e54f9c70036adc2081588bc9b7c27af13e88bd8ccfc",
+    "docs/knowledge/index.md": "68e557a54cedc3f0d03e294af865d0bd5508a633ec6ccb4fb71cfc109f422708",
+    "sources/selected-requirement.md": "5facb6e8783d9abc77ae89cf6bf9c69cf3bbf02d1ed4110c6c76063abdacd732",
+    "sources/retention-ticket.md": "611ae2f19e1fa5b2d6d0cd3a9c5a3a5de4b3f8506c221f3c3149965c226e81d9",
+    "sources/retention-policy.md": "5b3808195e8203953147b4b2a5f5c812c1a5d06f2575174631acd02a47eb92ee"
+  },
+  "extra_claude_cli_calls": 0,
+  "scope": "Behavior and source-conflict handling, not general accuracy or adoption",
+  "later_refinement": "Small clear behavior changes may use one note; follow-up routing review only"
+}

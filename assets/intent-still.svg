@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="480" viewBox="0 0 960 480" role="img" aria-labelledby="title desc">
+<title id="title">Plumb: carry intent into the code</title>
+<desc id="desc">A plumb line connects module knowledge, a seven-day retention spec, the matching implementation, verification evidence, and a knowledge update. A return trace connects the update back to knowledge. Checks provide evidence, not a guarantee.</desc>
+<rect width="960" height="480" fill="#f3efe4"/>
+<text x="40" y="24" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="16" font-weight="700" fill="#252b28">P L U M B</text>
+<text x="660" y="25" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">A SKILL FOR YOUR CODING AGENT</text>
+<polyline points="40,57 920,57" fill="none" stroke="#252b28" stroke-width="1"/>
+<text x="40" y="77" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="43" font-weight="700" fill="#252b28">Carry intent into the code.</text>
+<text x="41" y="133" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="21" font-weight="500" fill="#696e64">Read what lasts. Specify the change. Keep the result connected.</text>
+<polyline points="455,177 455,401" fill="none" stroke="#252b28" stroke-width="2"/>
+<circle cx="455" cy="175" r="4" fill="#252b28"/>
+<polygon points="444,400 466,400 455,421" fill="#d54b2c"/>
+<text x="41" y="188" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">01</text>
+<text x="79" y="185" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#252b28">Module knowledge</text>
+<polyline points="311,197 436,197" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="447,197 463,197" fill="none" stroke="#252b28" stroke-width="2"/>
+<text x="550" y="185" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="21" font-weight="500" fill="#252b28">OKF · rules + source references</text>
+<text x="41" y="231" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">02</text>
+<text x="79" y="228" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#252b28">Change spec</text>
+<polyline points="311,240 436,240" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="447,240 463,240" fill="none" stroke="#d54b2c" stroke-width="2"/>
+<text x="550" y="228" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="21" font-weight="500" fill="#d54b2c">Retain audit records for 7 days</text>
+<text x="41" y="274" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">03</text>
+<text x="79" y="271" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#252b28">Implementation</text>
+<polyline points="311,283 436,283" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="455,283 455,283" fill="none" stroke="#d54b2c" stroke-width="2"/>
+<polyline points="455,275 455,291" fill="none" stroke="#d54b2c" stroke-width="3"/>
+<text x="550" y="271" dominant-baseline="text-before-edge" font-family="Menlo, DejaVu Sans Mono, monospace" font-size="21" font-weight="500" fill="#d54b2c">retention_days = 7</text>
+<text x="41" y="317" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">04</text>
+<text x="79" y="314" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#252b28">Verification</text>
+<polyline points="311,326 436,326" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="447,326 463,326" fill="none" stroke="#52735e" stroke-width="2"/>
+<text x="550" y="314" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="21" font-weight="500" fill="#52735e">Tests observed; evidence retained</text>
+<polyline points="478,326 482,330 490,321" fill="none" stroke="#52735e" stroke-width="2"/>
+<text x="41" y="360" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">05</text>
+<text x="79" y="357" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#252b28">Knowledge update</text>
+<polyline points="311,369 436,369" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="447,369 463,369" fill="none" stroke="#252b28" stroke-width="2"/>
+<text x="550" y="357" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="21" font-weight="500" fill="#252b28">Record what actually changed</text>
+<polyline points="912,381 912,406" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="912,406 332,406" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="332,406 332,197" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polyline points="332,197 436,197" fill="none" stroke="#c9c6b9" stroke-width="1"/>
+<polygon points="436,197 429,193 429,201" fill="#c9c6b9"/>
+<polyline points="912,381 912,406 778,406" fill="none" stroke="#52735e" stroke-width="2"/>
+<circle cx="778" cy="406" r="3" fill="#52735e"/>
+<polyline points="40,438 920,438" fill="none" stroke="#252b28" stroke-width="1"/>
+<text x="41" y="452" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">CHECKS PROVIDE EVIDENCE, NOT A GUARANTEE.</text>
+<text x="727" y="452" dominant-baseline="text-before-edge" font-family="Avenir Next, DejaVu Sans, sans-serif" font-size="14" font-weight="500" fill="#696e64">READ / CHANGE / REMEMBER</text>
+</svg>

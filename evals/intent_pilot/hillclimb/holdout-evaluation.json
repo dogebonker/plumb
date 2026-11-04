@@ -1,0 +1,11 @@
+{
+  "pass": true,
+  "outcome": "aligned",
+  "dependency_proven": true,
+  "usage": {
+    "calls": 12,
+    "list_cost_usd": 1.3460707499999998,
+    "tokens": 61919,
+    "unknown": false
+  }
+}

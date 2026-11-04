@@ -1,0 +1,23 @@
+{
+  "implementation_hashes": {
+    "core.py": "c16077d1f8dcd538aab07196d052f7f3ac71bcabd9cfcc7d81b96ad1cdb364ac",
+    "model.py": "898856eb7fbfcd7d4487f2cf0b19411f1e49e6d5cab0165d0e0f517bd34a4cfe",
+    "reconcile.md": "65e490153bec538085a3de11c3b752e801d47a01d4c655d8a18e55fd8bde2689"
+  },
+  "iteration": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/iterations/0006",
+  "pass": true,
+  "score": 5,
+  "steps": [
+    "diagnosed source/code disagreement with dependency evidence",
+    "explicit code choice repairs six actual behaviors; repeat apply is safe",
+    "recheck still detects stale module knowledge",
+    "explicit knowledge choice updates only knowledge; changed sources block apply",
+    "fresh final reconciliation agrees with current intent and behavior"
+  ],
+  "usage": {
+    "calls": 12,
+    "list_cost_usd": 1.3460707499999998,
+    "tokens": 61919,
+    "unknown": false
+  }
+}

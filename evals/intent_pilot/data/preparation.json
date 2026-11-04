@@ -1,0 +1,14 @@
+{
+  "cases": 10,
+  "checkout_head": "b049b2e8ba3a418ad54eebe738c9d8fbe8a8d1c3",
+  "human_curation_minutes": null,
+  "human_review_minutes": null,
+  "independent_pairs": 5,
+  "input_kind": "committed Git objects only",
+  "limitations": [
+    "retrospective corrective sources",
+    "analyst-provisional labels",
+    "no Rust execution"
+  ],
+  "upstream": "https://github.com/tenequm/pond"
+}

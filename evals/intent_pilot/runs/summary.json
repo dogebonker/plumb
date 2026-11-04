@@ -1,0 +1,241 @@
+{
+  "arms": {
+    "bundle": {
+      "false_alarm_rate_all_five": 0.0,
+      "false_negative": 0,
+      "false_positive": 0,
+      "input_tokens": 266226,
+      "invalid": 0,
+      "not_run": 0,
+      "observed_seconds": 87.30156270990847,
+      "output_tokens": 5505,
+      "provider_list_cost_usd": 1.0882070000000001,
+      "target_recall_all_five": 1.0,
+      "true_negative": 5,
+      "true_positive": 5,
+      "uncertain": 0
+    },
+    "raw": {
+      "false_alarm_rate_all_five": 0.2,
+      "false_negative": 0,
+      "false_positive": 1,
+      "input_tokens": 273468,
+      "invalid": 5,
+      "not_run": 0,
+      "observed_seconds": 92.61428145691752,
+      "output_tokens": 5581,
+      "provider_list_cost_usd": 1.1211057,
+      "target_recall_all_five": 0.4,
+      "true_negative": 2,
+      "true_positive": 2,
+      "uncertain": 0
+    }
+  },
+  "case_count": 10,
+  "cases": [
+    {
+      "arm": "raw",
+      "expected": "mismatch",
+      "explanation": "session_from_rows still reads sessionId only from rows.first() and returns a schema error if it's absent. It never scans later rows. A forked subagent transcript whose first row is a headerless fork-context-ref therefore still fails with \"line 1 missing sessionId\", and the raw_session_id is required even for subagents. The transcript is dropped, which is the behavior the fix was meant to remove.",
+      "id": "039b8c485afc",
+      "pair": "forked-transcripts",
+      "question": "Is the sessionId scan implemented somewhere outside this snapshot, such as in the caller that builds rows?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "raw",
+      "expected": "mismatch",
+      "explanation": null,
+      "id": "2df3b633fb35",
+      "pair": "nested-subagents",
+      "question": null,
+      "status": "invalid",
+      "verdict": null
+    },
+    {
+      "arm": "raw",
+      "expected": "consistent",
+      "explanation": null,
+      "id": "2fd1e6a1722b",
+      "pair": "trailing-metadata",
+      "question": null,
+      "status": "invalid",
+      "verdict": null
+    },
+    {
+      "arm": "raw",
+      "expected": "consistent",
+      "explanation": "peek_head only calls the driver's peek_watermark, which can return Empty, when peek_session_id finds a sessionId on the first line. A non-empty claude-code file with no timestamped row whose first line has no sessionId (for example a summary-only row) gets Opaque instead. It is then counted pending and re-read on every run, even though it provably ingests nothing.",
+      "id": "638da979433c",
+      "pair": "empty-freshness",
+      "question": "Should a claude-code file with no timestamped row and no first-line sessionId gate Empty, or Opaque?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "raw",
+      "expected": "consistent",
+      "explanation": null,
+      "id": "6d9d4c241673",
+      "pair": "nested-subagents",
+      "question": null,
+      "status": "invalid",
+      "verdict": null
+    },
+    {
+      "arm": "raw",
+      "expected": "consistent",
+      "explanation": "session_from_rows scans all rows for the first sessionId. Subagents build their id from the path and store raw_session_id as optional (possibly null). Only the top-level branch errors when no id exists. The header row has no message, so it becomes a System message through the existing non-message path.",
+      "id": "6daf1c227a42",
+      "pair": "forked-transcripts",
+      "question": "Does the fixture round-trip test pass for the fork transcript?",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "raw",
+      "expected": "consistent",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other character with one dash per UTF-16 code unit. That matches the bundle regex, including astral characters collapsing to two dashes. It applies no NFC normalization, as the intent says. The decoder handles posix, drive-letter and UNC prefixes as described.",
+      "id": "810ad6972b38",
+      "pair": "project-slugs",
+      "question": "none",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "raw",
+      "expected": "mismatch",
+      "explanation": null,
+      "id": "d98d410ba536",
+      "pair": "project-slugs",
+      "question": null,
+      "status": "invalid",
+      "verdict": null
+    },
+    {
+      "arm": "raw",
+      "expected": "mismatch",
+      "explanation": null,
+      "id": "de4bd1674ab7",
+      "pair": "trailing-metadata",
+      "question": null,
+      "status": "invalid",
+      "verdict": null
+    },
+    {
+      "arm": "raw",
+      "expected": "mismatch",
+      "explanation": "The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.",
+      "id": "f5d7e20e3ea2",
+      "pair": "empty-freshness",
+      "question": "Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "bundle",
+      "expected": "mismatch",
+      "explanation": "session_from_rows requires the first row to carry sessionId and returns a schema error otherwise. This runs before the subagent path identity is used. A forked transcript starting with a fork-context-ref header that has no sessionId is therefore rejected instead of preserved. Top-level sessions also cannot take their id from a later record.",
+      "id": "039b8c485afc",
+      "pair": "forked-transcripts",
+      "question": "Does the fork-context-ref header row reach session_from_rows as rows.first(), and is a later-row sessionId lookup implemented elsewhere?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "bundle",
+      "expected": "mismatch",
+      "explanation": "subagent_ids only recognizes agent files directly inside \"subagents\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.",
+      "id": "2df3b633fb35",
+      "pair": "nested-subagents",
+      "question": "Is a nested workflows path meant to be handled somewhere outside this snapshot?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "bundle",
+      "expected": "consistent",
+      "explanation": "peek_last_ts uses peek_last_mapped, which iterates non-empty tail lines in reverse and returns the first line the closure maps to Some. The closure returns None for lines without a parseable timestamp, so untimestamped trailing metadata rows are skipped. The watermark comes from the latest timestamped row.",
+      "id": "2fd1e6a1722b",
+      "pair": "trailing-metadata",
+      "question": "Is a tail window of 32MB with no timestamped line acceptable to yield None (re-read)?",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "bundle",
+      "expected": "consistent",
+      "explanation": "skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.",
+      "id": "638da979433c",
+      "pair": "empty-freshness",
+      "question": "Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "bundle",
+      "expected": "consistent",
+      "explanation": "subagent_ids derives child_suffix as the path relative to the subagents/ ancestor, so nested workflow segments are kept. The child id is parent/suffix, not the content sessionId. claude_relative_path rebuilds parent/subagents/suffix.jsonl on native restore. A subagents/ path whose leaf isn't agent-<hash>.jsonl returns an unsupported_reason failure, and peek_session_id returns None for it, so it never borrows the parent's identity.",
+      "id": "6d9d4c241673",
+      "pair": "nested-subagents",
+      "question": "Does the jsonl_tree framework surface unsupported_reason as a visible sync failure? I assumed it does, because that code isn't in the snapshot.",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "bundle",
+      "expected": "consistent",
+      "explanation": "session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.",
+      "id": "6daf1c227a42",
+      "pair": "forked-transcripts",
+      "question": "none",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "bundle",
+      "expected": "consistent",
+      "explanation": "encode_project keeps only ASCII alphanumerics and replaces every other char with len_utf16() dashes, so astral characters give two dashes. Underscores, spaces, slashes, dots, colons and backslashes are all replaced. No normalization is applied. Restore uses this when no stored project_dir exists.",
+      "id": "810ad6972b38",
+      "pair": "project-slugs",
+      "question": "none",
+      "status": "valid",
+      "verdict": "consistent"
+    },
+    {
+      "arm": "bundle",
+      "expected": "mismatch",
+      "explanation": "encode_project only replaces '/' and '.', so underscores, spaces, colons, backslashes and non-ASCII characters survive. For example, \"/a_b c\" encodes to \"-a_b c\" instead of \"-a-b-c\". Astral characters also do not become two dashes. This fallback runs when options.source.project_dir is absent, as in foreign restore.",
+      "id": "d98d410ba536",
+      "pair": "project-slugs",
+      "question": "Should encode_project map every non-[A-Za-z0-9] UTF-16 code unit to '-'?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "bundle",
+      "expected": "mismatch",
+      "explanation": "peek_last_ts parses only the literal last non-empty line via peek_last_line. If that line is a trailing metadata record with no timestamp (e.g. last-prompt, permission-mode), parse_timestamp fails and the function returns None. It never walks backward to the last timestamped record. The comment even accepts this (\"A trailing row without one yields None and the file re-reads\"). The watermark is therefore missing, so the file is never skipped as fresh.",
+      "id": "de4bd1674ab7",
+      "pair": "trailing-metadata",
+      "question": "Should peek_last_ts scan backward through tail lines until it finds a parseable timestamp?",
+      "status": "valid",
+      "verdict": "mismatch"
+    },
+    {
+      "arm": "bundle",
+      "expected": "mismatch",
+      "explanation": "collect_jsonl_files accepts every .jsonl file with no control-file filter. A workflow journal.jsonl is therefore counted by discover (files.len()). In plan it is counted as a source. peek_session_id returns None for it, so it is never fresh and is counted as pending. The Claude adapter only skips it later, as an Empty skip during the read. That is not exclusion from discovery or from the pending count.",
+      "id": "f5d7e20e3ea2",
+      "pair": "empty-freshness",
+      "question": "Should discovery and plan filter out journal.jsonl control files before counting, rather than skipping them only at read time?",
+      "status": "valid",
+      "verdict": "mismatch"
+    }
+  ],
+  "human_curation_minutes": null,
+  "human_review_minutes": null,
+  "model": "claude-sonnet-5-5",
+  "pairs": 5
+}

@@ -1,0 +1,16 @@
+{
+  "actor": "native Codex",
+  "claude_calls": 0,
+  "calls": [
+    {
+      "request": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_boundary/request-001.json",
+      "response": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_boundary/response-001.json",
+      "request_sha256": "4657a33c082e731a0609aaf8e20d578cefd4ef9065e31f83c3530d141a640674"
+    },
+    {
+      "request": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_boundary/request-002.json",
+      "response": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_boundary/response-002.json",
+      "request_sha256": "934ce00a7f12b2efb073c98bf874cc83548a6cfe6d472ae9e2419365bcf921f8"
+    }
+  ]
+}

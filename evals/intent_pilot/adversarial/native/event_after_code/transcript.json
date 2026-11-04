@@ -1,0 +1,16 @@
+{
+  "actor": "native Codex",
+  "claude_calls": 0,
+  "calls": [
+    {
+      "request": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_after_code/request-001.json",
+      "response": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_after_code/response-001.json",
+      "request_sha256": "ce4a0c159f9197e46d0ce42b61f17a71aad3eaa410f6528ee6c3cd804ea16fbd"
+    },
+    {
+      "request": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_after_code/request-002.json",
+      "response": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/native/event_after_code/response-002.json",
+      "request_sha256": "413a9fcdab8742bc4539ff74e4a2b51a7812b512af806b0c13c5e69d451ef1ee"
+    }
+  ]
+}

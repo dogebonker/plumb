@@ -1,0 +1,126 @@
+{
+  "arm": "raw",
+  "id": "6d9d4c241673",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "error": "intent quote absent from bound document",
+    "status": "invalid"
+  },
+  "prompt_sha256": "f25243037e5d5ada203aaa72054b3a6ea1163b6ba8f6cac07336a416caf536dc",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 5304,
+    "duration_ms": 5441,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 1006,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 17465,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 17465,
+        "cacheReadInputTokens": 0,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.077104,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 724,
+        "provider": "firstParty",
+        "thinkingTokens": 304,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`), normalized to `/`\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"let child_suffix = path\\n        .strip_prefix(subagents)\\n        .ok()?\\n        .with_extension(\\\"\\\")\\n        .to_str()?\\n        .replace(std::path::MAIN_SEPARATOR, \\\"/\\\");\",\"explanation\":\"The subagents/ ancestor is found at any depth. The child suffix is the relative path with the extension stripped and separators normalized to `/`. Unrecognized layouts return None from peek_session_id, so they skip the freshness gate. unsupported_reason reports them as failures. Restore rebuilds the nested path from the id.\",\"question\":\"\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "0c609877-0df8-4d41-baaa-0def2a735753",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "let child_suffix = path\n        .strip_prefix(subagents)\n        .ok()?\n        .with_extension(\"\")\n        .to_str()?\n        .replace(std::path::MAIN_SEPARATOR, \"/\");",
+      "explanation": "The subagents/ ancestor is found at any depth. The child suffix is the relative path with the extension stripped and separators normalized to `/`. Unrecognized layouts return None from peek_session_id, so they skip the freshness gate. unsupported_reason reports them as failures. Restore rebuilds the nested path from the id.",
+      "intent_quote": "The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`), normalized to `/`",
+      "question": "",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 160,
+    "total_cost_usd": 0.077104,
+    "ttft_ms": 3372,
+    "ttft_stream_ms": 1004,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 17465,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 17465,
+      "cache_read_input_tokens": 0,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 17465,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 17465,
+          "cache_read_input_tokens": 0,
+          "input_tokens": 2,
+          "output_tokens": 724,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 724,
+      "output_tokens_details": {
+        "thinking_tokens": 304
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "900f4d2d-df4e-4892-869b-2cddc286f23d"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 6.386904250015505,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":5304,\"stop_reason\":\"tool_use\",\"session_id\":\"0c609877-0df8-4d41-baaa-0def2a735753\",\"total_cost_usd\":0.077104,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":17465,\"cache_read_input_tokens\":0,\"output_tokens\":724,\"output_tokens_details\":{\"thinking_tokens\":304},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":17465,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":724,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":17465,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":17465},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":724,\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":17465,\"webSearchRequests\":0,\"costUSD\":0.077104,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":304,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":17465,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`), normalized to `/`\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"let child_suffix = path\\\\n        .strip_prefix(subagents)\\\\n        .ok()?\\\\n        .with_extension(\\\\\\\"\\\\\\\")\\\\n        .to_str()?\\\\n        .replace(std::path::MAIN_SEPARATOR, \\\\\\\"/\\\\\\\");\\\",\\\"explanation\\\":\\\"The subagents/ ancestor is found at any depth. The child suffix is the relative path with the extension stripped and separators normalized to `/`. Unrecognized layouts return None from peek_session_id, so they skip the freshness gate. unsupported_reason reports them as failures. Restore rebuilds the nested path from the id.\\\",\\\"question\\\":\\\"\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"The child id is now derived from the file's full path under the `subagents/` ancestor at any depth (`<parent>/workflows/<wf-id>/agent-<hash>`), normalized to `/`\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"let child_suffix = path\\n        .strip_prefix(subagents)\\n        .ok()?\\n        .with_extension(\\\"\\\")\\n        .to_str()?\\n        .replace(std::path::MAIN_SEPARATOR, \\\"/\\\");\",\"explanation\":\"The subagents/ ancestor is found at any depth. The child suffix is the relative path with the extension stripped and separators normalized to `/`. Unrecognized layouts return None from peek_session_id, so they skip the freshness gate. unsupported_reason reports them as failures. Restore rebuilds the nested path from the id.\",\"question\":\"\"},\"ttft_ms\":3372,\"type\":\"result\",\"duration_ms\":5441,\"uuid\":\"900f4d2d-df4e-4892-869b-2cddc286f23d\",\"ttft_stream_ms\":1004,\"time_to_request_ms\":160,\"first_content_frame_ms\":1006,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

@@ -1,0 +1,45 @@
+{
+  "action": "finish",
+  "reads": [],
+  "searches": [],
+  "outcome": "spec_stale",
+  "edits": [
+    {
+      "path": "knowledge/billing-export.md",
+      "old": "# OKF: Billing export\nCurrent invariant: only actors with can_export_billing may export invoices; the API entry point enforces it.\nCSV currently includes customer_email.\nSource: sources/notion-export.md.\nHistorical note (2025): the serializer must enforce the export permission itself.\nFuture idea: stream rows directly from the database; no accepted decision exists.\n",
+      "new": "---\ntype: Module Contract\ntitle: Billing CSV export\ngenerated:\n  by: plumb-native-simulation/1\nsources:\n  - id: privacy-current\n    resource: ../sources/linear-privacy.md\n  - id: billing-prior\n    resource: ../sources/notion-export.md\n  - id: finance-proposal\n    resource: ../sources/confluence-roadmap.md\n---\n\n# Current intended behavior\n\nUnder the separately supplied simulated privacy-owner decision, PRIV-88 governs\nthe email column for every invoice export:\n\n> All invoice CSV exports must omit customer_email, including billing support exports.[^privacy-current]\n\n> No exception for can_export_billing actors is approved.[^privacy-current]\n\nOnly actors with `can_export_billing` may export. The public API owns that guard;\nthe internal serializer receives authorized records.[^billing-prior]\n\n# Implementation links\n\n`code/api/export.py` checks permission before invoking\n`code/billing/csv_writer.py`. The serializer emits `invoice_id,total_cents` in\nthe header and corresponding values in every row. It does not emit email.\n\n# Superseded and planned knowledge\n\nThe prior Notion requirement to include email is superseded for this simulated\nresolution. Its unchanged permission-boundary statement remains relevant.\nThe 2025 serializer-owned permission check is historical. The second-finance-\nreviewer requirement remains an unapproved future proposal.[^finance-proposal]\n\nNo actual human verification event is asserted: this document records a\ncontrolled simulation, and the external captures remain unchanged.\n\n[^privacy-current]: Captured Linear PRIV-88 revision l6.\n[^billing-prior]: Captured Notion billing export revision n17.\n[^finance-proposal]: Captured Confluence roadmap revision c3, not approved.\n",
+      "reason": "Record the simulated owner-selected current agreement and preserve unaffected contracts and source history."
+    }
+  ],
+  "explanation": "The serializer now emits only invoice_id and total_cents in the header and each row, matching owner-selected PRIV-88. The public API still checks can_export_billing before serialization. Local module knowledge incorrectly describes customer_email as current and cites only the superseded Notion email requirement. Update that local contract and its source history; do not reintroduce email, move authorization into the serializer, or adopt the unapproved second-reviewer proposal. The separately supplied operator choice is now knowledge. This one-file proposal preserves the selected rule verbatim, records the prior and proposed source scopes, and adds OKF concept metadata without claiming real human verification.",
+  "question": "",
+  "evidence": [
+    {
+      "path": "code/billing/csv_writer.py",
+      "quote": "rows = [\"invoice_id,total_cents\"]"
+    },
+    {
+      "path": "code/billing/csv_writer.py",
+      "quote": "rows.append(f\"{invoice.id},{invoice.total_cents}\")"
+    },
+    {
+      "path": "knowledge/billing-export.md",
+      "quote": "CSV currently includes customer_email."
+    },
+    {
+      "path": "sources/linear-privacy.md",
+      "quote": "All invoice CSV exports must omit customer_email, including billing support exports."
+    },
+    {
+      "path": "code/api/export.py",
+      "quote": "if not actor.can_export_billing:\n        raise PermissionError(\"billing export denied\")"
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/api/export.py",
+      "to_path": "code/billing/csv_writer.py",
+      "quote": "from code.billing.csv_writer import render_invoice_csv"
+    }
+  ]
+}

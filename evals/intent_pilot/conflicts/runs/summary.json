@@ -1,0 +1,242 @@
+[
+  {
+    "arm": "raw",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "The encoder replaces every non-ASCII-alphanumeric character with one dash per UTF-16 code unit, with no NFC normalization. This matches the bundle rule quoted in the source. The restore path uses the captured project_dir when present and otherwise calls encode_project. The fallback decoder handles UNC, drive-letter and posix prefixes, and the source says it is lossy by design.",
+    "id": "50ce43285a01",
+    "list_cost_usd": 0.035536,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "current-fixed",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 code unit. This matches the bundle regex and the astral-character rule. It applies no NFC normalization. The fallback decoder recovers UNC, drive-letter and posix prefixes, and it is lossy, as the source says it is.",
+    "id": "50ce43285a01",
+    "list_cost_usd": 0.0160673,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "current-fixed",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "raw",
+    "expected": [
+      "mismatch",
+      "compatible",
+      true
+    ],
+    "explanation": "The active source says Claude Code's project slug replaces every non-alphanumeric character with \"-\". It also says astral characters become two dashes, because the regex counts UTF-16 code units. The supplied encode_project still replaces only '/' and '.'. Underscores, spaces, backslashes and colons therefore survive into the slug. Restores of those projects go to a directory Claude Code won't open. The fallback decoder for UNC and drive-letter prefixes isn't in the supplied code either. The restore path uses encode_project whenever source.project_dir is absent.",
+    "id": "abba562186c2",
+    "list_cost_usd": 0.0278433,
+    "observed": [
+      "mismatch",
+      "compatible",
+      true
+    ],
+    "question": "Should encode_project be updated to replace every non-ASCII-alphanumeric character with \"-\", using two dashes per astral character (UTF-16 code units)? Should the fallback decoder be added too?",
+    "scenario": "current-old-code",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "mismatch",
+      "compatible",
+      true
+    ],
+    "explanation": "The active source says Claude Code replaces every non-alphanumeric character with \"-\", counting UTF-16 code units (astral characters become two dashes). The supplied encode_project replaces only '/' and '.', so '_', spaces, '\\\\', ':' and others survive. Restores for such projects go to a directory Claude Code won't open. The fallback decoder is not supplied.",
+    "id": "abba562186c2",
+    "list_cost_usd": 0.013977299999999998,
+    "observed": [
+      "mismatch",
+      "compatible",
+      true
+    ],
+    "question": "Should encode_project be changed to replace every non-ASCII-alphanumeric character with '-', using two dashes per astral character (len_utf16) and no NFC normalization?",
+    "scenario": "current-old-code",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "raw",
+    "expected": [
+      "unknown",
+      "conflict",
+      true
+    ],
+    "explanation": "The two active sources disagree on whether project-slug handling applies NFC normalization. The plan lists NFC in its slug model. The correction says NFC does not apply to session paths and that it overrides the plan. The operator policy says neither source can retire the other. The code's encode_project does no NFC, and it collapses non-alphanumerics per UTF-16 unit. That matches the correction and conflicts with the plan's NFC requirement. Because the sources conflict, I can't say whether the code is aligned.",
+    "id": "517586f99b24",
+    "list_cost_usd": 0.1595773,
+    "observed": [
+      "unknown",
+      "conflict",
+      true
+    ],
+    "question": "For Claude Code project-slug encoding and decoding in restore paths, should NFC normalization apply (the plan) or not (the correction)? Which source governs?",
+    "scenario": "unresolved-sources",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "unknown",
+      "conflict",
+      true
+    ],
+    "explanation": "Both sources are active and binding, and neither can retire the other. The old plan says slugs are NFC-normalized. The correction says NFC does not apply to session paths. The code does no NFC normalization, so it matches the correction and contradicts the plan. Without a ruling on which source governs, I can't judge the code against intent.",
+    "id": "517586f99b24",
+    "list_cost_usd": 0.0191353,
+    "observed": [
+      "unknown",
+      "conflict",
+      true
+    ],
+    "question": "Should project-slug encoding/decoding in restore paths apply NFC normalization, as the old plan says, or skip it, as the correction says?",
+    "scenario": "unresolved-sources",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "raw",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "The plan's older 3.5 bullets (the NFC step, the `['/', '.']` encoder, the MSIX probe) are explicitly corrected in the same document's PR C section and in the correction commit. That retires them, so the sources don't conflict. `encode_project` now replaces every non-alphanumeric character with `-`, counted in UTF-16 units, and does no NFC normalization. `decode_project` recovers UNC (`--host`) and drive-letter (`C--`) prefixes and falls back to posix. This matches the corrected intent.",
+    "id": "d71a8a9cd8f6",
+    "list_cost_usd": 0.1698393,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "explicit-correction",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "encode_project replaces every non-ASCII-alphanumeric character with one dash per UTF-16 unit and does no NFC normalization, as the active sources require. The older plan bullet (NFC, specific character list) is explicitly corrected by the same document and the commit. The fallback decoder recovers posix, drive-letter and UNC prefixes and is acknowledged as lossy.",
+    "id": "d71a8a9cd8f6",
+    "list_cost_usd": 0.0213713,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "explicit-correction",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "raw",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "The active correction commit says Claude Code collapses every non-alphanumeric UTF-16 code unit to a dash, with no NFC normalization. It also says the fallback decoder recovers posix, drive-letter and UNC prefixes. The implementation matches all of this. encode_project emits one dash per UTF-16 unit for each non-ASCII-alphanumeric character. decode_project handles UNC, drive-letter and posix slugs, and its lossiness is accepted. The old plan is only a future proposal, so its NFC and MSIX claims are not active promises.",
+    "id": "85218bca3bd4",
+    "list_cost_usd": 0.15717530000000002,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "future-proposal",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "explanation": "The active correction says every non-alphanumeric UTF-16 code unit becomes a dash, with no NFC normalization. encode_project does exactly that, and it doesn't normalize. The fallback decoder handles UNC, drive-letter and posix prefixes, as the correction describes. The old plan is only a future proposal, so its NFC and decode details aren't active.",
+    "id": "85218bca3bd4",
+    "list_cost_usd": 0.0173953,
+    "observed": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "question": "",
+    "scenario": "future-proposal",
+    "semantic_agreement": true,
+    "validation": "valid"
+  },
+  {
+    "arm": "raw",
+    "expected": [
+      "unknown",
+      "compatible",
+      true
+    ],
+    "explanation": "The source says project-slug encoding must collapse every non-alphanumeric character to \"-\", counting UTF-16 code units. The supplied code only calls encode_project as a fallback when options.source.project_dir is missing. The implementation of encode_project is not supplied, and neither is any fallback decoder. I can't tell whether the restore encoding matches the rule.",
+    "id": "c2d89877d3a6",
+    "list_cost_usd": 0.0261633,
+    "observed": [
+      "unknown",
+      "compatible",
+      true
+    ],
+    "question": "Please provide the encode_project implementation, and the fallback decoder if one exists, so the encoding can be checked against the rule.",
+    "scenario": "missing-encoder",
+    "semantic_agreement": true,
+    "validation": "invalid"
+  },
+  {
+    "arm": "bundle",
+    "expected": [
+      "unknown",
+      "compatible",
+      true
+    ],
+    "explanation": "The active source requires encode_project to replace every non-alphanumeric UTF-16 code unit with a dash. The supplied code only calls encode_project in the restore path. It doesn't include the function's implementation, so I can't tell whether it follows the rule. The fallback decoder isn't supplied either.",
+    "id": "c2d89877d3a6",
+    "list_cost_usd": 0.0131533,
+    "observed": [
+      "unknown",
+      "compatible",
+      true
+    ],
+    "question": "Can you supply the implementations of encode_project and the fallback project-slug decoder, so I can check them against the rule?",
+    "scenario": "missing-encoder",
+    "semantic_agreement": true,
+    "validation": "valid"
+  }
+]

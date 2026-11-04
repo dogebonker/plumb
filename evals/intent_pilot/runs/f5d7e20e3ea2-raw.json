@@ -1,0 +1,134 @@
+{
+  "arm": "raw",
+  "id": "f5d7e20e3ea2",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 203,
+    "response": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "        let mut plan = SyncPlan {\n            sources: heads.len(),\n            ..SyncPlan::default()\n        };",
+      "explanation": "The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.",
+      "intent_quote": "Workflow journal.jsonl control files leave the walk entirely\n  (JsonlTree::skip_source): never a session, never read, never pending.",
+      "question": "Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?",
+      "verdict": "mismatch"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "ad82286e6e36e4d2a5a05785f271f0287fca166baf839cc258439e9277327cd0",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 5301,
+    "duration_ms": 5752,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 1418,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 38170,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 38170,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.1599153,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 715,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"Workflow journal.jsonl control files leave the walk entirely\\n  (JsonlTree::skip_source): never a session, never read, never pending.\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"        let mut plan = SyncPlan {\\n            sources: heads.len(),\\n            ..SyncPlan::default()\\n        };\",\"explanation\":\"The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.\",\"question\":\"Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "a6f1e0e2-de6e-4323-a863-5cfb71ecc750",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/jsonl.rs",
+      "code_quote": "        let mut plan = SyncPlan {\n            sources: heads.len(),\n            ..SyncPlan::default()\n        };",
+      "explanation": "The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.",
+      "intent_quote": "Workflow journal.jsonl control files leave the walk entirely\n  (JsonlTree::skip_source): never a session, never read, never pending.",
+      "question": "Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 460,
+    "total_cost_usd": 0.1599153,
+    "ttft_ms": 3336,
+    "ttft_stream_ms": 1416,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 38170,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 38170,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 38170,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 38170,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 715,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 715,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "03ec745a-0d3f-4d9c-9bbf-173fd0e4f974"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 11.001931292004883,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":5301,\"stop_reason\":\"tool_use\",\"session_id\":\"a6f1e0e2-de6e-4323-a863-5cfb71ecc750\",\"total_cost_usd\":0.1599153,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":38170,\"cache_read_input_tokens\":813,\"output_tokens\":715,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":38170,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":715,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":38170,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":38170},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":715,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":38170,\"webSearchRequests\":0,\"costUSD\":0.1599153,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":38170,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"Workflow journal.jsonl control files leave the walk entirely\\\\n  (JsonlTree::skip_source): never a session, never read, never pending.\\\",\\\"code_path\\\":\\\"src/adapter/jsonl.rs\\\",\\\"code_quote\\\":\\\"        let mut plan = SyncPlan {\\\\n            sources: heads.len(),\\\\n            ..SyncPlan::default()\\\\n        };\\\",\\\"explanation\\\":\\\"The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.\\\",\\\"question\\\":\\\"Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"Workflow journal.jsonl control files leave the walk entirely\\n  (JsonlTree::skip_source): never a session, never read, never pending.\",\"code_path\":\"src/adapter/jsonl.rs\",\"code_quote\":\"        let mut plan = SyncPlan {\\n            sources: heads.len(),\\n            ..SyncPlan::default()\\n        };\",\"explanation\":\"The walk (collect_jsonl_files) includes every .jsonl, and JsonlTree has no skip_source. A journal.jsonl gets session_id None from peek_session_id, so is_session_fresh is false and it counts as pending. Zero-byte and timestamp-less files likewise get last_ts None, so they are never gated Empty. They are still read and counted pending, and there is no At/Empty/Opaque verdict.\",\"question\":\"Is this snapshot from before the commit's SourceWatermark/skip_source changes were applied?\"},\"ttft_ms\":3336,\"type\":\"result\",\"duration_ms\":5752,\"uuid\":\"03ec745a-0d3f-4d9c-9bbf-173fd0e4f974\",\"ttft_stream_ms\":1416,\"time_to_request_ms\":460,\"first_content_frame_ms\":1418,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

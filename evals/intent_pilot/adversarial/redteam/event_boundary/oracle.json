@@ -1,0 +1,16 @@
+{
+  "expected_check": "sources_conflict",
+  "required_conflict": [
+    "sources/confluence-retention.md",
+    "sources/linear-legal.md"
+  ],
+  "guard": "close_account enforces ownership and permission before publishing; audit consumer need not repeat actor authorization",
+  "required_dependency": "close_account imports publish_closed; publisher emits account.closed.v1; consumer subscribes through TOPIC",
+  "planned_scope": "Do not add email, v2, consumer authorization, or 90-day retention",
+  "maintainer_resolution": "For this simulation the legal owner confirms LEGAL-203 governs current v1 records. Keep v1 payload and authorization boundary. Change only audit retention to 7 days, then update OKF to record legal decision and superseded 30-day Confluence policy. Captured sources remain immutable.",
+  "post_resolution_observable": "authorized close publishes v1 with account_id only; consumer archives for 7 days; unauthorized close emits no event.",
+  "nonclaims": [
+    "No live vendor or maintainer evidence",
+    "No measured human effort"
+  ]
+}

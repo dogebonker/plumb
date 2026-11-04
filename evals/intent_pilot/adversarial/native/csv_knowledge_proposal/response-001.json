@@ -1,0 +1,42 @@
+{
+  "action": "inspect",
+  "reads": [
+    {
+      "path": "code/api/export.py",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "code/billing/csv_writer.py",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "knowledge/billing-export.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/confluence-roadmap.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/linear-privacy.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/notion-export.md",
+      "start_line": 0,
+      "end_line": 0
+    }
+  ],
+  "searches": [],
+  "outcome": "",
+  "explanation": "",
+  "question": "",
+  "evidence": [],
+  "links": [],
+  "edits": []
+}

@@ -1,0 +1,126 @@
+{
+  "arm": "raw",
+  "id": "d98d410ba536",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "error": "intent quote absent from bound document",
+    "status": "invalid"
+  },
+  "prompt_sha256": "d3e22fc1e6c4ac241bfec609f592d69896df43b90436007ed574307a58351ee8",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 5674,
+    "duration_ms": 5741,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 3435,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 23124,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 23124,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0966913,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 411,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"`encode_project` mapped only `/` and `.` to `-`. Claude Code's actual rule collapses **every** non-alphanumeric character\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"project.replace(['/', '.'], \\\"-\\\")\",\"explanation\":\"The snapshot's encode_project still replaces only '/' and '.', so '_', spaces, '\\\\', ':' survive in the slug. It doesn't apply the `[^a-zA-Z0-9]` rule or UTF-16 code-unit counting. The fallback decoder also still does `replace('-', \\\"/\\\")` with no drive-letter or UNC recovery. Foreign restores of such projects still write to a directory Claude Code won't open.\",\"question\":\"Is the snapshot missing the encode_project fix from this commit?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "c97e875f-dc63-4c37-be55-a84542634609",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "packages/pond/src/adapter/claude_code.rs",
+      "code_quote": "project.replace(['/', '.'], \"-\")",
+      "explanation": "The snapshot's encode_project still replaces only '/' and '.', so '_', spaces, '\\', ':' survive in the slug. It doesn't apply the `[^a-zA-Z0-9]` rule or UTF-16 code-unit counting. The fallback decoder also still does `replace('-', \"/\")` with no drive-letter or UNC recovery. Foreign restores of such projects still write to a directory Claude Code won't open.",
+      "intent_quote": "`encode_project` mapped only `/` and `.` to `-`. Claude Code's actual rule collapses **every** non-alphanumeric character",
+      "question": "Is the snapshot missing the encode_project fix from this commit?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 189,
+    "total_cost_usd": 0.0966913,
+    "ttft_ms": 5719,
+    "ttft_stream_ms": 3434,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 23124,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 23124,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 23124,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 23124,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 411,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 411,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "01522e60-252c-4389-8e5a-974c4d31732c"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 7.185807208996266,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":5674,\"stop_reason\":\"tool_use\",\"session_id\":\"c97e875f-dc63-4c37-be55-a84542634609\",\"total_cost_usd\":0.0966913,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":23124,\"cache_read_input_tokens\":813,\"output_tokens\":411,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":23124,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":411,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":23124,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":23124},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":411,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":23124,\"webSearchRequests\":0,\"costUSD\":0.0966913,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":23124,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"`encode_project` mapped only `/` and `.` to `-`. Claude Code's actual rule collapses **every** non-alphanumeric character\\\",\\\"code_path\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"project.replace(['/', '.'], \\\\\\\"-\\\\\\\")\\\",\\\"explanation\\\":\\\"The snapshot's encode_project still replaces only '/' and '.', so '_', spaces, '\\\\\\\\', ':' survive in the slug. It doesn't apply the `[^a-zA-Z0-9]` rule or UTF-16 code-unit counting. The fallback decoder also still does `replace('-', \\\\\\\"/\\\\\\\")` with no drive-letter or UNC recovery. Foreign restores of such projects still write to a directory Claude Code won't open.\\\",\\\"question\\\":\\\"Is the snapshot missing the encode_project fix from this commit?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"`encode_project` mapped only `/` and `.` to `-`. Claude Code's actual rule collapses **every** non-alphanumeric character\",\"code_path\":\"packages/pond/src/adapter/claude_code.rs\",\"code_quote\":\"project.replace(['/', '.'], \\\"-\\\")\",\"explanation\":\"The snapshot's encode_project still replaces only '/' and '.', so '_', spaces, '\\\\', ':' survive in the slug. It doesn't apply the `[^a-zA-Z0-9]` rule or UTF-16 code-unit counting. The fallback decoder also still does `replace('-', \\\"/\\\")` with no drive-letter or UNC recovery. Foreign restores of such projects still write to a directory Claude Code won't open.\",\"question\":\"Is the snapshot missing the encode_project fix from this commit?\"},\"ttft_ms\":5719,\"type\":\"result\",\"duration_ms\":5741,\"uuid\":\"01522e60-252c-4389-8e5a-974c4d31732c\",\"ttft_stream_ms\":3434,\"time_to_request_ms\":189,\"first_content_frame_ms\":3435,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

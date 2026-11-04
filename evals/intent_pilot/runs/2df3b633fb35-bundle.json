@@ -1,0 +1,134 @@
+{
+  "arm": "bundle",
+  "id": "2df3b633fb35",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 535,
+    "response": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "    if subagents_dir.file_name()?.to_str()? != \"subagents\" {\n        return None;\n    }",
+      "explanation": "subagent_ids only recognizes agent files directly inside \"subagents\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.",
+      "intent_quote": "A transcript beneath <parent>/subagents/workflows/<workflow>/agent-<hash>.jsonl must have its own path-derived child identity, preserving the workflow segments.",
+      "question": "Is a nested workflows path meant to be handled somewhere outside this snapshot?",
+      "verdict": "mismatch"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "5d0eeb4b9a6a2eb9a640315c10951c384dd7a90bbc15f387f0f73b0dafc47bbb",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 4951,
+    "duration_ms": 5145,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 2303,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 15250,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 15250,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0655953,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 451,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"mismatch\",\"intent_quote\":\"A transcript beneath <parent>/subagents/workflows/<workflow>/agent-<hash>.jsonl must have its own path-derived child identity, preserving the workflow segments.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    if subagents_dir.file_name()?.to_str()? != \\\"subagents\\\" {\\n        return None;\\n    }\",\"explanation\":\"subagent_ids only recognizes agent files directly inside \\\"subagents\\\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.\",\"question\":\"Is a nested workflows path meant to be handled somewhere outside this snapshot?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "320ce395-9753-440a-a002-33ddf48a8bc0",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "    if subagents_dir.file_name()?.to_str()? != \"subagents\" {\n        return None;\n    }",
+      "explanation": "subagent_ids only recognizes agent files directly inside \"subagents\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.",
+      "intent_quote": "A transcript beneath <parent>/subagents/workflows/<workflow>/agent-<hash>.jsonl must have its own path-derived child identity, preserving the workflow segments.",
+      "question": "Is a nested workflows path meant to be handled somewhere outside this snapshot?",
+      "verdict": "mismatch"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 193,
+    "total_cost_usd": 0.0655953,
+    "ttft_ms": 5131,
+    "ttft_stream_ms": 2303,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 15250,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 15250,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 15250,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 15250,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 451,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 451,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "3ce5298d-4066-4a02-a818-f3cb40c46b23"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 5.924253167002462,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":4951,\"stop_reason\":\"tool_use\",\"session_id\":\"320ce395-9753-440a-a002-33ddf48a8bc0\",\"total_cost_usd\":0.0655953,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":15250,\"cache_read_input_tokens\":813,\"output_tokens\":451,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":15250,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":451,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":15250,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":15250},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":451,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":15250,\"webSearchRequests\":0,\"costUSD\":0.0655953,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":15250,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"mismatch\\\",\\\"intent_quote\\\":\\\"A transcript beneath <parent>/subagents/workflows/<workflow>/agent-<hash>.jsonl must have its own path-derived child identity, preserving the workflow segments.\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"    if subagents_dir.file_name()?.to_str()? != \\\\\\\"subagents\\\\\\\" {\\\\n        return None;\\\\n    }\\\",\\\"explanation\\\":\\\"subagent_ids only recognizes agent files directly inside \\\\\\\"subagents\\\\\\\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.\\\",\\\"question\\\":\\\"Is a nested workflows path meant to be handled somewhere outside this snapshot?\\\"}\",\"structured_output\":{\"verdict\":\"mismatch\",\"intent_quote\":\"A transcript beneath <parent>/subagents/workflows/<workflow>/agent-<hash>.jsonl must have its own path-derived child identity, preserving the workflow segments.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"    if subagents_dir.file_name()?.to_str()? != \\\"subagents\\\" {\\n        return None;\\n    }\",\"explanation\":\"subagent_ids only recognizes agent files directly inside \\\"subagents\\\". A nested workflows/<workflow>/agent-x.jsonl path returns None. session_from_rows then falls back to the row's sessionId, which is the parent's, so the transcript merges under the parent identity. Workflow segments are dropped, and the unrecognized layout doesn't fail. claude_relative_path also restores to subagents/<agent>.jsonl, losing the nested path.\",\"question\":\"Is a nested workflows path meant to be handled somewhere outside this snapshot?\"},\"ttft_ms\":5131,\"type\":\"result\",\"duration_ms\":5145,\"uuid\":\"3ce5298d-4066-4a02-a818-f3cb40c46b23\",\"ttft_stream_ms\":2303,\"time_to_request_ms\":193,\"first_content_frame_ms\":2303,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

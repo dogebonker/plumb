@@ -1,0 +1,28 @@
+{
+  "baseline_behavior": {
+    "pass": false,
+    "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 17, in <module>\nAssertionError: [('/a_b c', '-a-b-c/S.jsonl', '-a_b c/S.jsonl'), ('a\ud83d\ude00b', 'a--b/S.jsonl', 'a\ud83d\ude00b/S.jsonl'), ('a\u0301', 'a-/S.jsonl', 'a\u0301/S.jsonl'), ('C:\\\\dev\\\\a_b', 'C--dev-a-b/S.jsonl', 'C:\\\\dev\\\\a_b/S.jsonl')]\n",
+    "stdout": ""
+  },
+  "behavior_program_sha256": "70d9bc7d1812a3f1808c90e45e6cada70eb58eab05528a586f5c1345760cea10",
+  "decision": "For this controlled replay the operator identifies sources/decision.md as the governing current agreement for session restore. sources/proposal.md is an unapproved future proposal. knowledge/module.md is a potentially stale local summary. Inspect the imported encoder before judging the public restore_path behavior. This is a source-selection decision, not permission to apply edits.",
+  "evaluator_revision": 2,
+  "evaluator_sha256": "cdb35102aad3cf9474a6c3003a338878c8bceb4ca69e0f1099d9688bbac894c0",
+  "files": {
+    "README.md": "ac7dc438b94c6aa9b5a411f30877e1ff084b775cfc74e072479e5953a5d7c29a",
+    "code/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "code/restore.py": "50ce8dc5848d959ed906a2679e2c2de6e0f682f68d65aaf1f5bc625078cf5ef5",
+    "code/slug.py": "9fc5b4ee1ff64bfe3bd1e37b69b56ab4b575346b9e5f607216553bb3509eed2b",
+    "knowledge/module.md": "17ed2cc6b8e1f8ae9de6d2d1460f7a514da9659899a9e5d193a9d09e796102e5",
+    "sources/decision.md": "fb0ffba5ba43bce3c1d5158ae95a5462452149db5cea08a480b72e62f260c0e4",
+    "sources/proposal.md": "ea24ef417e7cdbd4bfecded1e75b939688a911da00a7274fea6e53f856a05ff8"
+  },
+  "fixture_kind": "synthetic Python replay of a public historical Pond requirement",
+  "human_curation_minutes": null,
+  "known_good_calibration": {
+    "pass": true,
+    "stderr": "",
+    "stdout": "PASS: six public restore-path behaviors\n"
+  },
+  "measurement_repair": "hashes uses actual active iteration workspace at call time; no expected outcomes changed"
+}

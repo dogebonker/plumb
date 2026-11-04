@@ -1,0 +1,175 @@
+{
+  "arm": "bundle",
+  "citations": [
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 20,
+      "original_quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")",
+      "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+    },
+    {
+      "id": "correction",
+      "kind": "source",
+      "line": 31,
+      "original_quote": "Handled with `len_utf16()`,\nnot one dash per `char`.",
+      "quote": "Handled with `len_utf16()`,\nnot one dash per `char`."
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 216,
+      "line_in_excerpt": 32,
+      "quote": "if c.is_ascii_alphanumeric() {\n            encoded.push(c);\n        } else {",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    },
+    {
+      "id": "packages/pond/src/adapter/claude_code.rs",
+      "kind": "code",
+      "line": 221,
+      "line_in_excerpt": 37,
+      "quote": "for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }",
+      "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+    }
+  ],
+  "id": "85218bca3bd4",
+  "prompt_sha256": "43084f0e7e91497df2a09a8d31427319f7e9295adb599eccd78365f367f659ba",
+  "protocol_sha256": "3ad0519275dd1af43d3c5b37e0bcbac663da3abb0604eeaa552cb98f9463112d",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 3879,
+    "duration_ms": 4080,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 1339,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 3009,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 3009,
+        "cacheReadInputTokens": 1053,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.0173953,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 525,
+        "provider": "firstParty",
+        "thinkingTokens": 0,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"Handled with `len_utf16()`,\\nnot one dash per `char`.\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\\n            encoded.push(c);\\n        } else {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\"}],\"explanation\":\"The active correction says every non-alphanumeric UTF-16 code unit becomes a dash, with no NFC normalization. encode_project does exactly that, and it doesn't normalize. The fallback decoder handles UNC, drive-letter and posix prefixes, as the correction describes. The old plan is only a future proposal, so its NFC and decode details aren't active.\",\"question\":\"\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "9f5c5e6d-ec87-46df-9c77-88aa80faa72a",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_status": "aligned",
+      "evidence": [
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \"-\")"
+        },
+        {
+          "id": "correction",
+          "kind": "source",
+          "quote": "Handled with `len_utf16()`,\nnot one dash per `char`."
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "if c.is_ascii_alphanumeric() {\n            encoded.push(c);\n        } else {"
+        },
+        {
+          "id": "packages/pond/src/adapter/claude_code.rs",
+          "kind": "code",
+          "quote": "for _ in 0..c.len_utf16() {\n                encoded.push('-');\n            }"
+        }
+      ],
+      "explanation": "The active correction says every non-alphanumeric UTF-16 code unit becomes a dash, with no NFC normalization. encode_project does exactly that, and it doesn't normalize. The fallback decoder handles UNC, drive-letter and posix prefixes, as the correction describes. The old plan is only a future proposal, so its NFC and decode details aren't active.",
+      "needs_human": false,
+      "question": "",
+      "source_status": "compatible"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 200,
+    "total_cost_usd": 0.0173953,
+    "ttft_ms": 4049,
+    "ttft_stream_ms": 1338,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 3009,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 3009,
+      "cache_read_input_tokens": 1053,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 3009,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 3009,
+          "cache_read_input_tokens": 1053,
+          "input_tokens": 2,
+          "output_tokens": 525,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 525,
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "7e4e4976-37a1-4fd3-aae0-89c9a6896ebf"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 4.9476550000254065,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":3879,\"stop_reason\":\"tool_use\",\"session_id\":\"9f5c5e6d-ec87-46df-9c77-88aa80faa72a\",\"total_cost_usd\":0.0173953,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":3009,\"cache_read_input_tokens\":1053,\"output_tokens\":525,\"output_tokens_details\":{\"thinking_tokens\":0},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":3009,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":525,\"cache_read_input_tokens\":1053,\"cache_creation_input_tokens\":3009,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":3009},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":525,\"cacheReadInputTokens\":1053,\"cacheCreationInputTokens\":3009,\"webSearchRequests\":0,\"costUSD\":0.0173953,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":0,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":3009,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"code_status\\\":\\\"aligned\\\",\\\"source_status\\\":\\\"compatible\\\",\\\"needs_human\\\":false,\\\"evidence\\\":[{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\\\\\"-\\\\\\\")\\\"},{\\\"kind\\\":\\\"source\\\",\\\"id\\\":\\\"correction\\\",\\\"quote\\\":\\\"Handled with `len_utf16()`,\\\\nnot one dash per `char`.\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"if c.is_ascii_alphanumeric() {\\\\n            encoded.push(c);\\\\n        } else {\\\"},{\\\"kind\\\":\\\"code\\\",\\\"id\\\":\\\"packages/pond/src/adapter/claude_code.rs\\\",\\\"quote\\\":\\\"for _ in 0..c.len_utf16() {\\\\n                encoded.push('-');\\\\n            }\\\"}],\\\"explanation\\\":\\\"The active correction says every non-alphanumeric UTF-16 code unit becomes a dash, with no NFC normalization. encode_project does exactly that, and it doesn't normalize. The fallback decoder handles UNC, drive-letter and posix prefixes, as the correction describes. The old plan is only a future proposal, so its NFC and decode details aren't active.\\\",\\\"question\\\":\\\"\\\"}\",\"structured_output\":{\"code_status\":\"aligned\",\"source_status\":\"compatible\",\"needs_human\":false,\"evidence\":[{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"_b = (A) => A.replace(/[^a-zA-Z0-9]/g, \\\"-\\\")\"},{\"kind\":\"source\",\"id\":\"correction\",\"quote\":\"Handled with `len_utf16()`,\\nnot one dash per `char`.\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"if c.is_ascii_alphanumeric() {\\n            encoded.push(c);\\n        } else {\"},{\"kind\":\"code\",\"id\":\"packages/pond/src/adapter/claude_code.rs\",\"quote\":\"for _ in 0..c.len_utf16() {\\n                encoded.push('-');\\n            }\"}],\"explanation\":\"The active correction says every non-alphanumeric UTF-16 code unit becomes a dash, with no NFC normalization. encode_project does exactly that, and it doesn't normalize. The fallback decoder handles UNC, drive-letter and posix prefixes, as the correction describes. The old plan is only a future proposal, so its NFC and decode details aren't active.\",\"question\":\"\"},\"ttft_ms\":4049,\"type\":\"result\",\"duration_ms\":4080,\"uuid\":\"7e4e4976-37a1-4fd3-aae0-89c9a6896ebf\",\"ttft_stream_ms\":1338,\"time_to_request_ms\":200,\"first_content_frame_ms\":1339,\"queued_turn_count\":0,\"result_index\":0}\n",
+  "validation": "valid"
+}

@@ -1,5 +1,13 @@
 # Skills
 
+The current standalone [Plumb skill](plumb/SKILL.md) provides spec-driven
+changes using the existing coding agent and OKF module knowledge. Copy the whole
+`skills/plumb/` folder into your host's skill directory, or point the agent at its
+`SKILL.md`. It does not require the factory installation described below.
+See the [current README](../README.md) for usage.
+
+## Earlier factory skills
+
 Plumb skills land here, built in roadmap order. Each follows the open Agent Skills format, so it runs in any compatible harness.
 
 ## Install

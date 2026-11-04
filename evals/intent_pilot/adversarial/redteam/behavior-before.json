@@ -1,0 +1,11 @@
+{
+  "method": "actual synthetic source execution, prewritten maintainer policy; stdlib test doubles",
+  "csv": {
+    "pass": false,
+    "error": "invoice_id,customer_email,total_cents\ninv-7,private@example.test,1234"
+  },
+  "event": {
+    "pass": false,
+    "error": "[('acct-4', 30)]"
+  }
+}

@@ -1,0 +1,6 @@
+# Captured inputs, receipts and hash-verified fixtures retain their exact bytes.
+evals/intent_pilot/** -text -whitespace
+evals/skill_pilot/fixture/** -text -whitespace
+examples/pond-claude-code/** -text -whitespace
+# These standalone diagrams are generated historical artifacts.
+docs/visualizations/plumb-checker-*.html -whitespace

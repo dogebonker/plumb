@@ -1,0 +1,15 @@
+{
+  "expected_check": "sources_conflict",
+  "required_conflict": [
+    "sources/notion-export.md",
+    "sources/linear-privacy.md"
+  ],
+  "guard": "code/api/export.py owns authorization before render_invoice_csv; helper omission is not an authorization bug",
+  "planned_scope": "Do not require second reviewer or database streaming",
+  "maintainer_resolution": "For this simulation the privacy owner confirms Linear PRIV-88 governs all exports. Keep entry-point authorization. Remove customer_email from CSV and update OKF to cite both the superseded Notion requirement and governing Linear decision. Do not edit captured sources.",
+  "post_resolution_observable": "CSV header and every row omit customer_email; unauthorized actor still fails before serializer.",
+  "nonclaims": [
+    "No live vendor or maintainer evidence",
+    "No measured human effort"
+  ]
+}

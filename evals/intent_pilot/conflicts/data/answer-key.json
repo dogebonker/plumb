@@ -1,0 +1,56 @@
+{
+  "50ce43285a01": {
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "current-fixed"
+  },
+  "517586f99b24": {
+    "expected": [
+      "unknown",
+      "conflict",
+      true
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "unresolved-sources"
+  },
+  "85218bca3bd4": {
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "future-proposal"
+  },
+  "abba562186c2": {
+    "expected": [
+      "mismatch",
+      "compatible",
+      true
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "current-old-code"
+  },
+  "c2d89877d3a6": {
+    "expected": [
+      "unknown",
+      "compatible",
+      true
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "missing-encoder"
+  },
+  "d71a8a9cd8f6": {
+    "expected": [
+      "aligned",
+      "compatible",
+      false
+    ],
+    "label_status": "analyst-provisional controlled probe",
+    "scenario": "explicit-correction"
+  }
+}

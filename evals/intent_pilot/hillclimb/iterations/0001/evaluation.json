@@ -1,0 +1,22 @@
+{
+  "error": "Unresolved outcome requires a human question",
+  "implementation_hashes": {
+    "core.py": "75a3df5eb7586a79fa17fc5677c4a3bc39518178708ea9c404575e19defb1919",
+    "model.py": "21613abb5bb0d5442b3c7c28053ff3ebf37d125bb34487a1cbfd6efc6f84dbd3",
+    "reconcile.md": "65e490153bec538085a3de11c3b752e801d47a01d4c655d8a18e55fd8bde2689"
+  },
+  "iteration": "/Users/dan/Work/plumb/evals/intent_pilot/hillclimb/iterations/0001",
+  "pass": false,
+  "score": 3,
+  "steps": [
+    "diagnosed source/code disagreement with dependency evidence",
+    "explicit code choice repairs six actual behaviors; repeat apply is safe",
+    "recheck still detects stale module knowledge"
+  ],
+  "usage": {
+    "calls": 8,
+    "list_cost_usd": 0.9917805,
+    "tokens": 43602,
+    "unknown": false
+  }
+}

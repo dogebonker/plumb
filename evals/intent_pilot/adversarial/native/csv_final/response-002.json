@@ -1,0 +1,42 @@
+{
+  "action": "finish",
+  "reads": [],
+  "searches": [],
+  "outcome": "aligned",
+  "edits": [],
+  "explanation": "Code and local knowledge now agree with the simulated owner-selected PRIV-88 rule: no customer_email in the header or rows. The API retains can_export_billing authorization and the imported serializer remains internal. The knowledge quotes the current omission rule, records the Notion email requirement as superseded, preserves the authorization boundary, and leaves the finance-review proposal unapproved. This is aligned for the stated simulated decision, not a claim that document metadata itself grants authority.",
+  "question": "",
+  "evidence": [
+    {
+      "path": "code/billing/csv_writer.py",
+      "quote": "rows = [\"invoice_id,total_cents\"]"
+    },
+    {
+      "path": "code/billing/csv_writer.py",
+      "quote": "rows.append(f\"{invoice.id},{invoice.total_cents}\")"
+    },
+    {
+      "path": "sources/linear-privacy.md",
+      "quote": "All invoice CSV exports must omit customer_email, including billing support exports."
+    },
+    {
+      "path": "code/api/export.py",
+      "quote": "if not actor.can_export_billing:\n        raise PermissionError(\"billing export denied\")"
+    },
+    {
+      "path": "knowledge/billing-export.md",
+      "quote": "All invoice CSV exports must omit customer_email, including billing support exports."
+    },
+    {
+      "path": "knowledge/billing-export.md",
+      "quote": "The prior Notion requirement to include email is superseded for this simulated\nresolution."
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/api/export.py",
+      "to_path": "code/billing/csv_writer.py",
+      "quote": "from code.billing.csv_writer import render_invoice_csv"
+    }
+  ]
+}

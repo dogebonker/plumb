@@ -1,0 +1,7 @@
+{
+  "method": "Executed original simulator functions after redirecting only __file__ used for result destination into owned redteam directory; fake service and scripted actor unchanged",
+  "simulator_sha256": "73461661de130101923e657cfa90381e8e63193e84ae81180fb2072c5b9149fe",
+  "matches_root_results_exactly": true,
+  "case_count": 10,
+  "production_connector_implemented": false
+}

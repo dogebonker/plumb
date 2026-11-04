@@ -1,0 +1,43 @@
+{
+  "action": "finish",
+  "reads": [],
+  "searches": [],
+  "outcome": "spec_stale",
+  "edits": [],
+  "explanation": "The consumer now retains v1 audit records for 7 days, matching the owner-selected LEGAL-203 decision. The v1 account_id-only event and account-command ownership/permission guard remain intact. Module knowledge still declares 30-day retention and points to the superseded retention clause. Update that claim and its source history; retain the current v1 event contract and leave the 90-day/email/consumer-auth v2 proposal unadopted.",
+  "question": "Update module knowledge to record 7-day v1 retention under LEGAL-203, with the former 30-day clause explicitly superseded and v1 scope unchanged?",
+  "evidence": [
+    {
+      "path": "code/audit/consumer.py",
+      "quote": "archive.append(event[\"account_id\"], retention_days=7)"
+    },
+    {
+      "path": "knowledge/account-closure.md",
+      "quote": "Account service emits account.closed.v1; audit consumer archives the account ID for 30 days."
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "quote": "All account closure audit records must be retained for exactly 7 days, including account.closed.v1 records."
+    },
+    {
+      "path": "sources/notion-event.md",
+      "quote": "account.closed.v1 carries account_id only and is consumed by the audit service."
+    },
+    {
+      "path": "code/accounts/close.py",
+      "quote": "if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")"
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/accounts/close.py",
+      "to_path": "code/events/publisher.py",
+      "quote": "from code.events.publisher import publish_closed"
+    },
+    {
+      "from_path": "code/events/publisher.py",
+      "to_path": "code/audit/consumer.py",
+      "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})"
+    }
+  ]
+}

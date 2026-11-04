@@ -1,0 +1,52 @@
+{
+  "action": "inspect",
+  "reads": [
+    {
+      "path": "code/accounts/close.py",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "code/audit/consumer.py",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "code/events/publisher.py",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "knowledge/account-closure.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/confluence-retention.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/linear-v2.md",
+      "start_line": 0,
+      "end_line": 0
+    },
+    {
+      "path": "sources/notion-event.md",
+      "start_line": 0,
+      "end_line": 0
+    }
+  ],
+  "searches": [],
+  "outcome": "",
+  "explanation": "",
+  "question": "",
+  "evidence": [],
+  "links": [],
+  "edits": []
+}

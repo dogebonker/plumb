@@ -1,0 +1,49 @@
+test_all_supported_sizes_and_iterables (test_ingester.AcceptTests.test_all_supported_sizes_and_iterables) ... ok
+test_existing_accepted_batches (test_ingester.AcceptTests.test_existing_accepted_batches) ... ok
+test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) ... 
+  test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=6, iterator=False) ... FAIL
+  test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=6, iterator=True) ... FAIL
+  test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=9, iterator=False) ... FAIL
+  test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=9, iterator=True) ... FAIL
+
+======================================================================
+FAIL: test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=6, iterator=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/plumb-forward-cghsd254/test_ingester.py", line 33, in test_oversize_rejected_without_storage_calls
+    with self.assertRaisesRegex(ValueError, "five"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=6, iterator=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/plumb-forward-cghsd254/test_ingester.py", line 33, in test_oversize_rejected_without_storage_calls
+    with self.assertRaisesRegex(ValueError, "five"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=9, iterator=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/plumb-forward-cghsd254/test_ingester.py", line 33, in test_oversize_rejected_without_storage_calls
+    with self.assertRaisesRegex(ValueError, "five"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_oversize_rejected_without_storage_calls (test_ingester.AcceptTests.test_oversize_rejected_without_storage_calls) (size=9, iterator=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/plumb-forward-cghsd254/test_ingester.py", line 33, in test_oversize_rejected_without_storage_calls
+    with self.assertRaisesRegex(ValueError, "five"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (failures=4)
+Exit code: 1

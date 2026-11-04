@@ -1,0 +1,134 @@
+{
+  "arm": "bundle",
+  "id": "638da979433c",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 372,
+    "response": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "Ok(meta) if meta.len() <= TAIL_CAP => crate::adapter::SourceWatermark::Empty,",
+      "explanation": "skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.",
+      "intent_quote": "Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.",
+      "question": "Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?",
+      "verdict": "consistent"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "6e3118c2b1e670d5cd1ebcbc7d0289261b2dcfb548ead3af887d1d15619dd335",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 8320,
+    "duration_ms": 8502,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 3886,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 40149,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 40149,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.1679813,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 730,
+        "provider": "firstParty",
+        "thinkingTokens": 311,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"Ok(meta) if meta.len() <= TAIL_CAP => crate::adapter::SourceWatermark::Empty,\",\"explanation\":\"skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.\",\"question\":\"Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "6c04ba79-3011-4649-9688-75c6a68e39f6",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "Ok(meta) if meta.len() <= TAIL_CAP => crate::adapter::SourceWatermark::Empty,",
+      "explanation": "skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.",
+      "intent_quote": "Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.",
+      "question": "Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 181,
+    "total_cost_usd": 0.1679813,
+    "ttft_ms": 6482,
+    "ttft_stream_ms": 3886,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 40149,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 40149,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 40149,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 40149,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 730,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 730,
+      "output_tokens_details": {
+        "thinking_tokens": 311
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "68db8a00-1714-4361-9894-d6b9133463e2"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 9.488435916020535,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":8320,\"stop_reason\":\"tool_use\",\"session_id\":\"6c04ba79-3011-4649-9688-75c6a68e39f6\",\"total_cost_usd\":0.1679813,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":40149,\"cache_read_input_tokens\":813,\"output_tokens\":730,\"output_tokens_details\":{\"thinking_tokens\":311},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":40149,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":730,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":40149,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":40149},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":730,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":40149,\"webSearchRequests\":0,\"costUSD\":0.1679813,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":311,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":40149,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"Ok(meta) if meta.len() <= TAIL_CAP => crate::adapter::SourceWatermark::Empty,\\\",\\\"explanation\\\":\\\"skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.\\\",\\\"question\\\":\\\"Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"Workflow journal.jsonl control files must be excluded from discovery and must not count as pending sessions.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"Ok(meta) if meta.len() <= TAIL_CAP => crate::adapter::SourceWatermark::Empty,\",\"explanation\":\"skip_source excludes subagents/**/journal.jsonl. Both jsonl_tree_discover and collect_heads filter on it, so these files are neither counted nor pending. With no timestamped row found, the watermark is Empty only when file length is at most TAIL_CAP. The fallback read_tail covers the whole file in that case. Larger files, or a metadata error, return Opaque and are re-read.\",\"question\":\"Is it intended that a file of exactly TAIL_CAP bytes counts as fully scanned?\"},\"ttft_ms\":6482,\"type\":\"result\",\"duration_ms\":8502,\"uuid\":\"68db8a00-1714-4361-9894-d6b9133463e2\",\"ttft_stream_ms\":3886,\"time_to_request_ms\":181,\"first_content_frame_ms\":3886,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

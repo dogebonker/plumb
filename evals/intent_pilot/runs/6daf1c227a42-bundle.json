@@ -1,0 +1,134 @@
+{
+  "arm": "bundle",
+  "id": "6daf1c227a42",
+  "model": "claude-sonnet-5-5",
+  "observation": {
+    "derived_code_line": 529,
+    "response": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "let raw_session_id = rows\n        .iter()\n        .find_map(|row| row.value.get(\"sessionId\").and_then(Value::as_str))\n        .map(ToOwned::to_owned);",
+      "explanation": "session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.",
+      "intent_quote": "A subagent's identity comes from its path, even if no record carries sessionId; top-level sessions may obtain their id from a later record.",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "status": "valid"
+  },
+  "prompt_sha256": "f62302fc96653f86fae364929d98344fe69187a349019c828aa2144ddc8bcea1",
+  "protocol_sha256": "0660270e303997bf3b9e16d0db0ad34eb9595966377d0e5356fbc27573b58958",
+  "provider": {
+    "api_error_status": null,
+    "duration_api_ms": 9533,
+    "duration_ms": 9746,
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "fast_mode_state": "off",
+    "first_content_frame_ms": 5909,
+    "is_error": false,
+    "modelUsage": {
+      "claude-sonnet-5-5": {
+        "cacheCreationEphemeral1hInputTokens": 18610,
+        "cacheCreationEphemeral5mInputTokens": 0,
+        "cacheCreationInputTokens": 18610,
+        "cacheReadInputTokens": 813,
+        "canonicalModel": "claude-sonnet-5-5",
+        "contextWindow": 1000000,
+        "costBasis": "list",
+        "costUSD": 0.08066530000000001,
+        "inputTokens": 2,
+        "maxOutputTokens": 128000,
+        "outputTokens": 614,
+        "provider": "firstParty",
+        "thinkingTokens": 207,
+        "webSearchRequests": 0
+      }
+    },
+    "num_turns": 2,
+    "permission_denials": [],
+    "queued_turn_count": 0,
+    "result": "{\"verdict\":\"consistent\",\"intent_quote\":\"A subagent's identity comes from its path, even if no record carries sessionId; top-level sessions may obtain their id from a later record.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"let raw_session_id = rows\\n        .iter()\\n        .find_map(|row| row.value.get(\\\"sessionId\\\").and_then(Value::as_str))\\n        .map(ToOwned::to_owned);\",\"explanation\":\"session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.\",\"question\":\"none\"}",
+    "result_index": 0,
+    "safety_stops": 0,
+    "session_id": "f25c0ed9-d389-49a8-b3e5-136d6b665ca0",
+    "stop_reason": "tool_use",
+    "structured_output": {
+      "code_path": "src/adapter/claude_code.rs",
+      "code_quote": "let raw_session_id = rows\n        .iter()\n        .find_map(|row| row.value.get(\"sessionId\").and_then(Value::as_str))\n        .map(ToOwned::to_owned);",
+      "explanation": "session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.",
+      "intent_quote": "A subagent's identity comes from its path, even if no record carries sessionId; top-level sessions may obtain their id from a later record.",
+      "question": "none",
+      "verdict": "consistent"
+    },
+    "subagent_stats": {
+      "by_type": {},
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "system": 0,
+        "user": 0
+      },
+      "max_depth": 0,
+      "refused": {
+        "budget": 0,
+        "concurrency_limit": 0,
+        "depth_limit": 0
+      },
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "spawned": 0,
+      "spawned_by_subagents": 0,
+      "started_in_background": 0
+    },
+    "subtype": "success",
+    "terminal_reason": "completed",
+    "time_to_request_ms": 210,
+    "total_cost_usd": 0.08066530000000001,
+    "ttft_ms": 7699,
+    "ttft_stream_ms": 5909,
+    "type": "result",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 18610,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 18610,
+      "cache_read_input_tokens": 813,
+      "fallback_credit": null,
+      "inference_geo": "global",
+      "input_tokens": 2,
+      "iterations": [
+        {
+          "cache_creation": {
+            "ephemeral_1h_input_tokens": 18610,
+            "ephemeral_5m_input_tokens": 0
+          },
+          "cache_creation_input_tokens": 18610,
+          "cache_read_input_tokens": 813,
+          "input_tokens": 2,
+          "output_tokens": 614,
+          "type": "message"
+        }
+      ],
+      "output_tokens": 614,
+      "output_tokens_details": {
+        "thinking_tokens": 207
+      },
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "uuid": "2694c781-011e-4fdf-acf1-3f6d1ddbada9"
+  },
+  "reserved_usd": 0.25,
+  "returncode": 0,
+  "seconds": 10.479270458978135,
+  "status": "received",
+  "stderr": "",
+  "stdout": "{\"duration_api_ms\":9533,\"stop_reason\":\"tool_use\",\"session_id\":\"f25c0ed9-d389-49a8-b3e5-136d6b665ca0\",\"total_cost_usd\":0.08066530000000001,\"usage\":{\"input_tokens\":2,\"cache_creation_input_tokens\":18610,\"cache_read_input_tokens\":813,\"output_tokens\":614,\"output_tokens_details\":{\"thinking_tokens\":207},\"server_tool_use\":{\"web_search_requests\":0,\"web_fetch_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":18610,\"ephemeral_5m_input_tokens\":0},\"inference_geo\":\"global\",\"iterations\":[{\"input_tokens\":2,\"output_tokens\":614,\"cache_read_input_tokens\":813,\"cache_creation_input_tokens\":18610,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":18610},\"type\":\"message\"}],\"speed\":\"standard\",\"fallback_credit\":null},\"modelUsage\":{\"claude-sonnet-5-5\":{\"inputTokens\":2,\"outputTokens\":614,\"cacheReadInputTokens\":813,\"cacheCreationInputTokens\":18610,\"webSearchRequests\":0,\"costUSD\":0.08066530000000001,\"contextWindow\":1000000,\"maxOutputTokens\":128000,\"thinkingTokens\":207,\"cacheCreationEphemeral5mInputTokens\":0,\"cacheCreationEphemeral1hInputTokens\":18610,\"canonicalModel\":\"claude-sonnet-5-5\",\"provider\":\"firstParty\",\"costBasis\":\"list\"}},\"permission_denials\":[],\"terminal_reason\":\"completed\",\"fast_mode_state\":\"off\",\"fast_mode_disabled_reason\":\"sdk_opt_in_required\",\"subagent_stats\":{\"spawned\":0,\"requested\":{\"background\":0,\"foreground\":0,\"unset\":0},\"started_in_background\":0,\"max_depth\":0,\"spawned_by_subagents\":0,\"completed\":0,\"failed\":0,\"killed\":{\"parent\":0,\"user\":0,\"system\":0},\"refused\":{\"depth_limit\":0,\"concurrency_limit\":0,\"budget\":0},\"by_type\":{}},\"safety_stops\":0,\"is_error\":false,\"num_turns\":2,\"subtype\":\"success\",\"api_error_status\":null,\"result\":\"{\\\"verdict\\\":\\\"consistent\\\",\\\"intent_quote\\\":\\\"A subagent's identity comes from its path, even if no record carries sessionId; top-level sessions may obtain their id from a later record.\\\",\\\"code_path\\\":\\\"src/adapter/claude_code.rs\\\",\\\"code_quote\\\":\\\"let raw_session_id = rows\\\\n        .iter()\\\\n        .find_map(|row| row.value.get(\\\\\\\"sessionId\\\\\\\").and_then(Value::as_str))\\\\n        .map(ToOwned::to_owned);\\\",\\\"explanation\\\":\\\"session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.\\\",\\\"question\\\":\\\"none\\\"}\",\"structured_output\":{\"verdict\":\"consistent\",\"intent_quote\":\"A subagent's identity comes from its path, even if no record carries sessionId; top-level sessions may obtain their id from a later record.\",\"code_path\":\"src/adapter/claude_code.rs\",\"code_quote\":\"let raw_session_id = rows\\n        .iter()\\n        .find_map(|row| row.value.get(\\\"sessionId\\\").and_then(Value::as_str))\\n        .map(ToOwned::to_owned);\",\"explanation\":\"session_from_rows scans all rows for sessionId instead of requiring it on the first row. Subagents build their id from the path via subagent_descriptor, and a missing raw_session_id is only stored as null in the subagent metadata. Only top-level sessions error when no sessionId exists. The header row has no message field, so events_from_row keeps it as a System message instead of dropping it.\",\"question\":\"none\"},\"ttft_ms\":7699,\"type\":\"result\",\"duration_ms\":9746,\"uuid\":\"2694c781-011e-4fdf-acf1-3f6d1ddbada9\",\"ttft_stream_ms\":5909,\"time_to_request_ms\":210,\"first_content_frame_ms\":5909,\"queued_turn_count\":0,\"result_index\":0}\n"
+}

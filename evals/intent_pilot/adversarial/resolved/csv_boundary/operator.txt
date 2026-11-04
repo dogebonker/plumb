@@ -1,0 +1,1 @@
+For this simulation the privacy owner confirms Linear PRIV-88 governs all exports. Keep entry-point authorization. Remove customer_email from CSV and update module knowledge to cite the superseded Notion requirement and governing Linear decision. Captured sources remain immutable. This is a simulated source-selection decision, not permission to apply edits.

@@ -1,0 +1,72 @@
+{
+  "039b8c485afc": {
+    "expected": "mismatch",
+    "fix_commit": "06a2d2725ede538d5016dcae4a6af178fd636e48",
+    "label_status": "analyst-provisional",
+    "pair": "forked-transcripts",
+    "revision": "fa41ddf3346b962e4db1ee7b3ee23e46787e5098"
+  },
+  "2df3b633fb35": {
+    "expected": "mismatch",
+    "fix_commit": "94b9beeff58d4badc96017b66df32071e01daf1f",
+    "label_status": "analyst-provisional",
+    "pair": "nested-subagents",
+    "revision": "a813790a515d6fcfb3a8f9f05b3ffb250f3ef668"
+  },
+  "2fd1e6a1722b": {
+    "expected": "consistent",
+    "fix_commit": "dba35944d9d3e3f9ad09e225a15600a8b6953528",
+    "label_status": "analyst-provisional",
+    "pair": "trailing-metadata",
+    "revision": "dba35944d9d3e3f9ad09e225a15600a8b6953528"
+  },
+  "638da979433c": {
+    "expected": "consistent",
+    "fix_commit": "6a05cd17f0869967d149df42f0b4b961b3d3c0ee",
+    "label_status": "analyst-provisional",
+    "pair": "empty-freshness",
+    "revision": "6a05cd17f0869967d149df42f0b4b961b3d3c0ee"
+  },
+  "6d9d4c241673": {
+    "expected": "consistent",
+    "fix_commit": "94b9beeff58d4badc96017b66df32071e01daf1f",
+    "label_status": "analyst-provisional",
+    "pair": "nested-subagents",
+    "revision": "94b9beeff58d4badc96017b66df32071e01daf1f"
+  },
+  "6daf1c227a42": {
+    "expected": "consistent",
+    "fix_commit": "06a2d2725ede538d5016dcae4a6af178fd636e48",
+    "label_status": "analyst-provisional",
+    "pair": "forked-transcripts",
+    "revision": "06a2d2725ede538d5016dcae4a6af178fd636e48"
+  },
+  "810ad6972b38": {
+    "expected": "consistent",
+    "fix_commit": "a218ef33cb337b2ec8c41bb9b23b02fb76231559",
+    "label_status": "analyst-provisional",
+    "pair": "project-slugs",
+    "revision": "a218ef33cb337b2ec8c41bb9b23b02fb76231559"
+  },
+  "d98d410ba536": {
+    "expected": "mismatch",
+    "fix_commit": "a218ef33cb337b2ec8c41bb9b23b02fb76231559",
+    "label_status": "analyst-provisional",
+    "pair": "project-slugs",
+    "revision": "95e8ce4d88a1e9f210811ce8546e9b95503d3ce1"
+  },
+  "de4bd1674ab7": {
+    "expected": "mismatch",
+    "fix_commit": "dba35944d9d3e3f9ad09e225a15600a8b6953528",
+    "label_status": "analyst-provisional",
+    "pair": "trailing-metadata",
+    "revision": "5b28e5669a77876b8f4baefe35a4495acba21c9e"
+  },
+  "f5d7e20e3ea2": {
+    "expected": "mismatch",
+    "fix_commit": "6a05cd17f0869967d149df42f0b4b961b3d3c0ee",
+    "label_status": "analyst-provisional",
+    "pair": "empty-freshness",
+    "revision": "d17b43fc6486dd7e9fea33bac4594e830edfd462"
+  }
+}

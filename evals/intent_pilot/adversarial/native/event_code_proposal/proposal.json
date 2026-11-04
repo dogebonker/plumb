@@ -1,0 +1,294 @@
+{
+  "workspace": "/Users/dan/Work/plumb/evals/intent_pilot/adversarial/resolved/event_boundary/workspace",
+  "choice": "code",
+  "snapshot": {
+    "code/accounts/close.py": "from code.events.publisher import publish_closed\n\ndef close_account(actor, account, bus):\n    if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")\n    account.closed = True\n    publish_closed(bus, account.id)\n",
+    "code/audit/consumer.py": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=30)\n",
+    "code/events/publisher.py": "def publish_closed(bus, account_id):\n    bus.publish(\"account.closed.v1\", {\"account_id\": account_id})\n",
+    "knowledge/account-closure.md": "# OKF: Account closure\nOnly an actor with can_close_account for their own account may close it. The account service guards the command.\nAccount service emits account.closed.v1; audit consumer archives the account ID for 30 days.\nSources: sources/confluence-retention.md and sources/notion-event.md.\nHistorical incident fix: consumers once rejected missing email; v1 no longer carries email.\nPlanned: move to account.closed.v2 with 90-day archive; not approved.\n",
+    "sources/confluence-retention.md": "# Captured Confluence: Account audit policy\nRevision 22, 2026-09-20. Status: current.\nAccount closure audit records must be retained for exactly 30 days. No email field is required.\nAuthorization belongs to the account command boundary, not the audit consumer.\n",
+    "sources/linear-legal.md": "# Captured Linear: LEGAL-203\nRevision 8, 2026-10-10. Status: accepted active policy.\nAll account closure audit records must be retained for exactly 7 days, including account.closed.v1 records.\nNo migration to v2 is required to apply this policy.\n",
+    "sources/linear-v2.md": "# Captured Linear: EVENTS-421\nRevision 2. Status: backlog proposal; no approval.\nProposed v2 adds email and requires audit consumer to check actor ownership; archive for 90 days.\nDo not treat this proposal as the accepted v1 contract.\n",
+    "sources/notion-event.md": "# Captured Notion: Event contract\nRevision 11. Status: accepted current v1.\naccount.closed.v1 carries account_id only and is consumed by the audit service.\nThe audit consumer need not repeat the account command authorization check.\n"
+  },
+  "hashes": {
+    "code/accounts/close.py": "d771b2c25f5494fb34ecb3f07a875a2bea3a2c4c1fe53b01121d383ef075f04d",
+    "code/audit/consumer.py": "4c9779260915443a4a66df9b5f30f2d13e31b65a70d2d5172f239c06cbac7f44",
+    "code/events/publisher.py": "0e66d1bc630b445123addca1a3fc546d30e1f2f394e3ccccb68e0542f09d77da",
+    "knowledge/account-closure.md": "7cba28ef656a1ff5b01b2a3084c9529bc8da5ada86b904efdf5a6f8b2d923766",
+    "sources/confluence-retention.md": "20cb7573c8c44cf85f1f8ac66ff0f4257e729d5bffc59e02a34e765ec91e4d95",
+    "sources/linear-legal.md": "1a24dc8775ced30396e438350319161770d2b248178b21e24406be35be9c36bc",
+    "sources/linear-v2.md": "ab28fc62c02b423f0039cec980f8833f30381f7f17a8433323a91a43e2f7f2ee",
+    "sources/notion-event.md": "73d1d4294650eb4f6ad3281e33c8a8df23d6f3cff660f845222ad98cd89b99c5"
+  },
+  "edits": [
+    {
+      "path": "code/audit/consumer.py",
+      "old": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=30)\n",
+      "new": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=7)\n",
+      "reason": "Apply the simulated owner-selected current rule to its actual implementation."
+    }
+  ],
+  "rationale": "The simulated legal owner has now explicitly selected LEGAL-203 for current v1 records. The audit consumer archives for 30 days, contradicting the selected 7-day rule. The publisher and consumer already agree on account.closed.v1 and account_id-only payload. Account ownership and can_close_account are checked at the command boundary; neither schema migration nor consumer-owned authorization is required. Correct retention only, then reconcile the stale local knowledge. The explicit test-operator choice is code. This one-file proposal implements that choice; external captures and unrelated guards/contracts are untouched.",
+  "decision": "For this simulation the legal owner confirms LEGAL-203 governs current v1 records. Keep v1 payload and authorization boundary. Change only audit retention to 7 days, then update module knowledge to record the legal decision and superseded 30-day Confluence policy. Captured sources remain immutable. This is a simulated source-selection decision, not permission to apply edits.",
+  "trace": [
+    {
+      "round": 1,
+      "response": {
+        "action": "inspect",
+        "reads": [
+          {
+            "path": "code/accounts/close.py",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "code/audit/consumer.py",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "code/events/publisher.py",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "knowledge/account-closure.md",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "sources/confluence-retention.md",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "sources/linear-legal.md",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "sources/linear-v2.md",
+            "start_line": 0,
+            "end_line": 0
+          },
+          {
+            "path": "sources/notion-event.md",
+            "start_line": 0,
+            "end_line": 0
+          }
+        ],
+        "searches": [],
+        "outcome": "",
+        "explanation": "",
+        "question": "",
+        "evidence": [],
+        "links": [],
+        "edits": []
+      },
+      "results": {
+        "reads": [
+          {
+            "path": "code/accounts/close.py",
+            "start_line": 1,
+            "end_line": 7,
+            "text": "from code.events.publisher import publish_closed\n\ndef close_account(actor, account, bus):\n    if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")\n    account.closed = True\n    publish_closed(bus, account.id)\n",
+            "sha256": "d771b2c25f5494fb34ecb3f07a875a2bea3a2c4c1fe53b01121d383ef075f04d"
+          },
+          {
+            "path": "code/audit/consumer.py",
+            "start_line": 1,
+            "end_line": 4,
+            "text": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=30)\n",
+            "sha256": "4c9779260915443a4a66df9b5f30f2d13e31b65a70d2d5172f239c06cbac7f44"
+          },
+          {
+            "path": "code/events/publisher.py",
+            "start_line": 1,
+            "end_line": 2,
+            "text": "def publish_closed(bus, account_id):\n    bus.publish(\"account.closed.v1\", {\"account_id\": account_id})\n",
+            "sha256": "0e66d1bc630b445123addca1a3fc546d30e1f2f394e3ccccb68e0542f09d77da"
+          },
+          {
+            "path": "knowledge/account-closure.md",
+            "start_line": 1,
+            "end_line": 6,
+            "text": "# OKF: Account closure\nOnly an actor with can_close_account for their own account may close it. The account service guards the command.\nAccount service emits account.closed.v1; audit consumer archives the account ID for 30 days.\nSources: sources/confluence-retention.md and sources/notion-event.md.\nHistorical incident fix: consumers once rejected missing email; v1 no longer carries email.\nPlanned: move to account.closed.v2 with 90-day archive; not approved.\n",
+            "sha256": "7cba28ef656a1ff5b01b2a3084c9529bc8da5ada86b904efdf5a6f8b2d923766"
+          },
+          {
+            "path": "sources/confluence-retention.md",
+            "start_line": 1,
+            "end_line": 4,
+            "text": "# Captured Confluence: Account audit policy\nRevision 22, 2026-09-20. Status: current.\nAccount closure audit records must be retained for exactly 30 days. No email field is required.\nAuthorization belongs to the account command boundary, not the audit consumer.\n",
+            "sha256": "20cb7573c8c44cf85f1f8ac66ff0f4257e729d5bffc59e02a34e765ec91e4d95"
+          },
+          {
+            "path": "sources/linear-legal.md",
+            "start_line": 1,
+            "end_line": 4,
+            "text": "# Captured Linear: LEGAL-203\nRevision 8, 2026-10-10. Status: accepted active policy.\nAll account closure audit records must be retained for exactly 7 days, including account.closed.v1 records.\nNo migration to v2 is required to apply this policy.\n",
+            "sha256": "1a24dc8775ced30396e438350319161770d2b248178b21e24406be35be9c36bc"
+          },
+          {
+            "path": "sources/linear-v2.md",
+            "start_line": 1,
+            "end_line": 4,
+            "text": "# Captured Linear: EVENTS-421\nRevision 2. Status: backlog proposal; no approval.\nProposed v2 adds email and requires audit consumer to check actor ownership; archive for 90 days.\nDo not treat this proposal as the accepted v1 contract.\n",
+            "sha256": "ab28fc62c02b423f0039cec980f8833f30381f7f17a8433323a91a43e2f7f2ee"
+          },
+          {
+            "path": "sources/notion-event.md",
+            "start_line": 1,
+            "end_line": 4,
+            "text": "# Captured Notion: Event contract\nRevision 11. Status: accepted current v1.\naccount.closed.v1 carries account_id only and is consumed by the audit service.\nThe audit consumer need not repeat the account command authorization check.\n",
+            "sha256": "73d1d4294650eb4f6ad3281e33c8a8df23d6f3cff660f845222ad98cd89b99c5"
+          }
+        ],
+        "searches": []
+      }
+    },
+    {
+      "round": 2,
+      "response": {
+        "action": "finish",
+        "reads": [],
+        "searches": [],
+        "outcome": "code_wrong",
+        "explanation": "The simulated legal owner has now explicitly selected LEGAL-203 for current v1 records. The audit consumer archives for 30 days, contradicting the selected 7-day rule. The publisher and consumer already agree on account.closed.v1 and account_id-only payload. Account ownership and can_close_account are checked at the command boundary; neither schema migration nor consumer-owned authorization is required. Correct retention only, then reconcile the stale local knowledge. The explicit test-operator choice is code. This one-file proposal implements that choice; external captures and unrelated guards/contracts are untouched.",
+        "question": "",
+        "evidence": [
+          {
+            "path": "sources/confluence-retention.md",
+            "quote": "Account closure audit records must be retained for exactly 30 days. No email field is required."
+          },
+          {
+            "path": "sources/linear-legal.md",
+            "quote": "All account closure audit records must be retained for exactly 7 days, including account.closed.v1 records."
+          },
+          {
+            "path": "sources/linear-legal.md",
+            "quote": "No migration to v2 is required to apply this policy."
+          },
+          {
+            "path": "code/audit/consumer.py",
+            "quote": "archive.append(event[\"account_id\"], retention_days=30)"
+          },
+          {
+            "path": "code/accounts/close.py",
+            "quote": "if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")"
+          },
+          {
+            "path": "code/events/publisher.py",
+            "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})"
+          },
+          {
+            "path": "code/audit/consumer.py",
+            "quote": "TOPIC = \"account.closed.v1\""
+          },
+          {
+            "path": "sources/notion-event.md",
+            "quote": "The audit consumer need not repeat the account command authorization check."
+          },
+          {
+            "path": "sources/linear-v2.md",
+            "quote": "Do not treat this proposal as the accepted v1 contract."
+          }
+        ],
+        "links": [
+          {
+            "from_path": "code/accounts/close.py",
+            "to_path": "code/events/publisher.py",
+            "quote": "from code.events.publisher import publish_closed"
+          },
+          {
+            "from_path": "code/events/publisher.py",
+            "to_path": "code/audit/consumer.py",
+            "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})"
+          }
+        ],
+        "edits": [
+          {
+            "path": "code/audit/consumer.py",
+            "old": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=30)\n",
+            "new": "TOPIC = \"account.closed.v1\"\n\ndef consume_closed(event, archive):\n    archive.append(event[\"account_id\"], retention_days=7)\n",
+            "reason": "Apply the simulated owner-selected current rule to its actual implementation."
+          }
+        ]
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": "sources/confluence-retention.md",
+      "quote": "Account closure audit records must be retained for exactly 30 days. No email field is required.",
+      "line": 3,
+      "end_line": 3
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "quote": "All account closure audit records must be retained for exactly 7 days, including account.closed.v1 records.",
+      "line": 3,
+      "end_line": 3
+    },
+    {
+      "path": "sources/linear-legal.md",
+      "quote": "No migration to v2 is required to apply this policy.",
+      "line": 4,
+      "end_line": 4
+    },
+    {
+      "path": "code/audit/consumer.py",
+      "quote": "archive.append(event[\"account_id\"], retention_days=30)",
+      "line": 4,
+      "end_line": 4
+    },
+    {
+      "path": "code/accounts/close.py",
+      "quote": "if actor.account_id != account.id or not actor.can_close_account:\n        raise PermissionError(\"closure denied\")",
+      "line": 4,
+      "end_line": 5
+    },
+    {
+      "path": "code/events/publisher.py",
+      "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})",
+      "line": 2,
+      "end_line": 2
+    },
+    {
+      "path": "code/audit/consumer.py",
+      "quote": "TOPIC = \"account.closed.v1\"",
+      "line": 1,
+      "end_line": 1
+    },
+    {
+      "path": "sources/notion-event.md",
+      "quote": "The audit consumer need not repeat the account command authorization check.",
+      "line": 4,
+      "end_line": 4
+    },
+    {
+      "path": "sources/linear-v2.md",
+      "quote": "Do not treat this proposal as the accepted v1 contract.",
+      "line": 4,
+      "end_line": 4
+    }
+  ],
+  "links": [
+    {
+      "from_path": "code/accounts/close.py",
+      "to_path": "code/events/publisher.py",
+      "quote": "from code.events.publisher import publish_closed",
+      "line": 1
+    },
+    {
+      "from_path": "code/events/publisher.py",
+      "to_path": "code/audit/consumer.py",
+      "quote": "bus.publish(\"account.closed.v1\", {\"account_id\": account_id})",
+      "line": 2
+    }
+  ],
+  "check_outcome": "code_wrong",
+  "proposal_outcome": "code_wrong",
+  "proposal_id": "19781ae85eeebe25e66fbacf107b25f7b1187d477a3ad94d5540ebaf145e693c"
+}

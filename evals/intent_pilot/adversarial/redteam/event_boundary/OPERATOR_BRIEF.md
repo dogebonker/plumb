@@ -1,0 +1,1 @@
+SYNTHETIC CASE. Check the account-closure event path across API publisher and audit consumer against OKF and the captured sources. No separate operator decision chooses between active retention decisions. Inspect the service handoff and distinguish future delivery/retention changes from current behavior. Return a structured check only; do not edit.
