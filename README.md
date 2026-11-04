@@ -7,13 +7,7 @@ work from the original requirements, make a change, and check what actually
 happened. Lasting module knowledge lives in OKF bundles. Substantial changes
 get requirements, a design, and tasks. Small edits stay small.
 
-<picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="assets/intent-still.svg">
-  <img src="assets/intent-loop.gif" alt="A plumb line connects module knowledge, a change specification, implementation, verification, and a knowledge update. An illustrative retention change moves from thirty days to the selected seven-day rule." width="960">
-</picture>
-
-*An illustration of the workflow, not a recorded run. The animation plays three
-times and stops. [Static diagram](assets/intent-still.svg).*
+<img src="assets/plumb-hero.png" alt="Intricate folded paper structures connected by a red thread, with a brass plumb bob suspended over a reference mark." width="1200">
 
 **Experimental.** The skill and supporting CLI are implemented. General accuracy,
 maintainer time savings, and the cost of keeping bundles current remain unproven.
@@ -182,8 +176,8 @@ Run the local command tests without model usage:
 python3 -m unittest discover -s plumb -p 'test_*.py'
 ```
 
-The [animation generator](assets/intent_art.py) uses Pillow only when regenerating
-artwork. The checked-in GIF and static SVG need no rendering service.
+The [hero artwork](assets/plumb-hero.png) was created with image generation.
+Its [generation prompt](assets/plumb-hero.prompt.md) is kept with the asset.
 
 Earlier factory skills and experiments remain in the repository for reference.
 The standalone [Plumb skill](skills/plumb/SKILL.md) has no dependency on their
